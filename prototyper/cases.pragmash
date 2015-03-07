@@ -1,0 +1,8 @@
+set y 0
+for x (range -1 2) {
+  for y (range (- $x 1) (+ $x 2)) {
+    for z (range (- $y 1) (+ $y 2)) {
+      puts (join []float64{0,\  $x ", " $y ", " $z },)
+    }
+  }
+}
