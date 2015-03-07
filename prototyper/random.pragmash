@@ -1,0 +1,8 @@
+print "[]float64{"
+for x (range 5) {
+  if not $x 0 {
+    print ", "
+  }
+  print (- (* 2 (rand)) 1)
+}
+puts }
