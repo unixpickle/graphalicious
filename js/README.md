@@ -2,9 +2,9 @@
 
 This will provide a JavaScript implementation of Graphalicious graphs.
 
-# Datasource
+# Data source
 
-A **datasource** provides data for the graph to draw.
+A **data source** provides data for the graph to draw.
 
 ### Tickets
 
