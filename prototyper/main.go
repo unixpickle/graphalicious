@@ -2,12 +2,17 @@ package main
 
 import (
 	"github.com/unixpickle/gogui"
+	"math/rand"
 	"os"
+	"time"
 )
 
-var currentPointSet = 0
-var smootherIdx = 0
+var animationStart int64
 var canvas gogui.Canvas
+var psIndex int
+var roughPoints []Point
+var smootherIndex int
+var smoothPoints []Point
 
 type Point struct {
 	X float64
@@ -16,6 +21,26 @@ type Point struct {
 
 type Smoother interface {
 	Smooth(points []Point) []Point
+}
+
+func addPsIndex(add int) {
+	psIndex += add
+	if psIndex < 0 {
+		psIndex += len(pointSets)
+	} else if psIndex >= len(pointSets) {
+		psIndex = 0
+	}
+	runAnimation()
+}
+
+func addSmootherIndex(add int) {
+	smootherIndex += add
+	if smootherIndex < 0 {
+		smootherIndex += len(smoothers)
+	} else if smootherIndex >= len(smoothers) {
+		smootherIndex = 0
+	}
+	runAnimation()
 }
 
 func createWindow() {
@@ -28,31 +53,26 @@ func createWindow() {
 		os.Exit(1)
 	})
 	w.SetKeyPressHandler(func(k gogui.KeyEvent) {
-		if k.CharCode == 39 {
-			currentPointSet = (currentPointSet + 1) % len(pointSets)
-		} else if k.CharCode == 37 {
-			currentPointSet = (currentPointSet + len(pointSets) - 1) %
-				len(pointSets)
-		} else if k.CharCode == 0x20 {
-			smootherIdx = (smootherIdx + 1) % len(smoothers)
-		} else {
-			return
+		switch (k.CharCode) {
+		case 39:
+			addPsIndex(1)
+		case 37:
+			addPsIndex(-1)
+		case 0x20:
+			addSmootherIndex(1)
 		}
-		canvas.NeedsUpdate()
 	})
 	
 	// Create the canvas.
 	canvas, _ = gogui.NewCanvas(gogui.Rect{0, 0, 400, 400})
 	canvas.SetDrawHandler(drawHandler)
 	w.Add(canvas)
+	
+	runAnimation()
 }
 
-func currentCase() []float64 {
-	return pointSets[currentPointSet]
-}
-
-func currentDataCoords() []Point {
-	c := currentCase()
+func dataPoints() []Point {
+	c := pointSets[psIndex]
 	spacing := canvas.Frame().Width / float64(len(c)+1)
 	ySpacing := canvas.Frame().Height / 8
 	yStart := canvas.Frame().Height / 2
@@ -64,21 +84,24 @@ func currentDataCoords() []Point {
 	return res
 }
 
-func currentSmoother() Smoother {
-	return smoothers[smootherIdx]
-}
-
 func drawHandler(ctx gogui.DrawContext) {
-	points := currentDataCoords()
-	
 	ctx.SetFill(gogui.Color{0.5625, 0.5625, 0.5625, 1})
 	ctx.FillText("Use arrow keys and space bar", 10, 10)
 	
-	smooth := currentSmoother().Smooth(points)
+	progress := float64(time.Now().UnixNano() - animationStart) /
+		500000000
+	if progress > 1 {
+		progress = 1
+	}
+	
 	ctx.SetStroke(gogui.Color{0, 0, 1, 1})
 	ctx.SetThickness(5)
 	ctx.BeginPath()
-	for i, p := range smooth {
+	count := int(float64(len(smoothPoints)) * progress)
+	for i, p := range smoothPoints {
+		if i > count {
+			break
+		}
 		if i == 0 {
 			ctx.MoveTo(p.X, p.Y)
 		} else {
@@ -88,14 +111,38 @@ func drawHandler(ctx gogui.DrawContext) {
 	ctx.StrokePath()
 	
 	ctx.SetFill(gogui.Color{1, 0, 0, 1})
-	for _, p := range points {
+	for _, p := range roughPoints {
 		ctx.FillEllipse(gogui.Rect{p.X - 10, p.Y - 10, 20, 20})
 	}
+	
+	if progress == 1 {
+		return
+	}
+	go func() {
+		time.Sleep(time.Second / 24)
+		gogui.RunOnMain(func() {
+			canvas.NeedsUpdate()
+		})
+	}()
 }
 
 func main() {
+	// Generate a bunch of random points
+	points := make([]float64, 1000)
+	for i := 0; i < 1000; i++ {
+		points[i] = rand.Float64()*2 - 1
+	}
+	pointSets = append(pointSets, points)
+	
 	go gogui.RunOnMain(createWindow)
 	gogui.Main(&gogui.AppInfo{Name: "Prototyper"})
+}
+
+func runAnimation() {
+	roughPoints = dataPoints()
+	smoothPoints = smoothers[smootherIndex].Smooth(roughPoints)
+	animationStart = time.Now().UnixNano()
+	canvas.NeedsUpdate()
 }
 
 var pointSets [][]float64 = [][]float64{
