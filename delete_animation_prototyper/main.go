@@ -24,7 +24,7 @@ var startPoints []Point = []Point{
 	{350, 100},
 }
 
-const deleteIndex = 2
+var deleteIndex int = 3
 const duration = 0.5
 var animating bool = false
 
@@ -53,6 +53,10 @@ func createWindow() {
 	w.SetKeyUpHandler(func(k gogui.KeyEvent) {
 		switch k.CharCode {
 		case 0x20:
+			deleteIndex = deleteIndex + 1
+			if deleteIndex == 4 {
+				deleteIndex = 1
+			}
 			animating = true
 			timeStart = CurrentTime()
 		}
