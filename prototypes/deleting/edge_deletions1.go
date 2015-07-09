@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 	"os"
 	"time"
 
@@ -17,14 +18,14 @@ type Point struct {
 }
 
 var startPoints []Point = []Point{
+	{-250, 200},
+	{-150, 120},
 	{-50, 300},
-	{50, 50},
-	{150, 150},
-	{250, 170},
-	{350, 100},
+	{50, 250},
+	{150, 270},
+	{250, 150},
+	{350, 200},
 }
-
-var deleteIndex int = 3
 
 const duration = 0.5
 
@@ -32,7 +33,7 @@ var animating bool = false
 
 func main() {
 	go gogui.RunOnMain(createWindow)
-	gogui.Main(&gogui.AppInfo{Name: "Prototyper"})
+	gogui.Main(&gogui.AppInfo{Name: "Option 1"})
 }
 
 func createWindow() {
@@ -40,7 +41,7 @@ func createWindow() {
 
 	// Create the window.
 	w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
-	w.SetTitle("Prototyper")
+	w.SetTitle("Option 1")
 	w.Center()
 	w.Show()
 	w.SetCloseHandler(func() {
@@ -49,16 +50,21 @@ func createWindow() {
 	w.SetKeyDownHandler(func(k gogui.KeyEvent) {
 		switch k.CharCode {
 		case 0x20:
+			if animating {
+				startPoints = startPoints[:len(startPoints)-1]
+				for i, p := range startPoints {
+					p.X += 100
+					startPoints[i] = p
+				}
+				point := Point{-250, float64(rand.Intn(300) + 50)}
+				startPoints = append([]Point{point}, startPoints...)
+			}
 			animating = false
 		}
 	})
 	w.SetKeyUpHandler(func(k gogui.KeyEvent) {
 		switch k.CharCode {
 		case 0x20:
-			deleteIndex = deleteIndex + 1
-			if deleteIndex == 4 {
-				deleteIndex = 1
-			}
 			animating = true
 			timeStart = CurrentTime()
 		}
@@ -81,44 +87,42 @@ func createWindow() {
 
 func drawHandler(ctx gogui.DrawContext) {
 	percent := (CurrentTime() - timeStart) / duration
-	if percent > 1 {
-		percent = 1
+	if percent > 0.999 {
+		percent = 0.999
 	}
 	if !animating {
 		percent = 0
 	}
-	pointsWithoutDeleting := []Point{}
 	pointsWithDeleting := []Point{}
-	for i := 0; i < len(startPoints); i++ {
+	pointsWithoutDeleting := []Point{}
+	for i := 0; i < len(startPoints)-1; i++ {
 		origPoint := startPoints[i]
-		if i < deleteIndex {
-			p := Point{origPoint.X + 100*percent, origPoint.Y}
-			pointsWithDeleting = append(pointsWithDeleting, p)
-			pointsWithoutDeleting = append(pointsWithoutDeleting, p)
-		} else if i == deleteIndex {
-			p := Point{origPoint.X + 50*percent, origPoint.Y}
-			pointsWithoutDeleting = append(pointsWithoutDeleting, p)
-		} else {
-			pointsWithDeleting = append(pointsWithDeleting, origPoint)
-			pointsWithoutDeleting = append(pointsWithoutDeleting, origPoint)
-		}
+		p := Point{origPoint.X + 100*percent, origPoint.Y}
+		pointsWithoutDeleting = append(pointsWithoutDeleting, p)
+		pointsWithDeleting = append(pointsWithDeleting, p)
 	}
+	endPoint := startPoints[len(startPoints)-1]
+	mergeY := startPoints[len(startPoints)-2].Y
+	pointsWithoutDeleting = append(pointsWithoutDeleting,
+		Point{endPoint.X, mergeY + (1-percent)*(endPoint.Y - mergeY)})
+
 	initial := Spline(pointsWithoutDeleting)
 	final := Spline(pointsWithDeleting)
 	ctx.SetStroke(gogui.Color{0, 0, 1, 1})
 	ctx.SetThickness(5)
 	ctx.BeginPath()
-	deletePoint := pointsWithoutDeleting[deleteIndex]
+	deletePoint := initial[len(initial)-1]
 	for i, pi := range initial {
+		if i >= len(final) {
+			ctx.LineTo(pi.X, pi.Y)
+			continue
+		}
 		pf := final[i]
 		p := Point{pf.X, pi.Y + (pf.Y-pi.Y)*percent}
 		if i == 0 {
 			ctx.MoveTo(p.X, p.Y)
 		} else {
 			ctx.LineTo(p.X, p.Y)
-		}
-		if math.Abs(p.X-deletePoint.X) <= 1 {
-			deletePoint.Y = p.Y
 		}
 	}
 	ctx.StrokePath()

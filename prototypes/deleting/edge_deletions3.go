@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 	"os"
 	"time"
 
@@ -17,14 +18,14 @@ type Point struct {
 }
 
 var startPoints []Point = []Point{
+	{-250, 54},
+	{-150, 130},
 	{-50, 300},
-	{50, 50},
-	{150, 150},
-	{250, 170},
-	{350, 100},
+	{50, 250},
+	{150, 270},
+	{250, 150},
+	{350, 200},
 }
-
-var deleteIndex int = 3
 
 const duration = 0.5
 
@@ -32,7 +33,7 @@ var animating bool = false
 
 func main() {
 	go gogui.RunOnMain(createWindow)
-	gogui.Main(&gogui.AppInfo{Name: "Prototyper"})
+	gogui.Main(&gogui.AppInfo{Name: "Option 3"})
 }
 
 func createWindow() {
@@ -40,13 +41,22 @@ func createWindow() {
 
 	// Create the window.
 	w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
-	w.SetTitle("Prototyper")
+	w.SetTitle("Option 3")
 	w.Center()
 	w.Show()
 	w.SetCloseHandler(func() {
 		os.Exit(1)
 	})
 	w.SetKeyDownHandler(func(k gogui.KeyEvent) {
+		if animating {
+			startPoints = startPoints[:len(startPoints)-1]
+			for i, p := range startPoints {
+				p.X += 100
+				startPoints[i] = p
+			}
+			point := Point{-250, float64(rand.Intn(300) + 50)}
+			startPoints = append([]Point{point}, startPoints...)
+		}
 		switch k.CharCode {
 		case 0x20:
 			animating = false
@@ -55,10 +65,6 @@ func createWindow() {
 	w.SetKeyUpHandler(func(k gogui.KeyEvent) {
 		switch k.CharCode {
 		case 0x20:
-			deleteIndex = deleteIndex + 1
-			if deleteIndex == 4 {
-				deleteIndex = 1
-			}
 			animating = true
 			timeStart = CurrentTime()
 		}
@@ -81,58 +87,72 @@ func createWindow() {
 
 func drawHandler(ctx gogui.DrawContext) {
 	percent := (CurrentTime() - timeStart) / duration
-	if percent > 1 {
-		percent = 1
-	}
 	if !animating {
 		percent = 0
 	}
-	pointsWithoutDeleting := []Point{}
-	pointsWithDeleting := []Point{}
-	for i := 0; i < len(startPoints); i++ {
-		origPoint := startPoints[i]
-		if i < deleteIndex {
-			p := Point{origPoint.X + 100*percent, origPoint.Y}
-			pointsWithDeleting = append(pointsWithDeleting, p)
-			pointsWithoutDeleting = append(pointsWithoutDeleting, p)
-		} else if i == deleteIndex {
-			p := Point{origPoint.X + 50*percent, origPoint.Y}
-			pointsWithoutDeleting = append(pointsWithoutDeleting, p)
-		} else {
-			pointsWithDeleting = append(pointsWithDeleting, origPoint)
-			pointsWithoutDeleting = append(pointsWithoutDeleting, origPoint)
-		}
+	if percent > 1 {
+		percent = 1
 	}
+	pointsWithDeleting := []Point{}
+	pointsWithoutDeleting := []Point{}
+	for i := 0; i < len(startPoints)-1; i++ {
+		origPoint := startPoints[i]
+		p := Point{origPoint.X + 100*percent, origPoint.Y}
+		pointsWithoutDeleting = append(pointsWithoutDeleting, p)
+		pointsWithDeleting = append(pointsWithDeleting, p)
+	}
+	if percent < 1 {
+		endPoint := startPoints[len(startPoints)-1]
+		pointsWithoutDeleting = append(pointsWithoutDeleting, endPoint)
+	}
+
 	initial := Spline(pointsWithoutDeleting)
 	final := Spline(pointsWithDeleting)
 	ctx.SetStroke(gogui.Color{0, 0, 1, 1})
 	ctx.SetThickness(5)
 	ctx.BeginPath()
-	deletePoint := pointsWithoutDeleting[deleteIndex]
-	for i, pi := range initial {
-		pf := final[i]
+	for i, pf := range final {
+		pi := initial[i]
 		p := Point{pf.X, pi.Y + (pf.Y-pi.Y)*percent}
 		if i == 0 {
 			ctx.MoveTo(p.X, p.Y)
 		} else {
 			ctx.LineTo(p.X, p.Y)
 		}
-		if math.Abs(p.X-deletePoint.X) <= 1 {
-			deletePoint.Y = p.Y
+	}
+	ctx.StrokePath()
+	ctx.SetStroke(gogui.Color{0, 0, 1, 1 - percent})
+	for i := len(final); i < len(initial); i++ {
+		p := initial[i]
+		if i == len(final) {
+			ctx.MoveTo(p.X, p.Y)
+		} else {
+			ctx.LineTo(p.X, p.Y)
 		}
+	}
+	if percent < 1 {
+		endPoint := startPoints[len(startPoints)-1]
+		ctx.LineTo(endPoint.X, endPoint.Y)
 	}
 	ctx.StrokePath()
 	ctx.SetFill(gogui.Color{1, 0, 0, 1})
 	for _, p := range pointsWithDeleting {
 		ctx.FillEllipse(gogui.Rect{p.X - 5, p.Y - 5, 10, 10})
 	}
-	deleteRadius := 5 - percent*5
-	ctx.FillEllipse(gogui.Rect{deletePoint.X - deleteRadius, deletePoint.Y - deleteRadius, deleteRadius * 2, deleteRadius * 2})
+	if percent < 1 {
+		endPoint := startPoints[len(startPoints)-1]
+		ctx.SetFill(gogui.Color{1, 0, 0, 1 - percent})
+		ctx.FillEllipse(gogui.Rect{endPoint.X - 5, endPoint.Y - 5, 10, 10})
+	}
 }
 
 // Spline generates a monotonic cubic spline for a bunch of x-sorted points.
 // Thanks, http://en.wikipedia.org/wiki/Monotone_cubic_interpolation
 func Spline(p []Point) []Point {
+	if len(p) <= 1 {
+		return []Point{}
+	}
+
 	// Get secants and tangents.
 	dxList := make([]float64, len(p)-1)
 	dyList := make([]float64, len(p)-1)
