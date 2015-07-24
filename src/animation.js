@@ -16,6 +16,7 @@ function Animation(duration) {
   this._duration = duration * 1000;
   this._startTime = null;
   this._cancelled = false;
+  this._progress = 0;
 }
 
 Animation.prototype = Object.create(EventEmitter.prototype);
@@ -25,8 +26,7 @@ Animation.prototype.cancel = function() {
 };
 
 Animation.prototype.progress = function() {
-  var elapsed = currentTimestamp() - this._startTime;
-  return Math.max(Math.min(elapsed/this._duration, 1), 0);
+  return this._progress;
 };
 
 Animation.prototype.start = function() {
@@ -43,16 +43,28 @@ Animation.prototype._tick = function(ts) {
   }
 
   var elapsed = ts - this._startTime;
-  var progress = (elapsed / this._duration);
-  var done = false;
   if (elapsed >= this._duration) {
-    done = true;
-    progress = 1;
+    this._progress = 1;
+  } else {
+    this._progress = (elapsed / this._duration);
   }
-  this.emit('progress', progress);
-  if (!done) {
+  this.emit('progress', this._progress);
+
+  if (this._progress < 1) {
     requestAnimationFrame(this._tick.bind(this));
   } else {
     this.emit('done');
   }
+};
+
+function ValueAnimation(duration, initial, final) {
+  Animation.prototype.call(duration);
+  this._initial = initial;
+  this._final = final;
+}
+
+ValueAnimation.prototype = Object.create(Animation.prototype);
+
+ValueAnimation.prototype.value = function() {
+  return this._initial + (this._final-this._initial)*this._progress;
 };
