@@ -4,6 +4,7 @@
 // whenever it is laid out.
 function GraphCanvas() {
   this._canvas = document.createElement('canvas');
+  this._context = this._canvas.getContext('2d');
 
   this._ratio = window.crystal.getRatio();
   this._boundCrystalCallback = this._crystalCallback.bind(this);
@@ -11,6 +12,11 @@ function GraphCanvas() {
 }
 
 GraphCanvas.prototype = Object.create(EventEmitter.prototype);
+
+// context returns a 2D drawing context for this canvas.
+GraphCanvas.prototype.context = function() {
+  return this._context;
+};
 
 // dispose removes any callbacks which the GraphCanvas is registered for.
 // You should call this when you are done using a GraphCanvas.
@@ -33,12 +39,9 @@ GraphCanvas.prototype.height = function() {
 GraphCanvas.prototype.layout = function() {
   this._canvas.width = this.width() * this._ratio;
   this._canvas.height = this.height() * this._ratio;
+  this._context = this._canvas.getContext('2d');
+  this._scaleContextForRatio();
   this.emit('layout');
-};
-
-// pixelRatio returns the ratio between canvas pixels and CSS pixels.
-GraphCanvas.prototype.pixelRatio = function() {
-  return this._ratio;
 };
 
 // width returns the width of the canvas in CSS pixels.
@@ -49,4 +52,8 @@ GraphCanvas.prototype.width = function() {
 GraphCanvas.prototype._crystalCallback = function() {
   this._ratio = Math.ceil(window.crystal.getRatio());
   this.layout();
+};
+
+GraphCanvas.prototype._scaleContextForRatio = function() {
+  this._context.scale(this._ratio, this._ratio);
 };
