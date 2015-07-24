@@ -1,3 +1,5 @@
+// TODO: implement lag-smoothing.
+
 var currentTimestamp = window.performance.now || function() {
   return new Date().getTime();
 };
@@ -22,6 +24,11 @@ Animation.prototype.cancel = function() {
   this._cancelled = true;
 };
 
+Animation.prototype.progress = function() {
+  var elapsed = currentTimestamp() - this._startTime;
+  return Math.max(Math.min(elapsed/this._duration, 1), 0);
+};
+
 Animation.prototype.start = function() {
   if (this._startTime !== null) {
     throw new Error('cannot restart animation');
@@ -35,8 +42,8 @@ Animation.prototype._tick = function(ts) {
     return;
   }
 
-  var elapsed = ts - currentTimestamp();
-  var progress = (elapsed / this._duration)
+  var elapsed = ts - this._startTime;
+  var progress = (elapsed / this._duration);
   var done = false;
   if (elapsed >= this._duration) {
     done = true;
