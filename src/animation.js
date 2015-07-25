@@ -1,3 +1,5 @@
+//deps event_emitter.js
+
 // TODO: implement lag-smoothing.
 
 var currentTimestamp = window.performance.now || function() {

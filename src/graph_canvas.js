@@ -1,3 +1,5 @@
+//deps event_emitter.js
+
 // A GraphCanvas is used for drawing the contents of a graphalicious graph.
 //
 // GraphCanvas implements the EventEmitter protocol. It emits "layout" events

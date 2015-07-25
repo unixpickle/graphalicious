@@ -1,3 +1,5 @@
+//deps graph_canvas.js viewport.js animation.js event_emitter.js
+
 // A ScrollView facilitates scrolling through abstract content.
 function ScrollView(graphCanvas, content) {
   this._graphCanvas = graphCanvas;
