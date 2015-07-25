@@ -1,24 +1,24 @@
 (function() {
 
-  // A Viewport defines a clipped region inside a GraphView.
-  function Viewport(graphView, x, y, width, height) {
-    this._graphView = graphView;
-    this._x = x;
-    this._y = y;
-    this._width = width;
-    this._height = height;
+  // A Viewport defines a clipped region inside a GraphCanvas.
+  function Viewport(graphCanvas, x, y, width, height) {
+    this._graphCanvas = graphCanvas;
+    this._x = x || 0;
+    this._y = y || 0;
+    this._width = width || graphCanvas.width();
+    this._height = height || graphCanvas.height();
   }
 
   // containedViewport generates a new viewport within this one.
   // The subX and subY coordinates are relative to this viewport's own x and y coordinates.
   Viewport.prototype.containedViewport = function(subX, subY, width, height) {
-    return new Viewport(this._graphView, this._x+subX, this._y+subY, width, height);
+    return new Viewport(this._graphCanvas, this._x+subX, this._y+subY, width, height);
   };
 
   // context returns a 2D drawing context for the underlying canvas.
   // You should not draw in this context before calling enter().
   Viewport.prototype.context = function() {
-    return this._graphView.context;
+    return this._graphCanvas.context();
   };
 
   // enter performs transformation and clipping operations on the context to ensure that drawing
