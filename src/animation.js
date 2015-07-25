@@ -65,6 +65,11 @@ function ValueAnimation(duration, initial, final) {
 
 ValueAnimation.prototype = Object.create(Animation.prototype);
 
+ValueAnimation.prototype.reversed = function() {
+  var pctLeft = (this._final-this.value()) / (this._final-this._initial);
+  return new ValueAnimation((1-pctLeft)*this._duration, this.value(), this._initial);
+};
+
 ValueAnimation.prototype.value = function() {
-  return this._initial + (this._final-this._initial)*this._progress;
+  return this._initial + (this._final-this._initial)*this.progress();
 };
