@@ -3,15 +3,15 @@ function ScrollView(graphCanvas, content) {
   this._graphCanvas = graphCanvas;
   this._content = content;
 
-  this._hasLaidOutBefore = false;
   this._showingScrollbar = false;
   this._animation = null;
+
+  this._scrollBar = new ScrollBar(this);
 
   this._registerEvents();
 }
 
-ScrollView.HEIGHT = 5;
-ScrollView.MARGIN = 5;
+ScrollView.BAR_MARGIN = 5;
 ScrollView.SHOW_HIDE_DURATION = 0.4;
 
 ScrollView.prototype.useAnimation = function() {
@@ -24,18 +24,23 @@ ScrollView.prototype._draw = function() {
   var height = this.height();
 
   var fullViewport = new Viewport(this._graphCanvas);
-  var contentHeight = Math.round(height - pct*(ScrollView.HEIGHT+ScrollView.MARGIN));
+  var contentHeight = Math.round(height - pct*(ScrollBar.HEIGHT+ScrollView.BAR_MARGIN));
   if (contentHeight < 0) {
     return;
   }
-  var contentViewport = fullViewport.containedViewport(0, 0, this.width(), contentHeight);
+  var contentViewport = fullViewport.containedViewport(0, 0, fullViewport.width(), contentHeight);
   this._content.draw(contentViewport);
 
-  // TODO: here, draw the actual scrollbar.
+  if (pct > 0) {
+    var showingHeight = Math.ceil(pct * ScrollBar.HEIGHT);
+    var barViewport = fullViewport.containedViewport(0, fullViewport.height()-showingHeight,
+      fullViewport.width(), showingHeight);
+    this._scrollBar.draw(barViewport);
+  }
 };
 
 ScrollView.prototype._layout = function() {
-  if (this._graphCanvas.height() <= ScrollView.HEIGHT+ScrollView.MARGIN ||
+  if (this._graphCanvas.height() <= ScrollBar.HEIGHT+ScrollView.BAR_MARGIN ||
       this._graphCanvas.width() <= 0) {
     return;
   }
@@ -84,6 +89,7 @@ ScrollView.prototype._recomputeState = function() {
 ScrollView.prototype._registerEvents = function() {
   this._graphCanvas.on('layout', this._layout.bind(this));
   this._content.on('change', this._layout.bind(this));
+  this._scrollBar.on('redraw', this._layout.bind(this));
 };
 
 function ScrollBar(scrollView) {
@@ -100,6 +106,7 @@ function ScrollBar(scrollView) {
   this._amountScrolled = 1;
 }
 
+ScrollBar.HEIGHT = 5;
 ScrollBar.ANIMATION_DURATION = 0.4;
 ScrollBar.COLOR_ANIMATION_DURATION = 0.4;
 ScrollBar.BACKGROUND_COLOR = '#ccc';
