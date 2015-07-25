@@ -66,10 +66,29 @@ function ValueAnimation(duration, initial, final) {
 ValueAnimation.prototype = Object.create(Animation.prototype);
 
 ValueAnimation.prototype.reversed = function() {
-  var pctLeft = (this._final-this.value()) / (this._final-this._initial);
-  return new ValueAnimation((1-pctLeft)*this._duration, this.value(), this._initial);
+  return new ValueAnimation((1-this.progress())*this._duration, this.value(), this._initial);
 };
 
 ValueAnimation.prototype.value = function() {
   return this._initial + (this._final-this._initial)*this.progress();
+};
+
+function VectorAnimation(duration, initial, final) {
+  Animation.prototype.call(duration);
+  this._initial = initial;
+  this._final = final;
+}
+
+VectorAnimation.prototype = Object.create(Animation.prototype);
+
+VectorAnimation.prototype.reversed = function() {
+  return new VectorAnimation((1-this.progress())*this._duration, this.values(), this._initial);
+};
+
+VectorAnimation.prototype.vector = function() {
+  var res = [];
+  for (var i = 0, len = this._initial.length; i < len; ++i) {
+    res[i] = this._initial[i] + (this._final[i]-this._initial[i])*this.progress();
+  }
+  return res;
 };

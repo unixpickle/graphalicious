@@ -14,6 +14,11 @@ ScrollView.HEIGHT = 5;
 ScrollView.MARGIN = 5;
 ScrollView.SHOW_HIDE_DURATION = 0.4;
 
+ScrollView.prototype.useAnimation = function() {
+  // TODO: return false if the graph is not visible.
+  return true;
+};
+
 ScrollView.prototype._draw = function() {
   var pct = this._percentShowingScrollbar();
   var height = this.height();
@@ -58,7 +63,7 @@ ScrollView.prototype._recomputeState = function() {
   }
 
   this._showingScrollbar = s;
-  if (this._animation !== null || this._useAnimation()) {
+  if (this._animation !== null || this.useAnimation()) {
     if (this._animation !== null) {
       this._animation.cancel();
       this._animation = this._animation.reverse();
@@ -70,6 +75,7 @@ ScrollView.prototype._recomputeState = function() {
       this._animation = null;
     }.bind(this));
     this._animation.on('progress', this._layout.bind(this));
+    this._animation.start();
   } else {
     this._layout();
   }
@@ -80,7 +86,128 @@ ScrollView.prototype._registerEvents = function() {
   this._content.on('change', this._layout.bind(this));
 };
 
-ScrollView.prototype._useAnimation = function() {
-  // TODO: return false if the graph is not visible.
-  return true;
+function ScrollBar(scrollView) {
+  EventEmitter.call(this);
+
+  this._scrollView = scrollView;
+
+  this._color = ScrollBar.DEFAULT_COLOR;
+  this._colorAnimation = null;
+
+  this._viewportToContentRatio = 0.5;
+  this._animation = null;
+
+  this._amountScrolled = 1;
+}
+
+ScrollBar.ANIMATION_DURATION = 0.4;
+ScrollBar.COLOR_ANIMATION_DURATION = 0.4;
+ScrollBar.BACKGROUND_COLOR = '#ccc';
+ScrollBar.DEFAULT_COLOR = [0x64, 0xbc, 0xd4];
+ScrollBar.MINIMUM_BAR_WIDTH = 10;
+
+ScrollBar.prototype = Object.create(EventEmitter.prototype);
+
+ScrollBar.prototype.draw = function(viewport) {
+  viewport.enter();
+  var context = viewport.context();
+
+  context.fillStyle = ScrollBar.BACKGROUND_COLOR;
+  context.fillRect(0, 0, viewport.width(), viewport.height());
+
+  var barWidth = Math.max(viewport.width()*this._currentViewportToContentRatio,
+    ScrollBar.MINIMUM_BAR_WIDTH);
+  var barX = this._amountScrolled * (viewport.width() - barWidth);
+
+  context.fillStyle = this._colorStyle();
+  context.rect(barX, 0, barWidth, viewport.height());
+
+  viewport.leave();
 };
+
+ScrollBar.prototype.getAmountScrolled = function() {
+  return this._amountScrolled;
+};
+
+ScrollBar.prototype.setAmountScrolled = function(amount) {
+  this._amountScrolled = amount;
+  this.emit('redraw');
+};
+
+ScrollBar.prototype.setColor = function(color) {
+  if (this._colorAnimation !== null || this._scrollView.useAnimation()) {
+    this._colorAnimation = new VectorAnimation(ScrollBar.COLOR_ANIMATION_DURATION, this._color,
+      color);
+    this._color = color;
+    this._colorAnimation.on('progress', this.emit.bind(this, 'redraw'));
+    this._colorAnimation.on('draw', function() {
+      this._colorAnimation = null;
+    }.bind(this));
+    this._colorAnimation.start();
+  } else {
+    this._color = color;
+    this.emit('redraw');
+  }
+};
+
+ScrollBar.prototype.setViewportToContentRatio = function(ratio) {
+  if (ratio === this._viewportToContentRatio) {
+    return;
+  }
+  if (this._animation !== null || this._scrollView.useAnimation()) {
+    this._animation = new ValueAnimation(ScrollBar.ANIMATION_DURATION,
+      this._currentViewportToContentRatio(), ratio);
+    this._viewportToContentRatio = ratio;
+    this._animation.on('progress', this.emit.bind(this, 'redraw'));
+    this._animation.on('done', function() {
+      this._animation = null;
+    }.bind(this));
+    this._animation.start();
+  } else {
+    this._viewportToContentRatio = ratio;
+    this.emit('redraw');
+  }
+};
+
+ScrollBar.prototype._colorStyle = function() {
+  var color = this._currentColor();
+  var res = 'rgba(';
+  for (var i = 0; i < 3; ++i) {
+    if (i != 0) {
+      res += ', ';
+    }
+    res += Math.round(color[i]);
+  }
+  return res + ', 1)';
+};
+
+ScrollBar.prototype._currentColor = function() {
+  if (this._colorAnimation !== null) {
+    return this._colorAnimation.vector();
+  } else {
+    return this._color;
+  }
+};
+
+ScrollBar.prototype._currentViewportToContentRatio = function() {
+  if (this._animation !== null) {
+    return this._animation.value();
+  } else {
+    return this._viewportToContentRatio;
+  }
+};
+
+function parseHexColor(hexColor) {
+  if (hex[0] !== '#' || hex.length != 7) {
+    return ScrollBar.DEFAULT_COLOR;
+  }
+  var res = [];
+  for (var i = 0; i < 3; ++i) {
+    var val = parseInt(hex.substr(1 + 2*i, 2), 16);
+    if (isNaN(val)) {
+      return ScrollBar.DEFAULT_COLOR;
+    }
+    res[i] = val;
+  }
+  return res;
+}
