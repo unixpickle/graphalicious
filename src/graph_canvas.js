@@ -3,7 +3,7 @@
 // A GraphCanvas is used for drawing the contents of a graphalicious graph.
 //
 // GraphCanvas implements the EventEmitter protocol. It emits "layout" events
-// whenever it is laid out.
+// whenever it is resized on-screen or when its layout() method is called.
 function GraphCanvas() {
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
