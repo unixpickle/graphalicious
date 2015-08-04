@@ -38,6 +38,11 @@ ScrollView.prototype.element = function() {
   return this._element;
 };
 
+// getGraphCanvas returns the GraphCanvas.
+ScrollView.prototype.getGraphCanvas = function() {
+  return this._graphCanvas;
+};
+
 // getScrollBar returns the ScrollBar.
 ScrollView.prototype.getScrollBar = function() {
   return this._scrollBar;
