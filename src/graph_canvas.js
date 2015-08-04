@@ -6,7 +6,7 @@
 // whenever it is resized on-screen or when its layout() method is called.
 function GraphCanvas() {
   EventEmitter.call(this);
-  
+
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
 

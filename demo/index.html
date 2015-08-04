@@ -12,12 +12,13 @@
       sv.element().style.width = '200px';
       sv.element().style.height = '100px';
       sv.layout();
-      setInterval(function() {
-        sv.setScrolls(!sv.getScrolls());
-      }, 2000);
+      
+      window.sv = sv;
     });
     </script>
   </head>
   <body>
+    <button onclick="window.sv.setScrolls(!window.sv.getScrolls())">Toggle Scrolls</button>
+    <br>
   </body>
 </html>

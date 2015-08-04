@@ -1,4 +1,4 @@
-function fractionToPercentString(fraction) {
+function formatPercent(fraction) {
   return (fraction*100).toFixed(5) + '%';
 }
 

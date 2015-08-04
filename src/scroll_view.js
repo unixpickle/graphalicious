@@ -60,6 +60,7 @@ ScrollView.prototype.layout = function() {
   }
 
   this._graphCanvas.layout();
+  this._scrollBar.layout();
 };
 
 // setScrolls sets whether or not the ScrollBar should be visible.
