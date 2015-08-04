@@ -1,13 +1,17 @@
 //deps scroll_bar.js graph_canvas.js animation.js event_emitter.js
 
 // A ScrollView facilitates scrolling through abstract content.
+// The ScrollView will emit 'change' events whenever it is scrolled.
 function ScrollView(graphCanvas) {
+  EventEmitter.call(this);
+
   this._graphCanvas = graphCanvas;
 
   this._scrolls = false;
   this._animation = null;
 
   this._scrollBar = new ScrollBar();
+  this._scrollBar.on('change', this.emit.bind(this, 'change'));
 
   this._element = document.createElement('div');
   this._element.style.position = 'relative';
@@ -18,10 +22,16 @@ function ScrollView(graphCanvas) {
 
   this._graphCanvas.element().style.width = '100%';
   this._graphCanvas.element().style.height = '100%';
+
+  this._totalInvisibleWidth = 0;
+
+  this._registerDragEvents();
 }
 
 ScrollView.BAR_MARGIN = 5;
 ScrollView.SHOW_HIDE_DURATION = 0.4;
+
+ScrollView.prototype = Object.create(EventEmitter.prototype);
 
 // element returns the root element for the ScrollView.
 ScrollView.prototype.element = function() {
@@ -36,6 +46,11 @@ ScrollView.prototype.getScrollBar = function() {
 // getScrolls returns whether or not the ScrollView is set to show the ScrollBar.
 ScrollView.prototype.getScrolls = function() {
   return this._scrolls;
+};
+
+// getTotalInvisibleWidth returns the last value set by setTotalWidth.
+ScrollView.prototype.getTotalInvisibleWidth = function() {
+  return this._totalWidth;
 };
 
 // layout adjusts the contained GraphCanvas and ScrollBar to fit the root element's bounds.
@@ -86,12 +101,79 @@ ScrollView.prototype.setScrolls = function(s) {
   this._animation.start();
 };
 
+// setTotalInvisibleWidth tells the ScrollView how wide the underlying content is (in pixels).
+// This makes drag-scrolling work the way the user expects.
+ScrollView.prototype.setTotalInvisibleWidth = function(pixels) {
+  this._totalInvisibleWidth = pixels;
+};
+
+ScrollView.prototype._dragged = function(initialAmountScrolled, offset) {
+  if (this._totalInvisibleWidth <= 0 || !this._scrolls) {
+    return;
+  }
+  var fraction = Math.max(Math.min(initialAmountScrolled - offset/this._totalInvisibleWidth, 1), 0);
+  if (fraction !== this._scrollBar.getAmountScrolled()) {
+    this._scrollBar.setAmountScrolled(fraction);
+    this.emit('change');
+  }
+};
+
 ScrollView.prototype._percentShowingBar = function() {
   if (this._animation === null) {
     return this._scrolls ? 1 : 0;
   } else {
     return this._animation.value();
   }
+};
+
+ScrollView.prototype._registerDragEvents = function() {
+  var e = this._graphCanvas.element();
+  if ('ontouchstart' in document) {
+    var initialAmountScrolled;
+    var initialX;
+    e.addEventListener('ontouchstart', function(e) {
+      initialX = e.changedTouches[0].pageX;
+      initialAmountScrolled = this._scrollBar.getAmountScrolled();
+    }.bind(this));
+    e.addEventListener('ontouchmove', function(e) {
+      this._dragged(initialAmountScrolled, e.changedTouches[0].pageX-initialX);
+    }.bind(this));
+  }
+
+  var shielding = document.createElement('div');
+  shielding.style.position = 'fixed';
+  shielding.style.left = '0';
+  shielding.style.top = '0';
+  shielding.style.width = '100%';
+  shielding.style.height = '100%';
+
+  var mouseInitialAmountScrolled;
+  var mouseInitialX;
+  var mouseDown = false;
+
+  e.addEventListener('mousedown', function(e) {
+    mouseDown = true;
+    mouseInitialX = e.clientX;
+    mouseInitialAmountScrolled = this._scrollBar.getAmountScrolled();
+
+    // NOTE: this prevents hover events on the left of the page while dragging.
+    document.body.appendChild(shielding);
+
+    // NOTE: this line of code prevents the cursor from changing on drag in Safari on OS X.
+    // It may have the same effect on other platforms as well.
+    e.preventDefault();
+  }.bind(this));
+  document.body.addEventListener('mousemove', function(e) {
+    if (mouseDown) {
+      this._dragged(mouseInitialAmountScrolled, e.clientX-mouseInitialX);
+    }
+  }.bind(this));
+  document.body.addEventListener('mouseup', function() {
+    if (mouseDown) {
+      mouseDown = false;
+      document.body.removeChild(shielding);
+    }
+  });
 };
 
 ScrollView.prototype._useAnimation = function() {
