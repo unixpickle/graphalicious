@@ -57,9 +57,10 @@ ScrollBar.prototype.layout = function() {
   if (elementWidth === 0) {
     return;
   }
-  this._knob.style.width = formatPixels(elementWidth * this._knobSize);
+  var knobWidth = this._knobWidth();
+  this._knob.style.width = formatPixels(knobWidth);
 
-  var availableWidth = elementWidth * (1 - this._knobSize);
+  var availableWidth = elementWidth - knobWidth;
   this._knob.style.left = formatPixels(availableWidth * this._amountScrolled);
 };
 
@@ -80,8 +81,7 @@ ScrollBar.prototype._amountScrolledForWidth = function(w) {
   if (elementWidth === 0) {
     throw new Error('element is impossibly thin');
   }
-  var knobWidth = elementWidth * this._knobSize;
-  return (w / (elementWidth - knobWidth));
+  return (w / (elementWidth - this._knobWidth()));
 };
 
 ScrollBar.prototype._jumpPages = function(count) {
@@ -89,6 +89,10 @@ ScrollBar.prototype._jumpPages = function(count) {
   var newAmount = this.getAmountScrolled() + count*pageSize;
   this.setAmountScrolled(Math.min(Math.max(newAmount, 0), 1));
   this.emit('change');
+};
+
+ScrollBar.prototype._knobWidth = function() {
+  return Math.max(this._element.offsetWidth * this._knobSize, ScrollBar.KNOB_MIN_WIDTH);
 };
 
 ScrollBar.prototype._registerEvents = function() {
