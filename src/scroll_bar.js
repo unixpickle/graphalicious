@@ -1,3 +1,5 @@
+//deps event_emitter.js formatting.js
+
 // ScrollBar is a DOM-based scrollbar.
 function ScrollBar() {
   EventEmitter.call(this);

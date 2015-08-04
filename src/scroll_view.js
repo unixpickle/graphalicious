@@ -1,4 +1,4 @@
-//deps scroll_bar.js graph_canvas.js animation.js event_emitter.js
+//deps scroll_bar.js graph_canvas.js animation.js event_emitter.js formatting.js
 
 // A ScrollView facilitates scrolling through abstract content.
 // The ScrollView will emit 'change' events whenever it is scrolled.
