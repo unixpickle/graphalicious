@@ -6,20 +6,25 @@ function ScrollBar() {
   this._element.style.width = '100%';
   this._element.style.position = 'absolute';
   this._element.style.bottom = '0';
+  this._element.style.backgroundColor = ScrollBar.DEFAULT_BACKGROUND_COLOR;
 
   this._knob = document.createElement('div');
   this._knob.className = 'graphalicious-scrollbar-knob';
+  this._knob.style.width = '50%';
   this._knob.style.height = '100%';
   this._knob.style.position = 'absolute';
+  this._knob.style.backgroundColor = ScrollBar.DEFAULT_COLOR;
 
   this._element.appendChild(this._knob);
 
   this._knobSize = 0.5;
-  this._knob.style.width = '50%';
-
   this._amountScrolled = 1;
+  this.setKnobSize(0.5);
+  this.setAmountScrolled(1);
 }
 
+ScrollBar.DEFAULT_BACKGROUND_COLOR = '#ccc';
+ScrollBar.DEFAULT_COLOR = '#65bcd4';
 ScrollBar.HEIGHT = 5;
 
 // element returns the ScrollBar's underlying DOM element.

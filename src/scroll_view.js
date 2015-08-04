@@ -13,8 +13,8 @@ function ScrollView(graphCanvas) {
   this._element.style.position = 'relative';
   this._element.style.overflow = 'hidden';
 
-  this._element.appendNode(this._graphCanvas.element());
-  this._element.appendNode(this._scrollBar.element());
+  this._element.appendChild(this._graphCanvas.element());
+  this._element.appendChild(this._scrollBar.element());
 
   this._graphCanvas.element().style.width = '100%';
   this._graphCanvas.element().style.height = '100%';
@@ -48,7 +48,7 @@ ScrollView.prototype.layout = function() {
 
   if (percentShowing === 0) {
     graphElement.style.height = '100%';
-    barElement.style.top = '100%';
+    barElement.style.bottom = formatPixels(-ScrollBar.HEIGHT);
   } else if (percentShowing === 1) {
     graphElement.style.height = 'calc(100% - ' + formatPixels(ScrollView.BAR_MARGIN +
       ScrollBar.HEIGHT) + ')';
@@ -56,7 +56,7 @@ ScrollView.prototype.layout = function() {
   } else {
     var offset = (ScrollView.BAR_MARGIN + ScrollBar.HEIGHT) * percentShowing;
     graphElement.style.height = 'calc(100% - ' + formatPixels(offset) + ')';
-    barElement.style.bottom = formatPixels(-ScrollBar.HEIGHT * (1 - offset));
+    barElement.style.bottom = formatPixels(-ScrollBar.HEIGHT * (1 - percentShowing));
   }
 
   this._graphCanvas.layout();
@@ -73,7 +73,7 @@ ScrollView.prototype.setScrolls = function(s) {
 
   if (this._animation !== null) {
     this._animation.cancel();
-    this._animation = this._animation.reverse();
+    this._animation = this._animation.reversed();
   } else {
     var endState = (s ? 1 : 0);
     this._animation = new ValueAnimation(ScrollView.SHOW_HIDE_DURATION, 1-endState, endState);
@@ -97,3 +97,5 @@ ScrollView.prototype._useAnimation = function() {
   // TODO: return false if the graph is not visible.
   return true;
 };
+
+exports.ScrollView = ScrollView;

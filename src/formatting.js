@@ -3,5 +3,5 @@ function fractionToPercentString(fraction) {
 }
 
 function formatPixels(number) {
-  return Math.round(number) + 'px';
+  return number.toFixed(2) + 'px';
 }

@@ -5,6 +5,8 @@
 // GraphCanvas implements the EventEmitter protocol. It emits "layout" events
 // whenever it is resized on-screen or when its layout() method is called.
 function GraphCanvas() {
+  EventEmitter.call(this);
+  
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
 
@@ -33,7 +35,7 @@ GraphCanvas.prototype.element = function() {
 
 // height returns the height of the canvas in CSS pixels.
 GraphCanvas.prototype.height = function() {
-  return this._element.offsetHeight;
+  return this._canvas.offsetHeight;
 };
 
 // layout re-draws the contents of the canvas.
@@ -48,7 +50,7 @@ GraphCanvas.prototype.layout = function() {
 
 // width returns the width of the canvas in CSS pixels.
 GraphCanvas.prototype.width = function() {
-  return this._element.offsetWidth;
+  return this._canvas.offsetWidth;
 };
 
 GraphCanvas.prototype._crystalCallback = function() {
@@ -59,3 +61,5 @@ GraphCanvas.prototype._crystalCallback = function() {
 GraphCanvas.prototype._scaleContextForRatio = function() {
   this._context.scale(this._ratio, this._ratio);
 };
+
+exports.GraphCanvas = GraphCanvas;

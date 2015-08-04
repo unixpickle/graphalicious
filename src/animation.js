@@ -2,7 +2,7 @@
 
 // TODO: implement lag-smoothing.
 
-var currentTimestamp = window.performance.now || function() {
+var currentTimestamp = window.performance.now.bind(window.performance) || function() {
   return new Date().getTime();
 };
 
@@ -15,6 +15,7 @@ var requestAnimationFrame = window.requestAnimationFrame || function(cb) {
 // An Animation uses requestAnimationFrame or a polyfill to animate a percentage
 // over a given duration.
 function Animation(duration) {
+  EventEmitter.call(this);
   this._duration = duration * 1000;
   this._startTime = null;
   this._cancelled = false;
@@ -60,7 +61,7 @@ Animation.prototype._tick = function(ts) {
 };
 
 function ValueAnimation(duration, initial, final) {
-  Animation.prototype.call(duration);
+  Animation.call(this, duration);
   this._initial = initial;
   this._final = final;
 }
@@ -76,7 +77,7 @@ ValueAnimation.prototype.value = function() {
 };
 
 function VectorAnimation(duration, initial, final) {
-  Animation.prototype.call(duration);
+  Animation.call(this, duration);
   this._initial = initial;
   this._final = final;
 }
