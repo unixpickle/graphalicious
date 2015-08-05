@@ -13,5 +13,9 @@ The *content* interface should emit these events:
 The *content* interface should implement these methods:
 
  * **draw**(startX, viewport) - draw the content (or a sub-frame of the content) inside a viewport.
+ * **formatYLabel**(value) - format a value for presentation in the y-axis.
+ * **getFontFamily**() - get the font family for axis labels.
+ * **getFontSize**() - get the font size for axis labels.
+ * **getFontWeight**() - get the font weight for axis labels.
  * **getMinimumWidth**() - get the minimum width needed to display the content without scrolling.
  * **getMaxValueInFrame**(startX, width) - get the maximum value (for the y-axis labels) within the given clipped region.
