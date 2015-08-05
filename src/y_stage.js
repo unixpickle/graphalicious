@@ -23,38 +23,72 @@ YStage.prototype._registerEvents = function() {
   this._scrollView.getGraphCanvas().on('layout', this._layout);
 };
 
+// YLabel represents a y-axis label.
+function YLabel(value, content) {
+  this.text = content.formatYLabel(value)
+  var metrics = measureLabel(this.text, content);
+  this.width = metrics.width;
+  this.height = metrics.height;
+  this.opacity = 1;
+  this.x = 0;
+  this.y = 0;
+  this.fontFamily = content.getFontFamily();
+  this.fontSize = content.getFontSize();
+  this.fontWeight = content.getFontWeight();
+}
+
+// draw draws the y-axis label in a viewport.
+YLabel.prototype.draw = function(viewport) {
+  viewport.enter();
+  var context = viewport.context();
+  context.font = this.fontWeight + ' ' + this.fontSize + 'px ' + this.fontFamily;
+  context.fillStyle = 'rgba(144, 144, 144, ' + formatAlpha(this.opacity) + ')';
+  context.fillText(this.text, this.x, this.y-this.height/2);
+  viewport.leave();
+};
+
 // YLabels lays out y-axis labels and spaces them appropriately.
 function YLabels(outerHeight, height, maxValue, content) {
-  this._height = height;
-  this._width = 0;
-  this._textValues = [];
-  this._textYValues = [];
-
-  var topLabelSize = measureLabel(content.formatYLabel(maxValue), content);
-  var bottomLabelSize = measureLabel(content.formatYLabel(0), content);
-
-  var labelHeight = Math.max(topLabelSize.height, bottomLabelSize.height);
-  var count = Math.floor((outerHeight - YLabels.MIN_LABEL_SPACE) /
-    (labelHeight + YLabels.MIN_LABEL_SPACE));
-
-  if (count < 2) {
+  var usableHeight = height - (YLabels.PADDING_TOP + YLabels.PADDING_BOTTOM);
+  this._labels = [];
+  if (usableHeight < 0) {
     return;
   }
 
-  var valueDifference = maxValue / (count - 1);
-  for (var i = 0; i < count; ++i) {
-    var labelText = content.formatYLabel(i*valueDifference);
-    var metrics = measureLabel(labelText, content);
-    this._width = Math.max(this._width, metrics.width);
-    this._textValues.push(labelText);
+  var firstLabel = new YLabel(0, content);
+  var lastLabel = new YLabel(maxValue, content);
+  firstLabel.y = height - YLabels.PADDING_BOTTOM;
+  lastLabel.y = YLabels.PADDING_TOP;
 
-    var spacing = height / (count-1);
-    var midYValue = height - (spacing/2 + spacing*i);
-    this._textYValues.push(midYValue + metrics.height/2);
+  var labelHeight = Math.max(firstLabel.height, lastLabel.height);
+  var labelCount = Math.floor((usableHeight+YLabels.MIN_LABEL_SPACE) /
+    (labelHeight+YLabels.MIN_LABEL_SPACE));
+  var labelSpacing = usableHeight / (labelCount - 1);
+
+  this._labels.push(firstLabel);
+  for (var i = 1; i < labelCount-1; ++i) {
+    var label = new YLabel((maxValue/(labelCount-1))*i, content);
+    label.y = firstLabel.y + labelSpacing;
+  }
+  this._labels.push(lastLabel);
+
+  this._width = 0;
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    this._width = Math.max(this._labels[i].width+YLabels.PADDING_LEFT+YLabels.PADDING_RIGHT,
+      this._width);
+  }
+
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    var label = this._labels[i];
+    label.x = this._width - (YLabels.PADDING_RIGHT + label.width);
   }
 }
 
-YLabels.MIN_LABEL_SPACE = 10;
+YLabels.MIN_LABEL_SPACE = 30;
+YLabels.PADDING_BOTTOM = 15;
+YLabels.PADDING_LEFT = 5;
+YLabels.PADDING_RIGHT = 5;
+YLabels.PADDING_TOP = 20;
 
 function measureLabel(text, content) {
   if (!textMeasurementLabel) {

@@ -5,3 +5,7 @@ function formatPercent(fraction) {
 function formatPixels(number) {
   return number.toFixed(2) + 'px';
 }
+
+function formatAlpha(alpha) {
+  return alpha.toFixed(2);
+}
