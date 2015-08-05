@@ -25,7 +25,8 @@ YStage.prototype._registerEvents = function() {
 
 // YLabel represents a y-axis label.
 function YLabel(value, content) {
-  this.text = content.formatYLabel(value)
+  this.value = value;
+  this.text = content.formatYLabel(value);
   var metrics = measureLabel(this.text, content);
   this.width = metrics.width;
   this.height = metrics.height;
@@ -36,6 +37,22 @@ function YLabel(value, content) {
   this.fontSize = content.getFontSize();
   this.fontWeight = content.getFontWeight();
 }
+
+// copy generates a duplicate of this YLabel.
+YLabel.prototype.copy = function() {
+  var res = Object.create(YLabel.prototype);
+  res.value = this.value;
+  res.text = this.text;
+  res.width = this.width;
+  res.height = this.height;
+  res.opacity = this.opacity;
+  res.x = this.x;
+  res.y = this.y;
+  res.fontFamily = this.fontFamily;
+  res.fontSize = this.fontSize;
+  res.fontWeight = this.fontWeight;
+  return res;
+};
 
 // draw draws the y-axis label in a viewport.
 YLabel.prototype.draw = function(viewport) {
@@ -51,18 +68,21 @@ YLabel.prototype.draw = function(viewport) {
 function YLabels(outerHeight, height, maxValue, content) {
   var usableHeight = height - (YLabels.PADDING_TOP + YLabels.PADDING_BOTTOM);
   this._labels = [];
-  if (usableHeight < 0) {
-    return;
-  }
 
   var firstLabel = new YLabel(0, content);
   var lastLabel = new YLabel(maxValue, content);
   firstLabel.y = height - YLabels.PADDING_BOTTOM;
   lastLabel.y = YLabels.PADDING_TOP;
 
+  var usableOuterHeight = outerHeight - (YLabels.PADDING_BOTTOM + YLabels.PADDING_TOP);
   var labelHeight = Math.max(firstLabel.height, lastLabel.height);
-  var labelCount = Math.floor((usableHeight+YLabels.MIN_LABEL_SPACE) /
+  var labelCount = Math.floor((usableOuterHeight+YLabels.MIN_LABEL_SPACE) /
     (labelHeight+YLabels.MIN_LABEL_SPACE));
+
+  if (labelCount <= 2) {
+    return;
+  }
+
   var labelSpacing = usableHeight / (labelCount - 1);
 
   this._labels.push(firstLabel);
@@ -89,6 +109,71 @@ YLabels.PADDING_BOTTOM = 15;
 YLabels.PADDING_LEFT = 5;
 YLabels.PADDING_RIGHT = 5;
 YLabels.PADDING_TOP = 20;
+
+YLabels.intermediate = function(start, end, fraction) {
+  var newMaxValue = start._maxValue() + (end._maxValue() - start._maxValue())*fraction;
+  var newHeight = end._usedHeight();
+
+  var newLabels = end._copy();
+  newLabels._scale(newHeight, newMaxValue);
+  newLabels._setOpacity(1-fraction);
+
+  var endLabels = end._copy();
+  endLabels._setOpacity(fraction);
+  newLabels._add(endLabels);
+
+  return newLabels;
+};
+
+YLabels.prototype._add = function(labels) {
+  for (var i = 0, len = labels._labels.length; i < len; ++i) {
+    this._labels.push(labels._labels[i].copy());
+  }
+  this._labels.sort(function(a, b) {
+    return a.value - b.value;
+  });
+
+  // Remove redundant labels.
+  for (var i = 1; i < this._labels.length; ++i) {
+    if (this._labels[i-1].value === this._labels[i].value) {
+      this._labels.splice(i, 1);
+      this._labels[i-1].opacity = 1;
+      --i;
+    }
+  }
+};
+
+YLabels.prototype._copy = function() {
+  var res = Object.create(YLabels.prototype);
+  res._labels = [];
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    res._labels[i] = this._labels[i].copy();
+  }
+  return res;
+};
+
+YLabels.prototype._maxValue = function() {
+  return this._labels[this._labels.length-1].value;
+};
+
+YLabels.prototype._scale = function(newHeight, newMaxValue) {
+  var scale = (newHeight*newMaxValue) / (this._usedHeight()*this._maxValue());
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    this._labels.y -= YLabels.PADDING_BOTTOM;
+    this._labels.y *= scale;
+    this._labels.y += YLabels.PADDING_BOTTOM;
+  }
+};
+
+YLabels.prototype._setOpacity = function(opacity) {
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    this._labels[i].opacity = opacity;
+  }
+};
+
+YLabels.prototype._usedHeight = function() {
+  return this._labels[this._labels.length-1].y - YLabels.PADDING_BOTTOM;
+};
 
 function measureLabel(text, content) {
   if (!textMeasurementLabel) {
