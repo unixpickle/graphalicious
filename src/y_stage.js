@@ -31,12 +31,13 @@ function YLabel(value, content) {
   this.width = metrics.width;
   this.height = metrics.height;
   this.opacity = 1;
-  this.x = 0;
   this.y = 0;
   this.fontFamily = content.getFontFamily();
   this.fontSize = content.getFontSize();
   this.fontWeight = content.getFontWeight();
 }
+
+YLabel.LINE_THICKNESS = 2;
 
 // copy generates a duplicate of this YLabel.
 YLabel.prototype.copy = function() {
@@ -46,7 +47,6 @@ YLabel.prototype.copy = function() {
   res.width = this.width;
   res.height = this.height;
   res.opacity = this.opacity;
-  res.x = this.x;
   res.y = this.y;
   res.fontFamily = this.fontFamily;
   res.fontSize = this.fontSize;
@@ -55,19 +55,20 @@ YLabel.prototype.copy = function() {
 };
 
 // draw draws the y-axis label in a viewport.
-YLabel.prototype.draw = function(viewport) {
-  viewport.enter();
-  var context = viewport.context();
+YLabel.prototype.draw = function(width, x, context) {
   context.font = this.fontWeight + ' ' + this.fontSize + 'px ' + this.fontFamily;
   context.fillStyle = 'rgba(144, 144, 144, ' + formatAlpha(this.opacity) + ')';
-  context.fillText(this.text, this.x, this.y-this.height/2);
-  viewport.leave();
+  context.fillText(this.text, x, this.y-this.height/2);
+  context.fillRect(x+this.width+YLabels.PADDING_RIGHT, Math.round(this.y-YLabel.LINE_THICKNESS/2),
+    width, YLabel.LINE_THICKNESS);
 };
 
 // YLabels lays out y-axis labels and spaces them appropriately.
 function YLabels(outerHeight, height, maxValue, content) {
-  var usableHeight = height - (YLabels.PADDING_TOP + YLabels.PADDING_BOTTOM);
   this._labels = [];
+  this._width = 0;
+
+  var usableHeight = height - (YLabels.PADDING_TOP + YLabels.PADDING_BOTTOM);
 
   var firstLabel = new YLabel(0, content);
   var lastLabel = new YLabel(maxValue, content);
@@ -88,19 +89,13 @@ function YLabels(outerHeight, height, maxValue, content) {
   this._labels.push(firstLabel);
   for (var i = 1; i < labelCount-1; ++i) {
     var label = new YLabel((maxValue/(labelCount-1))*i, content);
-    label.y = firstLabel.y + labelSpacing;
+    label.y = firstLabel.y + labelSpacing*i;
   }
   this._labels.push(lastLabel);
 
-  this._width = 0;
   for (var i = 0, len = this._labels.length; i < len; ++i) {
     this._width = Math.max(this._labels[i].width+YLabels.PADDING_LEFT+YLabels.PADDING_RIGHT,
       this._width);
-  }
-
-  for (var i = 0, len = this._labels.length; i < len; ++i) {
-    var label = this._labels[i];
-    label.x = this._width - (YLabels.PADDING_RIGHT + label.width);
   }
 }
 
@@ -111,7 +106,7 @@ YLabels.PADDING_RIGHT = 5;
 YLabels.PADDING_TOP = 20;
 
 YLabels.intermediate = function(start, end, fraction) {
-  var newMaxValue = start._maxValue() + (end._maxValue() - start._maxValue())*fraction;
+  var newMaxValue = start._maxValue() + (end._maxValue()-start._maxValue())*fraction;
   var newHeight = end._usedHeight();
 
   var newLabels = end._copy();
@@ -121,8 +116,18 @@ YLabels.intermediate = function(start, end, fraction) {
   var endLabels = end._copy();
   endLabels._setOpacity(fraction);
   newLabels._add(endLabels);
+  
+  newLabels._width = start._width + (end._width-start._width)*fraction;
 
   return newLabels;
+};
+
+YLabels.prototype.draw = function(width, context) {
+  for (var i = 0, len = this._labels.length; i < len; ++i) {
+    var label = this._labels[i];
+    var x = this._width - (YLabels.PADDING_RIGHT + label.width);
+    label.draw(width, x, context);
+  }
 };
 
 YLabels.prototype._add = function(labels) {
