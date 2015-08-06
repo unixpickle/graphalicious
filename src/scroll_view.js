@@ -26,6 +26,7 @@ function ScrollView(graphCanvas) {
   this._totalInvisibleWidth = 0;
 
   this._registerDragEvents();
+  this._registerScrollWheelEvents();
 }
 
 ScrollView.BAR_MARGIN = 5;
@@ -179,6 +180,13 @@ ScrollView.prototype._registerDragEvents = function() {
       document.body.removeChild(shielding);
     }
   });
+};
+
+ScrollView.prototype._registerScrollWheelEvents = function() {
+  this._element.addEventListener('wheel', function(e) {
+    this._dragged(this._scrollBar.getAmountScrolled(), -e.deltaX);
+    e.preventDefault();
+  }.bind(this));
 };
 
 ScrollView.prototype._useAnimation = function() {

@@ -15,10 +15,19 @@
 
       window.sv = sv;
     });
+    function toggleScrolls() {
+      if (window.sv.getScrolls()) {
+        window.sv.setScrolls(false);
+      } else {
+        window.sv.setTotalInvisibleWidth(400);
+        window.sv.getScrollBar().setKnobSize(1/3);
+        window.sv.setScrolls(true);
+      }
+    }
     </script>
   </head>
   <body>
-    <button onclick="window.sv.setScrolls(!window.sv.getScrolls())">Toggle Scrolls</button>
+    <button onclick="toggleScrolls()">Toggle Scrolls</button>
     <br>
   </body>
 </html>
