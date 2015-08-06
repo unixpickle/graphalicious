@@ -39,10 +39,10 @@ YAxisLabels.intermediate = function(start, end, fraction) {
   var manipulatedEnd = end._copy();
   manipulatedEnd._setOpacity(fraction);
 
-  var manipulatedStart = start._copy();
-  manipulatedStart._setOpacity(1-fraction);
+  var result = start._copy();
+  result._setOpacity(1-fraction);
 
-  var result = manipulatedStart._add(manipulatedEnd);
+  result._add(manipulatedEnd);
   result._maxValue = start._maxValue + (end._maxValue-start._maxValue)*fraction;
   result._width = start._width + (end._width-start._width)*fraction;
 
@@ -60,8 +60,22 @@ YAxisLabels.prototype.draw = function(height, canvas) {
     context.fillStyle = label.fillStyle();
     context.fillRect(this._width, yValue-YAxisLabels.LINE_THICKNESS/2, canvas.width()-this._width,
       YAxisLabels.LINE_THICKNESS);
-    label.draw(this._width-YAxisLabels.PADDING_RIGHT-label.width, yValue-label.height/2, context);
+    label.draw(this._width-YAxisLabels.PADDING_RIGHT-label.width, yValue+label.height/2, context);
   }
+};
+
+// equals returns true if this object is effectively equal to another YAxisLabels.
+YAxisLabels.prototype.equals = function(l) {
+  if (this._width !== l._width || this._maxValue !== l._maxValue ||
+      this._labels.length !== l._labels.length) {
+    return false;
+  }
+  for (var i = 0, len = l._labels.length; i < len; ++i) {
+    if (!l._labels[i].equals(this._labels[i])) {
+      return false;
+    }
+  }
+  return true;
 };
 
 // maxValue returns the maximum value of the YAxisLabels.

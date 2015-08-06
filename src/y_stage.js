@@ -35,15 +35,15 @@ YStage.prototype._draw = function() {
   var contentY = canvas.height() - YAxisLabels.PADDING_BOTTOM - contentHeight;
   var leftOffset = this._pixelsScrolled() - this._leftmostLabelsWidth + labels.width();
 
-  this._content.draw(leftOffset, new Viewport(labels.width(), contentY,
-    canvas.width()-labels.width(), contentHeight));
+  this._content.draw(leftOffset, new Viewport(this._scrollView.getGraphCanvas(), labels.width(),
+    contentY, canvas.width()-labels.width(), contentHeight));
 };
 
 YStage.prototype._layout = function() {
   var minWidth = this._content.minWidth();
-  var leftmostMaxValue = this._content.maxValueInFrame(0, this._canvasWidth);
+  var leftmostMaxValue = this._content.maxValueInFrame(0, this._scrollView.width());
   this._leftmostLabelsWidth = YAxisLabels.createForContent(leftmostMaxValue, this._content,
-    this._scrollView.height()).width;
+    this._scrollView.height()).width();
   var offscreenAmount = minWidth - (this._scrollView.width() - this._leftmostLabelsWidth);
   if (offscreenAmount > 0) {
     this._scrollView.setScrolls(true);
@@ -85,9 +85,9 @@ YStage.prototype._recomputeLabels = function() {
 };
 
 YStage.prototype._registerEvents = function() {
-  this._scrollView.on('change', this._layout);
-  this._content.on('change', this._layout);
-  this._scrollView.getGraphCanvas().on('layout', this._layout);
+  this._scrollView.on('change', this._layout.bind(this));
+  this._content.on('change', this._layout.bind(this));
+  this._scrollView.getGraphCanvas().on('layout', this._layout.bind(this));
 };
 
 YStage.prototype._visibleFrameOfContent = function() {
@@ -100,3 +100,5 @@ YStage.prototype._visibleFrameOfContent = function() {
     width: this._scrollView.width()
   };
 };
+
+exports.YStage = YStage;

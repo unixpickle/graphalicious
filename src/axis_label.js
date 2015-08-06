@@ -11,12 +11,9 @@ function AxisLabel(value, formatter, content) {
   this.fontWeight = content.getFontWeight();
 
   this._measure();
-  var metrics = measureLabel(this.text, content);
-  this.width = metrics.width;
-  this.height = metrics.height;
 }
 
-AxisLabel.TEXT_COLOR = '144, 144, 144';
+AxisLabel.TEXT_COLOR = '153, 153, 153';
 
 // copy generates a duplicate of this AxisLabel.
 AxisLabel.prototype.copy = function() {

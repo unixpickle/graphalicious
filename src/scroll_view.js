@@ -92,6 +92,10 @@ ScrollView.prototype.layout = function() {
 // setScrolls sets whether or not the ScrollBar should be visible.
 // This may cause an animation.
 ScrollView.prototype.setScrolls = function(s) {
+  if (s === this._scrolls) {
+    return;
+  }
+  
   this._scrolls = s;
   if (this._animation === null && !this._useAnimation()) {
     this.layout();
