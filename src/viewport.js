@@ -1,5 +1,3 @@
-//deps graph_canvas.js
-
 // A Viewport defines a clipped region inside a GraphCanvas.
 function Viewport(graphCanvas, x, y, width, height) {
   this._graphCanvas = graphCanvas;

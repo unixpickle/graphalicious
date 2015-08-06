@@ -1,5 +1,3 @@
-//deps animation.js
-
 var textMeasurementLabel = null;
 
 // AxisLabel is a label made to be drawn in a canvas.

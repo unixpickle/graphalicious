@@ -10,10 +10,6 @@ This depends on [crystal](https://github.com/unixpickle/crystal).
 
 You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in order to use the build script.
 
-# TODO
-
- * Remove unneeded dependency markers.
-
 # License
 
 See [LICENSE](LICENSE)

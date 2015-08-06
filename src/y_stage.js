@@ -1,5 +1,3 @@
-//deps animation.js
-
 // YStage is a stage which presents content with y-axis labels but no x-axis labels.
 function YStage(scrollView, content) {
   this._scrollView = scrollView;
@@ -20,7 +18,7 @@ function YStage(scrollView, content) {
 }
 
 YStage.prototype._currentLabels = function() {
-  return this._animation !== null : this._animation.labels() : this._labels;
+  return this._animation !== null ? this._animation.labels() : this._labels;
 };
 
 YStage.prototype._draw = function() {
