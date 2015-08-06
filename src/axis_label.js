@@ -6,12 +6,12 @@ var textMeasurementLabel = null;
 function AxisLabel(value, formatter, content) {
   this.value = value;
   this.text = formatter(value);
-  
+
   this.opacity = 1;
   this.fontFamily = content.getFontFamily();
   this.fontSize = content.getFontSize() + 'px';
   this.fontWeight = content.getFontWeight();
-  
+
   this._measure();
   var metrics = measureLabel(this.text, content);
   this.width = metrics.width;
