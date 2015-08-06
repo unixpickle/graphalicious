@@ -19,3 +19,4 @@ The *content* interface should implement these methods:
  * **getFontWeight**() - get the font weight for axis labels.
  * **getMinimumWidth**() - get the minimum width needed to display the content without scrolling.
  * **getMaxValueInFrame**(startX, width) - get the maximum value (for the y-axis labels) within the given clipped region.
+ * **niceYAxisDivisions**(maxValue, numDivisions) - given a maxValue and a number of divisions, compute the values for each division in a graph. These should be ordered from lowest to highest. The highest value must be greater than or equal to maxValue.
