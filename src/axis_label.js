@@ -41,6 +41,13 @@ AxisLabel.prototype.draw = function(x, y, context) {
   context.fillText(this.text, x, y);
 };
 
+// equals returns true if this label shares all the same properties as another one.
+AxisLabel.prototype.equals = function(a) {
+  return this.value === a.value && this.text === a.text && this.opacity === a.opacity &&
+    this.fontFamily === a.fontFamily && this.fontSize === a.fontSize &&
+    this.fontWeight === a.fontWeight && this.width === a.width && this.height === a.height;
+};
+
 // fillStyle is the canvas drawing style for the color and opacity of this label.
 AxisLabel.prototype.fillStyle = function() {
   return 'rgba(' + AxisLabel.TEXT_COLOR + ', ' + formatAlpha(this.opacity) + ')';

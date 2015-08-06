@@ -59,6 +59,11 @@ ScrollView.prototype.getTotalInvisibleWidth = function() {
   return this._totalWidth;
 };
 
+// height returns the height of the ScrollView's element in CSS pixels.
+ScrollView.prototype.height = function() {
+  return this._element.offsetHeight;
+};
+
 // layout adjusts the contained GraphCanvas and ScrollBar to fit the root element's bounds.
 // This will layout the GraphCanvas.
 ScrollView.prototype.layout = function() {
@@ -111,6 +116,11 @@ ScrollView.prototype.setScrolls = function(s) {
 // This makes drag-scrolling work the way the user expects.
 ScrollView.prototype.setTotalInvisibleWidth = function(pixels) {
   this._totalInvisibleWidth = pixels;
+};
+
+// width returns the width of the ScrollView's element in CSS pixels.
+ScrollView.prototype.width = function() {
+  return this._element.offsetWidth;
 };
 
 ScrollView.prototype._dragged = function(initialAmountScrolled, offset) {

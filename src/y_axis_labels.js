@@ -64,6 +64,16 @@ YAxisLabels.prototype.draw = function(height, canvas) {
   }
 };
 
+// maxValue returns the maximum value of the YAxisLabels.
+YAxisLabels.prototype.maxValue = function() {
+  return this._maxValue;
+};
+
+// width returns the width of the YAxisLabels.
+YAxisLabels.prototype.width = function() {
+  return this._width;
+};
+
 YAxisLabels.prototype._add = function(labels) {
   for (var i = 0, len = labels._labels.length; i < len; ++i) {
     this._labels.push(labels._labels[i].copy());
