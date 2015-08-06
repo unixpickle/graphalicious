@@ -1,3 +1,5 @@
+//deps animation.js
+
 var textMeasurementLabel = null;
 
 // YStage is a stage which presents content with y-axis labels but no x-axis labels.
@@ -5,12 +7,26 @@ function YStage(scrollView, content) {
   this._scrollView = scrollView;
   this._content = content;
 
+  this._animation = null;
+  this._labels = null;
+
   this._registerEvents();
   this._layout();
 }
 
 YStage.prototype._draw = function() {
-  // TODO: here, draw the content at the scrolled part and compute the axis labels.
+  if (this._labels === null && this._animation === null) {
+    return;
+  }
+  var labels;
+  if (this._animation !== null) {
+    labels = this._animation.labels();
+  } else {
+    labels = this._labels;
+  }
+  labels.draw(this._scrollView.getGraphCanvas().getContext());
+
+  // TODO: draw the content here.
 };
 
 YStage.prototype._layout = function() {
@@ -54,7 +70,7 @@ YLabel.prototype.copy = function() {
   return res;
 };
 
-// draw draws the y-axis label in a viewport.
+// draw draws the y-axis label in a context.
 YLabel.prototype.draw = function(width, x, context) {
   context.font = this.fontWeight + ' ' + this.fontSize + 'px ' + this.fontFamily;
   context.fillStyle = 'rgba(144, 144, 144, ' + formatAlpha(this.opacity) + ')';
@@ -63,7 +79,7 @@ YLabel.prototype.draw = function(width, x, context) {
     width, YLabel.LINE_THICKNESS);
 };
 
-// YLabels lays out y-axis labels and spaces them appropriately.
+// YLabels lays out y-axis labels and spaces them out appropriately.
 function YLabels(outerHeight, height, maxValue, content) {
   this._labels = [];
   this._width = 0;
@@ -116,7 +132,7 @@ YLabels.intermediate = function(start, end, fraction) {
   var endLabels = end._copy();
   endLabels._setOpacity(fraction);
   newLabels._add(endLabels);
-  
+
   newLabels._width = start._width + (end._width-start._width)*fraction;
 
   return newLabels;
@@ -164,9 +180,9 @@ YLabels.prototype._maxValue = function() {
 YLabels.prototype._scale = function(newHeight, newMaxValue) {
   var scale = (newHeight*newMaxValue) / (this._usedHeight()*this._maxValue());
   for (var i = 0, len = this._labels.length; i < len; ++i) {
-    this._labels.y -= YLabels.PADDING_BOTTOM;
+    this._labels.y -= YLabels.PADDING_TOP;
     this._labels.y *= scale;
-    this._labels.y += YLabels.PADDING_BOTTOM;
+    this._labels.y += YLabels.PADDING_TOP;
   }
 };
 
@@ -177,7 +193,26 @@ YLabels.prototype._setOpacity = function(opacity) {
 };
 
 YLabels.prototype._usedHeight = function() {
-  return this._labels[this._labels.length-1].y - YLabels.PADDING_BOTTOM;
+  return this._labels[0].y - YLabels.PADDING_TOP;
+};
+
+// YLabelsAnimation runs an animation between a start YLabels and an end YLabels.
+function YLabelsAnimation(start, end) {
+  ValueAnimation.call(this);
+  this._startLabels = start;
+  this._endLabels = end;
+}
+
+YLabelsAnimation.prototype = Object.create(ValueAnimation.prototype);
+
+// labels returns the current YLabels.
+YLabelsAnimation.prototype.labels = function() {
+  return YLabels.intermediate(this._startLabels, this._endLabels, this.value());
+};
+
+// setEndLabels updates the state to which the animation is going.
+YLabelsAnimation.prototype.setEndLabels = function(newLabels) {
+  this._endLabels = newLabels;
 };
 
 function measureLabel(text, content) {
