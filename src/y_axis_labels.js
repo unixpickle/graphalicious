@@ -114,8 +114,8 @@ YAxisLabels.prototype._maxLabelValue = function() {
 YAxisLabels.prototype._removeRedundantLabels = function() {
   for (var i = 1; i < this._labels.length; ++i) {
     if (this._labels[i-1].value === this._labels[i].value) {
+      this._labels[i-1].opacity = Math.min(1, this._labels[i-1].opacity+this._labels[i].opacity);
       this._labels.splice(i, 1);
-      this._labels[i-1].opacity = 1;
       --i;
     }
   }
@@ -123,7 +123,7 @@ YAxisLabels.prototype._removeRedundantLabels = function() {
 
 YAxisLabels.prototype._setOpacity = function(opacity) {
   for (var i = 0, len = this._labels.length; i < len; ++i) {
-    this._labels[i].opacity = opacity;
+    this._labels[i].opacity *= opacity;
   }
 };
 
@@ -134,7 +134,7 @@ function YAxisLabelsAnimation(start, end) {
   this._endLabels = end;
 }
 
-YAxisLabelsAnimation.DURATION = 0.4;
+YAxisLabelsAnimation.DURATION = 0.3;
 
 YAxisLabelsAnimation.prototype = Object.create(Animation.prototype);
 

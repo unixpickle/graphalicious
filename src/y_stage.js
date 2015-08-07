@@ -8,7 +8,6 @@ function YStage(scrollView, content) {
   this._leftmostLabelsWidth = null;
 
   this._animation = null;
-  this._animationPending = false;
   this._labels = null;
 
   // By default, the scroll view should be scrolled all the way to the right.
@@ -19,16 +18,8 @@ function YStage(scrollView, content) {
 }
 
 YStage.prototype._animationDone = function() {
-  if (this._animationPending) {
-    this._animation = new YAxisLabelsAnimation(this._animation.getEndLabels(), this._labels);
-    this._animation.on('progress', this._draw.bind(this));
-    this._animation.on('done', this._animationDone.bind(this));
-    this._animation.start();
-  } else {
-    this._animation = null;
-    this._draw();
-  }
-  this._animationPending = false;
+  this._animation = null;
+  this._draw();
 };
 
 YStage.prototype._currentLabels = function() {
@@ -87,7 +78,13 @@ YStage.prototype._recomputeLabels = function() {
   if (this._labels !== null && labels.equals(this._labels)) {
     // NOTE: empty branch.
   } else if (this._animation !== null) {
-    this._animationPending = true;
+    this._animation.cancel();
+    var oldLabels = this._animation.labels();
+    this._animation = new YAxisLabelsAnimation(oldLabels, labels);
+    this._animation.on('progress', this._draw.bind(this));
+    this._animation.on('done', this._animationDone.bind(this));
+    this._animation.start();
+    this._draw();
     this._labels = labels;
   } else if (this._labels === null) {
     this._labels = labels;

@@ -201,8 +201,18 @@ ScrollView.prototype._registerDragEvents = function() {
 };
 
 ScrollView.prototype._registerScrollWheelEvents = function() {
+  var pendingDelta = 0;
+  var pendingRequest = false;
   this._element.addEventListener('wheel', function(e) {
-    this._dragged(this._scrollBar.getAmountScrolled(), -e.deltaX);
+    if (!pendingRequest) {
+      pendingRequest = true;
+      requestAnimationFrame(function() {
+        this._dragged(this._scrollBar.getAmountScrolled(), pendingDelta);
+        pendingDelta = 0;
+        pendingRequest = false;
+      }.bind(this));
+    }
+    pendingDelta -= e.deltaX;
     e.preventDefault();
   }.bind(this));
 };
