@@ -138,6 +138,11 @@ YAxisLabelsAnimation.DURATION = 0.4;
 
 YAxisLabelsAnimation.prototype = Object.create(Animation.prototype);
 
+// getEndLabels returns the labels towards which this animation is going.
+YAxisLabelsAnimation.prototype.getEndLabels = function() {
+  return this._endLabels;
+};
+
 // labels returns the current YLabels.
 YAxisLabelsAnimation.prototype.labels = function() {
   return YAxisLabels.intermediate(this._startLabels, this._endLabels, this.progress());
