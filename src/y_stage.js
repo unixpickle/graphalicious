@@ -46,7 +46,7 @@ YStage.prototype._draw = function() {
     contentY, contentWidth, contentHeight));
 };
 
-YStage.prototype._layout = function() {
+YStage.prototype._layout = function(animateLabels) {
   var minWidth = this._content.minWidth();
   var leftmostMaxValue = this._content.maxValueInFrame(0, this._scrollView.width());
   this._leftmostLabelsWidth = YAxisLabels.createForContent(leftmostMaxValue, this._content,
@@ -60,7 +60,7 @@ YStage.prototype._layout = function() {
     this._scrollView.setScrolls(false);
   }
 
-  this._recomputeLabels();
+  this._recomputeLabels(animateLabels);
   this._draw();
 };
 
@@ -69,7 +69,7 @@ YStage.prototype._pixelsScrolled = function() {
     this._scrollView.getTotalInvisibleWidth();
 };
 
-YStage.prototype._recomputeLabels = function() {
+YStage.prototype._recomputeLabels = function(animateLabels) {
   var frame = this._visibleFrameOfContent();
   var maxValue = this._content.maxValueInFrame(frame.x, frame.width);
   var labels = YAxisLabels.createForContent(maxValue, this._content,
@@ -84,9 +84,10 @@ YStage.prototype._recomputeLabels = function() {
     this._animation.on('progress', this._draw.bind(this));
     this._animation.on('done', this._animationDone.bind(this));
     this._animation.start();
-    this._draw();
     this._labels = labels;
   } else if (this._labels === null) {
+    this._labels = labels;
+  } else if (!animateLabels) {
     this._labels = labels;
   } else {
     this._animation = new YAxisLabelsAnimation(this._labels, labels);
@@ -98,9 +99,9 @@ YStage.prototype._recomputeLabels = function() {
 };
 
 YStage.prototype._registerEvents = function() {
-  this._scrollView.on('change', this._layout.bind(this));
-  this._content.on('change', this._layout.bind(this));
-  this._scrollView.getGraphCanvas().on('layout', this._layout.bind(this));
+  this._scrollView.on('change', this._layout.bind(this, false));
+  this._content.on('change', this._layout.bind(this, true));
+  this._scrollView.getGraphCanvas().on('layout', this._layout.bind(this, false));
 };
 
 YStage.prototype._visibleFrameOfContent = function() {

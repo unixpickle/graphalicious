@@ -10,8 +10,8 @@ function YAxisLabels(labels, width, maxValue) {
 YAxisLabels.LABEL_SPACING_HEURISTIC = 30;
 YAxisLabels.LINE_THICKNESS = 2;
 YAxisLabels.PADDING_BOTTOM = 15;
-YAxisLabels.PADDING_LEFT = 5;
-YAxisLabels.PADDING_RIGHT = 5;
+YAxisLabels.PADDING_LEFT = 10;
+YAxisLabels.PADDING_RIGHT = 10;
 YAxisLabels.PADDING_TOP = 20;
 
 // createForContent generates YAxisLabels which fit a content as well as possible.

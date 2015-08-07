@@ -144,4 +144,11 @@ ScrollBar.prototype._registerEvents = function() {
       this.emit('change');
     }
   }.bind(this));
+
+  document.body.addEventListener('mouseleave', function() {
+    if (clicked) {
+      clicked = false;
+      document.body.removeChild(shielding);
+    }
+  }.bind(this));
 };

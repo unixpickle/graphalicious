@@ -198,9 +198,17 @@ ScrollView.prototype._registerDragEvents = function() {
       document.body.removeChild(shielding);
     }
   });
+  document.body.addEventListener('mouseleave', function() {
+    if (mouseDown) {
+      mouseDown = false;
+      document.body.removeChild(shielding);
+    }
+  }.bind(this));
 };
 
 ScrollView.prototype._registerScrollWheelEvents = function() {
+  // Join wheel events to go along with requestAnimationFrame. Otherwise they will come in at too
+  // high a frequency in Safari on OS X.
   var pendingDelta = 0;
   var pendingRequest = false;
   this._element.addEventListener('wheel', function(e) {
