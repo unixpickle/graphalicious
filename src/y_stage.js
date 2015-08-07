@@ -29,16 +29,16 @@ YStage.prototype._draw = function() {
   var labels = this._currentLabels();
   labels.draw(canvas.height(), canvas);
 
-  var frame = this._visibleFrameOfContent();
-  var maxValue = this._content.maxValueInFrame(frame.x, frame.width);
-  var labelHeightRatio = maxValue / labels.maxValue();
-  var contentHeight = Math.round(labelHeightRatio*canvas.height() - YAxisLabels.PADDING_TOP -
-    YAxisLabels.PADDING_BOTTOM);
-  var contentY = canvas.height() - YAxisLabels.PADDING_BOTTOM - contentHeight;
   var leftOffset = this._pixelsScrolled() - this._leftmostLabelsWidth + labels.width();
+  var contentWidth = canvas.width() - labels.width();
+  var maxValue = this._content.maxValueInFrame(leftOffset, contentWidth);
+  var labelHeightRatio = maxValue / labels.maxValue();
+  var contentHeight = Math.round(labelHeightRatio * (canvas.height()-YAxisLabels.PADDING_TOP-
+    YAxisLabels.PADDING_BOTTOM));
+  var contentY = canvas.height() - YAxisLabels.PADDING_BOTTOM - contentHeight;
 
   this._content.draw(leftOffset, new Viewport(this._scrollView.getGraphCanvas(), labels.width(),
-    contentY, canvas.width()-labels.width(), contentHeight));
+    contentY, contentWidth, contentHeight));
 };
 
 YStage.prototype._layout = function() {

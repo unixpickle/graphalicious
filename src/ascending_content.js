@@ -7,7 +7,7 @@ function AscendingContent(width) {
   this._width = width || 1;
 }
 
-AscendingContent.SLOPE = 0.5;
+AscendingContent.SLOPE = 1;
 
 AscendingContent.prototype = Object.create(EventEmitter.prototype);
 
@@ -24,10 +24,11 @@ AscendingContent.prototype.draw = function(startX, viewport) {
     context.moveTo(0, viewport.height());
     context.moveTo(viewport.width(), 0);
   } else {
-    var startY = viewport.height() * (1 - startX/this._width);
-    var endY = viewport.height() * (1 - (startX+viewport.width())/this._width);
-    context.moveTo(0, startY);
-    context.lineTo(viewport.width(), endY);
+    var startY = AscendingContent.SLOPE * startX;
+    var endY = AscendingContent.SLOPE * (startX + viewport.width());
+    var newStartY = viewport.height() * (1 - startY/endY);
+    context.moveTo(0, newStartY);
+    context.lineTo(viewport.width(), 0);
   }
 
   context.stroke();
