@@ -32,6 +32,7 @@ AxisLabel.prototype.copy = function() {
 // draw draws the label in a context at a given position.
 AxisLabel.prototype.draw = function(x, y, context) {
   context.font = this.fontWeight + ' ' + this.fontSize + ' ' + this.fontFamily;
+  context.textBaseline = 'bottom';
   context.fillStyle = this.fillStyle();
   context.fillText(this.text, x, y);
 };

@@ -11,11 +11,12 @@
       document.body.appendChild(sv.element());
       sv.element().style.width = '200px';
       sv.element().style.height = '100px';
+      sv.getGraphCanvas().element().style.backgroundColor = 'white';
       
       new window.graphalicious.YStage(sv, new window.graphalicious.AscendingContent(600));
     });
     </script>
   </head>
-  <body>
+  <body style="background-color: #f0f0f0">
   </body>
 </html>

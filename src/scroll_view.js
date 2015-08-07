@@ -16,6 +16,10 @@ function ScrollView(graphCanvas) {
   this._element = document.createElement('div');
   this._element.style.position = 'relative';
   this._element.style.overflow = 'hidden';
+  this._element.style.webkitUserSelect = 'none';
+  this._element.style.MozUserSelect = 'none';
+  this._element.style.msUserSelect = 'none';
+  this._element.style.userSelect = 'none';
 
   this._element.appendChild(this._graphCanvas.element());
   this._element.appendChild(this._scrollBar.element());
@@ -56,7 +60,7 @@ ScrollView.prototype.getScrolls = function() {
 
 // getTotalInvisibleWidth returns the last value set by setTotalWidth.
 ScrollView.prototype.getTotalInvisibleWidth = function() {
-  return this._totalWidth;
+  return this._totalInvisibleWidth;
 };
 
 // height returns the height of the ScrollView's element in CSS pixels.

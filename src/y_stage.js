@@ -23,8 +23,10 @@ YStage.prototype._currentLabels = function() {
 
 YStage.prototype._draw = function() {
   var canvas = this._scrollView.getGraphCanvas();
-  var labels = this._currentLabels();
 
+  canvas.context().clearRect(0, 0, canvas.width(), canvas.height());
+
+  var labels = this._currentLabels();
   labels.draw(canvas.height(), canvas);
 
   var frame = this._visibleFrameOfContent();

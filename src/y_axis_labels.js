@@ -53,11 +53,11 @@ YAxisLabels.intermediate = function(start, end, fraction) {
 YAxisLabels.prototype.draw = function(height, canvas) {
   var context = canvas.context();
   var usableHeight = height - (YAxisLabels.PADDING_TOP + YAxisLabels.PADDING_BOTTOM);
-  var spacing = usableHeight / (this._labels.length - 1);
   for (var i = 0, len = this._labels.length; i < len; ++i) {
-    var yValue = height - (YAxisLabels.PADDING_BOTTOM + spacing*i);
+    var percentUp = usableHeight * this._labels[i].value / this._maxValue;
+    var yValue = height - (YAxisLabels.PADDING_BOTTOM + percentUp);
     var label = this._labels[i];
-    context.fillStyle = label.fillStyle();
+    context.fillStyle = 'rgba(240, 240, 240, ' + formatAlpha(label.opacity) + ')';
     context.fillRect(this._width, yValue-YAxisLabels.LINE_THICKNESS/2, canvas.width()-this._width,
       YAxisLabels.LINE_THICKNESS);
     label.draw(this._width-YAxisLabels.PADDING_RIGHT-label.width, yValue+label.height/2, context);
