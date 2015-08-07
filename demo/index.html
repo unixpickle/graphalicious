@@ -9,11 +9,11 @@
     window.addEventListener('load', function() {
       var sv = new window.graphalicious.ScrollView(new window.graphalicious.GraphCanvas());
       document.body.appendChild(sv.element());
-      sv.element().style.width = '200px';
-      sv.element().style.height = '100px';
+      sv.element().style.width = '300px';
+      sv.element().style.height = '200px';
       sv.getGraphCanvas().element().style.backgroundColor = 'white';
       
-      new window.graphalicious.YStage(sv, new window.graphalicious.AscendingContent(600));
+      new window.graphalicious.YStage(sv, new window.graphalicious.AscendingContent(800));
     });
     </script>
   </head>

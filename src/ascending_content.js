@@ -71,6 +71,8 @@ AscendingContent.prototype.minWidth = function() {
 
 // niceYAxisDivisions divides values evenly.
 AscendingContent.prototype.niceYAxisDivisions = function(maxValue, count) {
+  maxValue = 20 * Math.ceil(maxValue / 20);
+
   var vals = [];
   for (var i = 0; i < count; ++i) {
     vals[i] = maxValue * i / (count - 1);

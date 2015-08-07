@@ -129,10 +129,12 @@ YAxisLabels.prototype._setOpacity = function(opacity) {
 
 // YAxisLabelsAnimation runs an animation between a start YLabels and an end YLabels.
 function YAxisLabelsAnimation(start, end) {
-  Animation.call(this);
+  Animation.call(this, YAxisLabelsAnimation.DURATION);
   this._startLabels = start;
   this._endLabels = end;
 }
+
+YAxisLabelsAnimation.DURATION = 0.4;
 
 YAxisLabelsAnimation.prototype = Object.create(Animation.prototype);
 

@@ -82,6 +82,7 @@ YStage.prototype._recomputeLabels = function() {
       this._animation = null;
       this._draw();
     }.bind(this));
+    this._animation.start();
     this._labels = labels;
   }
 };

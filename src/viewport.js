@@ -27,7 +27,7 @@ Viewport.prototype.context = function() {
 Viewport.prototype.enter = function() {
   var context = this.context();
   context.save();
-  context.translate(-this._x, -this._y);
+  context.translate(this._x, this._y);
   context.beginPath();
   context.rect(0, 0, this._width, this._height);
   context.closePath();
