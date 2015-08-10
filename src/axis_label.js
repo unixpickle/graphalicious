@@ -1,11 +1,12 @@
-var textMeasurementLabel = null;
-
 // AxisLabel is a label made to be drawn in a canvas.
 function AxisLabel(text, font) {
   this.text = text;
   this.opacity = 1;
   this.font = font;
-  this._measure();
+  
+  var measurement = TextMeasurement.getGlobalMeasurement().measure(text, font);
+  this.width = measurement.width;
+  this.height = measurement.height;
 }
 
 AxisLabel.TEXT_COLOR = '153, 153, 153';
@@ -22,7 +23,7 @@ AxisLabel.prototype.copy = function() {
 // draw draws the label in a 2D graphics context at a given position.
 AxisLabel.prototype.draw = function(x, y, context) {
   context.font = this.font;
-  context.textBaseline = 'bottom';
+  context.textBaseline = 'middle';
   context.fillStyle = this.fillStyle();
   context.fillText(this.text, x, y);
 };
@@ -37,17 +38,49 @@ AxisLabel.prototype.fillStyle = function() {
   return 'rgba(' + AxisLabel.TEXT_COLOR + ', ' + formatAlpha(this.opacity) + ')';
 };
 
-AxisLabel.prototype._measure = function() {
-  if (!textMeasurementLabel) {
-    textMeasurementLabel = document.createElement('label');
-    textMeasurementLabel.style.position = 'fixed'
-    textMeasurementLabel.style.visibility = 'hidden';
-    textMeasurementLabel.style.pointerEvents = 'none';
+// TextMeasurement computes the size of text labels.
+function TextMeasurement() {
+  this._canvas = document.createElement('canvas');
+  this._canvas.width = 1;
+  this._canvas.height = 1;
+  this._context = this._canvas.getContext('2d');
+  
+  this._label = document.createElement('label');
+  this._label.style.position = 'fixed';
+  this._label.style.visibility = 'hidden';
+  this._label.style.pointerEvents = 'none';
+  
+  this._cachedFont = null;
+  this._cachedHeight = 0;
+}
+
+TextMeasurement._globalObject = null;
+
+// getGlobalMeasurement returns a singleton TextMeasurement object.
+TextMeasurement.getGlobalMeasurement = function() {
+  if (!TextMeasurement._globalObject) {
+    TextMeasurement._globalObject = new TextMeasurement();
   }
-  textMeasurementLabel.style.font = this.font;
-  textMeasurementLabel.innerText = this.text;
-  document.body.appendChild(textMeasurementLabel);
-  this.width = textMeasurementLabel.offsetWidth;
-  this.height = textMeasurementLabel.offsetHeight;
-  document.body.removeChild(textMeasurementLabel);
+  return TextMeasurement._globalObject;
+};
+
+// measure returns an object with a width and height attribute.
+TextMeasurement.prototype.measure = function(text, font) {
+  this._context.font = font;
+  return {
+    width: this._context.measureText(font).width,
+    height: this._heightOfFont(font)
+  };
+};
+
+TextMeasurement.prototype._heightOfFont = function(font) {
+  if (this._cachedFont !== font) {
+    this._cachedFont = font;
+    this._label.style.font = font;
+    this._label.innerText = 'Mg';
+    document.body.appendChild(this._label);
+    this._cachedHeight = this._label.offsetHeight;
+    document.body.removeChild(this._label);
+  }
+  return this._cachedHeight;
 };
