@@ -11,7 +11,7 @@ function ScrollView(canvas, colorScheme) {
 
   this._scrollbarAnimation = null;
   this._scrolls = false;
-  
+
   this._offscreenWidth = 0;
   this._contentWidth = 0;
   this._amountScrolled = 0;
@@ -19,6 +19,7 @@ function ScrollView(canvas, colorScheme) {
   this._registerEvents();
 }
 
+ScrollView.ANIMATION_DURATION = 0.4;
 ScrollView.SCROLLBAR_HEIGHT = 5;
 ScrollView.SCROLLBAR_MARGIN = 5;
 
@@ -32,9 +33,18 @@ ScrollView.prototype.contentViewport = function() {
 };
 
 // disableScrolling makes the ScrollView unscrollable.
-// The scrollbar will be hidden and scrollwheel events will be disabled.
+// The scrollbar will be hidden and scroll-wheel events will be disabled.
 ScrollView.prototype.disableScrolling = function() {
-  // TODO: update this._scrolls and this._scrollbarAnimation.
+  if (!this._scrolls) {
+    return;
+  }
+  this._scrolls = false;
+  this._deregisterScrollingEvents();
+  if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
+    this._animateScrollbar(0);
+  } else {
+    this._draw();
+  }
 };
 
 // enableScrolling makes the ScrollView scrollable.
@@ -46,8 +56,39 @@ ScrollView.prototype.disableScrolling = function() {
 ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
   this._contentWidth = content;
   this._offscreenWidth = offscreen;
-  // TODO: update this._scrolls and this._scrollbarAnimation.
-  this._draw();
+
+  this._scrolls = true;
+  this._registerScrollingEvents();
+  if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
+    this._animateScrollbar(1);
+  } else {
+    this._draw();
+  }
+};
+
+// getAnimationsEnabled returns whether or not animations are enabled on the underlying canvas.
+ScrollView.prototype.getAnimationsEnabled = function() {
+  return this._canvas.getAnimationsEnabled();
+};
+
+ScrollView.prototype._animateScrollbar = function(endVal) {
+  var startVal = this._fractionShowingScrollbar();
+  if (this._scrollbarAnimation !== null) {
+    this._scrollbarAnimation.cancel();
+  }
+
+  var duration = Math.abs(startVal - endVal) * ScrollView.ANIMATION_DURATION;
+  this._scrollbarAnimation = new ValueAnimation(duration, startVal, endVal);
+  this._scrollbarAnimation.on('progress', this._draw.bind(this));
+  this._scrollbarAnimation.on('done', function() {
+    this._scrollbarAnimation = null;
+    this._draw();
+  }.bind(this));
+  this._scrollbarAnimation.start();
+};
+
+ScrollView.prototype._deregisterScrollingEvents = function() {
+  // TODO: this.
 };
 
 ScrollView.prototype._draw = function() {
@@ -105,4 +146,8 @@ ScrollView.prototype._redrawScrollbar = function() {
 ScrollView.prototype._registerEvents = function() {
   this._canvas.on('layout', this._layout.bind(this));
   this._colorScheme.on('change', this._redrawScrollbar.bind(this));
+};
+
+ScrollView.prototype._registerScrollingEvents = function() {
+  // TODO: this.
 };

@@ -9,6 +9,8 @@ function Canvas() {
 
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
+  
+  this._animationsEnabled = true;
 
   this._ratio = window.crystal.getRatio();
   this._boundCrystalCallback = this._crystalCallback.bind(this);
@@ -33,6 +35,11 @@ Canvas.prototype.element = function() {
   return this._canvas;
 };
 
+// getAnimationsEnabled returns whether or not animations are enabled on this canvas.
+Canvas.prototype.getAnimationsEnabled = function() {
+  return this._animationsEnabled;
+};
+
 // height returns the height of the canvas in CSS pixels.
 Canvas.prototype.height = function() {
   return this._canvas.offsetHeight;
@@ -47,6 +54,11 @@ Canvas.prototype.layout = function() {
   this._context = this._canvas.getContext('2d');
   this._scaleContextForRatio();
   this.emit('layout');
+};
+
+// setAnimationsEnabled tells the canvas and everything drawing within it whether or not to animate.
+Canvas.prototype.setAnimationsEnabled = function(flag) {
+  this._animationsEnabled = flag;
 };
 
 // viewport returns a Viewport that fills the canvas.
