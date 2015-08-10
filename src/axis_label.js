@@ -1,37 +1,27 @@
 var textMeasurementLabel = null;
 
 // AxisLabel is a label made to be drawn in a canvas.
-function AxisLabel(value, formatter, content) {
-  this.value = value;
-  this.text = formatter(value);
-
+function AxisLabel(text, font) {
+  this.text = text;
   this.opacity = 1;
-  this.fontFamily = content.getFontFamily();
-  this.fontSize = content.getFontSize() + 'px';
-  this.fontWeight = content.getFontWeight();
-
+  this.font = font;
   this._measure();
 }
 
 AxisLabel.TEXT_COLOR = '153, 153, 153';
 
-// copy generates a duplicate of this AxisLabel.
+// copy creates a duplicate of this AxisLabel.
 AxisLabel.prototype.copy = function() {
   var res = Object.create(AxisLabel.prototype);
-  res.value = this.value;
   res.text = this.text;
   res.opacity = this.opacity;
-  res.fontFamily = this.fontFamily;
-  res.fontSize = this.fontSize;
-  res.fontWeight = this.fontWeight;
-  res.width = this.width;
-  res.height = this.height;
+  res.font = this.font;
   return res;
 };
 
-// draw draws the label in a context at a given position.
+// draw draws the label in a 2D graphics context at a given position.
 AxisLabel.prototype.draw = function(x, y, context) {
-  context.font = this.fontWeight + ' ' + this.fontSize + ' ' + this.fontFamily;
+  context.font = this.font;
   context.textBaseline = 'bottom';
   context.fillStyle = this.fillStyle();
   context.fillText(this.text, x, y);
@@ -39,9 +29,7 @@ AxisLabel.prototype.draw = function(x, y, context) {
 
 // equals returns true if this label shares all the same properties as another one.
 AxisLabel.prototype.equals = function(a) {
-  return this.value === a.value && this.text === a.text && this.opacity === a.opacity &&
-    this.fontFamily === a.fontFamily && this.fontSize === a.fontSize &&
-    this.fontWeight === a.fontWeight && this.width === a.width && this.height === a.height;
+  return this.text === a.text && this.opacity === a.opacity && this.font === a.font;
 };
 
 // fillStyle is the canvas drawing style for the color and opacity of this label.
@@ -56,9 +44,7 @@ AxisLabel.prototype._measure = function() {
     textMeasurementLabel.style.visibility = 'hidden';
     textMeasurementLabel.style.pointerEvents = 'none';
   }
-  textMeasurementLabel.style.fontFamily = this.fontFamily;
-  textMeasurementLabel.style.fontSize = this.fontSize;
-  textMeasurementLabel.style.fontWeight = this.fontWeight;
+  textMeasurementLabel.style.font = this.font;
   textMeasurementLabel.innerText = this.text;
   document.body.appendChild(textMeasurementLabel);
   this.width = textMeasurementLabel.offsetWidth;

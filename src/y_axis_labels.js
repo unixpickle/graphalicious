@@ -1,5 +1,28 @@
 //deps animation.js
 
+// YAxisLabel is an AxisLabel with an extra value attribute.
+function YAxisLabel(text, font, value) {
+  AxisLabel.call(this, text, font);
+  this.value = value;
+}
+
+YAxisLabel.prototype = Object.create(AxisLabel.prototype);
+
+// copy creates a duplicate of this label.
+YAxisLabel.prototype.copy = function() {
+  var res = Object.create(YAxisLabel.prototype);
+  res.text = this.text;
+  res.opacity = this.opacity;
+  res.font = this.font;
+  res.value = this.value;
+  return res;
+};
+
+// equals returns true if this label shares all the same properties as another one.
+YAxisLabel.prototype.equals = function(a) {
+  return AxisLabel.prototype.equals.call(this, a) && this.value === a.value;
+};
+
 // YAxisLabels animates and manipulates the y-axis labels.
 function YAxisLabels(labels, width, maxValue) {
   this._labels = labels;
@@ -26,7 +49,7 @@ YAxisLabels.createForContent = function(maxValue, content, usableHeight) {
   var labels = [];
   var width = 0;
   for (var i = 0; i < count; ++i) {
-    var label = new AxisLabel(divisions[i], content.formatYLabel, content);
+    var label = new YAxisLabel(divisions[i], content.formatYLabel, content);
     labels.push(label);
     width = Math.max(label.width+YAxisLabels.PADDING_LEFT+YAxisLabels.PADDING_RIGHT, width);
   }
