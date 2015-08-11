@@ -242,8 +242,7 @@ function ScrollViewControls(delegate) {
 
   this._registerMouseEvents();
   this._registerTouchEvents();
-
-  // TODO: scrollwheel events.
+  this._registerWheelEvents();
 }
 
 ScrollViewControls.STATE_DRAGGING_NOTHING = 0;
@@ -332,6 +331,25 @@ ScrollViewControls.prototype._registerTouchEvents = function() {
   }.bind(this));
   e.addEventListener('touchend', this._handleEventEnd.bind(this));
   e.addEventListener('touchcancel', this._handleEventEnd.bind(this));
+};
+
+ScrollViewControls.prototype._registerWheelEvents = function() {
+  // Join wheel events to go along with requestAnimationFrame. Otherwise they will come in at too
+  // high a frequency in Safari on OS X.
+  var pendingDelta = 0;
+  var pendingRequest = false;
+  this._delegate.element().addEventListener('wheel', function(e) {
+    if (!pendingRequest) {
+      pendingRequest = true;
+      requestAnimationFrame(function() {
+        this._delegate.setPixelsScrolled(this._delegate.getPixelsScrolled() - pendingDelta);
+        pendingDelta = 0;
+        pendingRequest = false;
+      }.bind(this));
+    }
+    pendingDelta -= e.deltaX;
+    e.preventDefault();
+  }.bind(this));
 };
 
 ScrollViewControls.prototype._startShielding = function() {
