@@ -9,7 +9,7 @@ function Canvas() {
 
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
-  
+
   this._animationsEnabled = true;
 
   this._ratio = window.crystal.getRatio();

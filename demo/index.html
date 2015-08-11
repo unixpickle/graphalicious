@@ -6,17 +6,28 @@
     <script src="crystal.js"></script>
     <script src="../build.js"></script>
     <script type="text/javascript">
+    var gl = window.graphalicious;
+    var sv;
     window.addEventListener('load', function() {
-      var sv = new window.graphalicious.ScrollView(new window.graphalicious.GraphCanvas());
-      document.body.appendChild(sv.element());
-      sv.element().style.width = '300px';
-      sv.element().style.height = '200px';
-      sv.getGraphCanvas().element().style.backgroundColor = 'white';
-      
-      new window.graphalicious.YStage(sv, new window.graphalicious.AscendingContent(1200));
+      var canvas = new gl.Canvas();
+      var colorScheme = new gl.ColorScheme('#65bcd4');
+      sv = new gl.ScrollView(canvas, colorScheme);
+      document.body.appendChild(canvas.element());
+      canvas.element().style.width = '300px';
+      canvas.element().style.height = '200px';
+      canvas.element().style.backgroundColor = 'white';
+      canvas.layout();
     });
+    function toggleScrolls() {
+      if (sv.isScrollingEnabled()) {
+        sv.disableScrolling();
+      } else {
+        sv.enableScrolling(600, 250);
+      }
+    }
     </script>
   </head>
   <body style="background-color: #f0f0f0">
+    <button onclick="toggleScrolls()">Toggle Scrolls</button><br>
   </body>
 </html>

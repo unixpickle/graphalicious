@@ -3,7 +3,7 @@ function AxisLabel(text, font) {
   this.text = text;
   this.opacity = 1;
   this.font = font;
-  
+
   var measurement = TextMeasurement.getGlobalMeasurement().measure(text, font);
   this.width = measurement.width;
   this.height = measurement.height;
@@ -44,12 +44,12 @@ function TextMeasurement() {
   this._canvas.width = 1;
   this._canvas.height = 1;
   this._context = this._canvas.getContext('2d');
-  
+
   this._label = document.createElement('label');
   this._label.style.position = 'fixed';
   this._label.style.visibility = 'hidden';
   this._label.style.pointerEvents = 'none';
-  
+
   this._cachedFont = null;
   this._cachedHeight = 0;
 }

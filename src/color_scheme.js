@@ -4,7 +4,7 @@
 //
 // ColorScheme implements EventEmitter and will emit 'change' events whenever it is changed.
 function ColorScheme(primaryColor, secondaryColor) {
-  EventEmitter.prototype.call(this);
+  EventEmitter.call(this);
   this._primaryColor = primaryColor;
   this._secondaryColor = secondaryColor || primaryColor;
 }
@@ -27,3 +27,5 @@ ColorScheme.prototype.setColors = function(prim, sec) {
   this._secondaryColor = sec || prim;
   this.emit('change');
 };
+
+exports.ColorScheme = ColorScheme;

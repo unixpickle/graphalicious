@@ -2,7 +2,7 @@
 
 // ScrollView provides the user interface for scrolling around within content.
 function ScrollView(canvas, colorScheme) {
-  EventEmitter.prototype.call(this);
+  EventEmitter.call(this);
 
   this._canvas = canvas;
   this._colorScheme = colorScheme;
@@ -20,8 +20,12 @@ function ScrollView(canvas, colorScheme) {
 }
 
 ScrollView.ANIMATION_DURATION = 0.4;
+ScrollView.BAR_BACKGROUND_COLOR = '#ccc';
+ScrollView.MIN_SCROLLBAR_SIZE = 20;
 ScrollView.SCROLLBAR_HEIGHT = 5;
 ScrollView.SCROLLBAR_MARGIN = 5;
+
+ScrollView.prototype = Object.create(EventEmitter.prototype);
 
 // contentViewport returns a Viewport into which content may be drawn.
 ScrollView.prototype.contentViewport = function() {
@@ -38,11 +42,12 @@ ScrollView.prototype.disableScrolling = function() {
   if (!this._scrolls) {
     return;
   }
-  this._scrolls = false;
   this._deregisterScrollingEvents();
   if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
     this._animateScrollbar(0);
+    this._scrolls = false;
   } else {
+    this._scrolls = false;
     this._draw();
   }
 };
@@ -54,14 +59,15 @@ ScrollView.prototype.disableScrolling = function() {
 // content that is not visible at a given time. The scroll view can be scrolled to any point between
 // 0 and offscreenWidth pixels.
 ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
-  this._contentWidth = content;
-  this._offscreenWidth = offscreen;
+  this._contentWidth = contentWidth;
+  this._offscreenWidth = offscreenWidth;
 
-  this._scrolls = true;
   this._registerScrollingEvents();
   if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
     this._animateScrollbar(1);
+    this._scrolls = true;
   } else {
+    this._scrolls = true;
     this._draw();
   }
 };
@@ -69,6 +75,11 @@ ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
 // getAnimationsEnabled returns whether or not animations are enabled on the underlying canvas.
 ScrollView.prototype.getAnimationsEnabled = function() {
   return this._canvas.getAnimationsEnabled();
+};
+
+// isScrollingEnabled returns a boolean indicating whether or not scrolling is enabled.
+ScrollView.prototype.isScrollingEnabled = function() {
+  return this._scrolls;
 };
 
 ScrollView.prototype._animateScrollbar = function(endVal) {
@@ -87,6 +98,20 @@ ScrollView.prototype._animateScrollbar = function(endVal) {
   this._scrollbarAnimation.start();
 };
 
+ScrollView.prototype._computeScrollbarFrame = function(totalWidth) {
+  var width = Math.round((1 - this._offscreenWidth/this._contentWidth) * totalWidth);
+  if (width < ScrollView.MIN_SCROLLBAR_SIZE) {
+    width = ScrollView.MIN_SCROLLBAR_SIZE;
+  } else if (width + ScrollView.MIN_SCROLLBAR_SIZE > totalWidth) {
+    width = totalWidth - ScrollView.MIN_SCROLLBAR_SIZE;
+  }
+  var maxX = totalWidth - width;
+  return {
+    x: Math.round(maxX * this._amountScrolled),
+    width: width
+  };
+};
+
 ScrollView.prototype._deregisterScrollingEvents = function() {
   // TODO: this.
 };
@@ -97,7 +122,7 @@ ScrollView.prototype._draw = function() {
   var viewport = this._canvas.viewport();
   viewport.enter();
   viewport.context().clearRect(0, 0, viewport.width(), viewport.height());
-  var scrollbarHeight = this._fractionShowingScrollbar * ScrollView.SCROLLBAR_HEIGHT;
+  var scrollbarHeight = this._fractionShowingScrollbar() * ScrollView.SCROLLBAR_HEIGHT;
   if (scrollbarHeight > 0) {
     this._drawScrollbar(viewport.context(), viewport.height()-scrollbarHeight, viewport.width(),
       scrollbarHeight);
@@ -108,12 +133,16 @@ ScrollView.prototype._draw = function() {
 };
 
 ScrollView.prototype._drawScrollbar = function(context, y, width, height) {
-  // TODO: this.
+  var frame = this._computeScrollbarFrame(width);
+  context.fillStyle = ScrollView.BAR_BACKGROUND_COLOR;
+  context.fillRect(0, y, width, height);
+  context.fillStyle = this._colorScheme.getPrimaryColor();
+  context.fillRect(frame.x, y, frame.width, height);
 };
 
 ScrollView.prototype._fractionShowingScrollbar = function() {
   if (this._scrollbarAnimation === null) {
-    return this._scrollbarVisible ? 1 : 0;
+    return this._scrolls ? 1 : 0;
   } else {
     return this._scrollbarAnimation.value();
   }
@@ -151,3 +180,5 @@ ScrollView.prototype._registerEvents = function() {
 ScrollView.prototype._registerScrollingEvents = function() {
   // TODO: this.
 };
+
+exports.ScrollView = ScrollView;
