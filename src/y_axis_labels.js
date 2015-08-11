@@ -125,3 +125,57 @@ YAxisLabels.prototype.setMaxValue = function(value) {
 YAxisLabels.prototype.setWidth = function(width) {
   this._width = width;
 };
+
+// YAxisLabelsTransition is an animation which transitions from one YAxisLabels to another.
+function YAxisLabelsTransition(start, end) {
+  Animation.call(this);
+
+  var labels = YAxisLabelsTransitions._startEndLabels(start.getLabels(), end.getLabels());
+  this._startState = new YAxisLabels(labels.start, start.getWidth(), start.getMaxValue());
+  this._endState = new YAxisLabels(labels.end, end.getWidth(), end.getMaxValue());
+  this._tempState = new YAxisLabels(labels.start, start.getWidth(), start.getMaxValue());
+}
+
+YAxisLabelsTransition._startEndLabels = function(start, end) {
+  var aggregateStart = [];
+  var aggregateEnd = [];
+
+  // Both start and end are sorted, so this is essentially the last step of a merge sort.
+  var startIndex = 0;
+  var endIndex = 0;
+  while (startIndex < start.length || endIndex < start.length) {
+    var startLabel = start[startIndex];
+    var endLabel = end[endIndex];
+    if (startLabel && (!endLabel || startLabel.value < endLabel.value)) {
+      var invisibleLabel = startLabel.copy();
+      invisibleLabel.opacity = 0;
+      aggregateStart.push(startLabel.copy());
+      aggregateEnd.push(invisibleLabel);
+    } else {
+      var invisibleLabel = endLabel.copy();
+      invisibleLabel.opacity = 0;
+      aggregateStart.push(invisibleLabel);
+      aggregateEnd.push(endLabel.copy());
+    }
+  }
+
+  return {start: aggregateStart, end: aggregateEnd};
+};
+
+YAxisLabelsTransition.prototype = Object.create(Animation.prototype);
+
+// labels returns a set of intermediate labels for the current time in the transition.
+YAxisLabelsTransition.prototype.labels = function() {
+  var startLabels = this._startState.getLabels();
+  var endLabels = this._endState.getLabels();
+  var tempLabels = this._tempState.getLabels();
+  var progress = this.progress();
+  for (var i = 0, len = endLabels.length; ++i) {
+    tempLabels[i].opacity = (1-progress)*startLabels[i].opacity + progress*endLabels[i].opacity;
+  }
+  this._tempState.setMaxValue((1-progress)*this._startState.getMaxValue() +
+    progress*this._endState.getMaxValue());
+  this._tempState.setWidth((1-progress)*this._startState.getWidth() +
+    progress*this._endState.getMaxValue());
+  return this._tempState;
+};
