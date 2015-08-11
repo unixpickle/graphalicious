@@ -42,7 +42,6 @@ ScrollView.prototype.disableScrolling = function() {
   if (!this._scrolls) {
     return;
   }
-  this._deregisterScrollingEvents();
   if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
     this._animateScrollbar(0);
     this._scrolls = false;
@@ -61,8 +60,6 @@ ScrollView.prototype.disableScrolling = function() {
 ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
   this._contentWidth = contentWidth;
   this._offscreenWidth = offscreenWidth;
-
-  this._registerScrollingEvents();
   if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
     this._animateScrollbar(1);
     this._scrolls = true;
@@ -75,6 +72,12 @@ ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
 // getAnimationsEnabled returns whether or not animations are enabled on the underlying canvas.
 ScrollView.prototype.getAnimationsEnabled = function() {
   return this._canvas.getAnimationsEnabled();
+};
+
+// getPixelsScrolled returns the number of pixels that the content is offset from its leftmost
+// position.
+ScrollView.prototype.getPixelsScrolled = function() {
+  return Math.round(this._offscreenWidth * this._amountScrolled);
 };
 
 // isScrollingEnabled returns a boolean indicating whether or not scrolling is enabled.
@@ -112,8 +115,35 @@ ScrollView.prototype._computeScrollbarFrame = function(totalWidth) {
   };
 };
 
-ScrollView.prototype._deregisterScrollingEvents = function() {
-  // TODO: this.
+ScrollView.prototype._controlsDelegate = function() {
+  return {
+    element: function() {
+      return this._canvas.element();
+    }.bind(this),
+
+    contentHeight: function() {
+      return this.contentViewport().height();
+    }.bind(this),
+
+    scrollbarRect: function() {
+      var frame = this._computeScrollbarFrame(this._canvas.width());
+      frame.height = this._fractionShowingScrollbar() * ScrollView.SCROLLBAR_HEIGHT;;
+      frame.y = this._canvas.height() - frame.height;
+      return frame;
+    }.bind(this),
+
+    width: function() {
+      return this._canvas.width();
+    }.bind(this),
+
+    maxPixelsScrolled: function() {
+      return this._offscreenWidth;
+    }.bind(this),
+
+    scrolls: this.isScrollingEnabled.bind(this),
+    getPixelsScrolled: this.getPixelsScrolled.bind(this),
+    setPixelsScrolled: this._setPixelsScrolled.bind(this)
+  };
 };
 
 ScrollView.prototype._draw = function() {
@@ -160,7 +190,7 @@ ScrollView.prototype._layout = function() {
 };
 
 ScrollView.prototype._redrawScrollbar = function() {
-  var scrollbarHeight = this._fractionShowingScrollbar * ScrollView.SCROLLBAR_HEIGHT;
+  var scrollbarHeight = this._fractionShowingScrollbar() * ScrollView.SCROLLBAR_HEIGHT;
   if (scrollbarHeight > 0) {
     var intHeight = Math.ceil(scrollbarHeight);
     var viewport = this._canvas.viewport();
@@ -175,10 +205,141 @@ ScrollView.prototype._redrawScrollbar = function() {
 ScrollView.prototype._registerEvents = function() {
   this._canvas.on('layout', this._layout.bind(this));
   this._colorScheme.on('change', this._redrawScrollbar.bind(this));
+  new ScrollViewControls(this._controlsDelegate());
 };
 
-ScrollView.prototype._registerScrollingEvents = function() {
-  // TODO: this.
+ScrollView.prototype._setPixelsScrolled = function(pixels) {
+  var oldAmount = this._amountScrolled;
+  this._amountScrolled = Math.min(Math.max(pixels/this._offscreenWidth, 0), 1);
+  if (oldAmount !== this._amountScrolled) {
+    this._drawSetsToTrue = false;
+    this.emit('scroll');
+    if (!this._drawSetsToTrue) {
+      this._redrawScrollbar();
+    }
+  }
+};
+
+function ScrollViewControls(delegate) {
+  this._state = ScrollViewControls.STATE_DRAGGING_NOTHING;
+  this._delegate = delegate;
+
+  // this._dragInitialX is set to the clientX coordinate of the last _handleEventStart.
+  this._dragInitialX = 0;
+
+  // this._dragInitialValue has two different meanings depending on the state.
+  // In STATE_DRAGGING_CONTENT, this is the number of pixels scrolled in the last _handleEventStart.
+  // In STATE_DRAGGING_BAR, this is the x coordinate of the scrollbar in the last _handleEventStart.
+  this._dragInitialValue = 0;
+
+  // this._dragShielding is used to block :hover selectors while the user is dragging the scrollbar.
+  this._dragShielding = document.createElement('div');
+  this._dragShielding.style.position = 'fixed';
+  this._dragShielding.style.left = '0';
+  this._dragShielding.style.top = '0';
+  this._dragShielding.style.width = '100%';
+  this._dragShielding.style.height = '100%';
+
+  this._registerMouseEvents();
+  this._registerTouchEvents();
+
+  // TODO: scrollwheel events.
+}
+
+ScrollViewControls.STATE_DRAGGING_NOTHING = 0;
+ScrollViewControls.STATE_DRAGGING_CONTENT = 1;
+ScrollViewControls.STATE_DRAGGING_BAR = 2;
+
+ScrollViewControls.prototype._centerScrollbarAroundPoint = function(relative, scrollbarRect) {
+  var maxX = this._delegate.width() - scrollbarRect.width;
+  var useX = Math.min(Math.max(relative.x-scrollbarRect.width/2, 0), maxX);
+  var pixels = Math.round(this._delegate.maxPixelsScrolled() * useX / maxX);
+  this._delegate.setPixelsScrolled(pixels);
+};
+
+ScrollViewControls.prototype._handleEventStart = function(coords) {
+  if (!this._delegate.scrolls()) {
+    return;
+  }
+
+  var relative = this._relativeXY(coords);
+  var scrollbarRect = this._delegate.scrollbarRect();
+  if (relative.y < this._delegate.contentHeight()) {
+    this._state = ScrollViewControls.STATE_DRAGGING_CONTENT;
+    this._dragInitialValue = this._delegate.getPixelsScrolled();
+    this._startShielding();
+  } else if (relative.y >= scrollbarRect.y) {
+    if (relative.x < scrollbarRect.x || relative.x >= scrollbarRect.x + scrollbarRect.width) {
+      this._centerScrollbarAroundPoint(relative, scrollbarRect);
+    } else {
+      this._state = ScrollViewControls.STATE_DRAGGING_BAR;
+      this._dragInitialValue = scrollbarRect.x;
+      this._startShielding();
+    }
+  }
+  this._dragInitialX = coords.x;
+};
+
+ScrollViewControls.prototype._handleEventMove = function(coords) {
+  if (!this._delegate.scrolls() || this._state === ScrollViewControls.STATE_DRAGGING_NOTHING) {
+    return;
+  } else if (this._state === ScrollViewControls.STATE_DRAGGING_CONTENT) {
+    this._delegate.setPixelsScrolled(this._dragInitialValue + this._dragInitialX - coords.x);
+  } else if (this._state === ScrollViewControls.STATE_DRAGGING_BAR) {
+    var newBarX = this._dragInitialValue + coords.x - this._dragInitialX;
+    var maxX = this._delegate.width() - this._delegate.scrollbarRect().width;
+    var pixels = (newBarX / maxX) * this._delegate.maxPixelsScrolled();
+    this._delegate.setPixelsScrolled(pixels);
+  }
+};
+
+ScrollViewControls.prototype._handleEventEnd = function() {
+  if (this._state !== ScrollViewControls.STATE_DRAGGING_NOTHING) {
+    this._stopShielding();
+    this._state = ScrollViewControls.STATE_DRAGGING_NOTHING;
+  }
+};
+
+ScrollViewControls.prototype._relativeXY = function(point) {
+  var canvasRect = this._delegate.element().getBoundingClientRect();
+  return {
+    x: point.x - canvasRect.left,
+    y: point.y - canvasRect.top
+  };
+};
+
+ScrollViewControls.prototype._registerMouseEvents = function() {
+  this._delegate.element().addEventListener('mousedown', function(e) {
+    this._handleEventStart({x: e.clientX, y: e.clientY});
+  }.bind(this));
+  document.body.addEventListener('mousemove', function(e) {
+    this._handleEventMove({x: e.clientX, y: e.clientY});
+  }.bind(this));
+  document.body.addEventListener('mouseup', this._handleEventEnd.bind(this));
+  document.body.addEventListener('mouseleave', this._handleEventEnd.bind(this));
+};
+
+ScrollViewControls.prototype._registerTouchEvents = function() {
+  if (!('ontouchstart' in document)) {
+    return;
+  }
+  var e = this._delegate.element();
+  e.addEventListener('touchstart', function(e) {
+    this._handleEventStart({x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY});
+  }.bind(this));
+  e.addEventListener('touchmove', function(e) {
+    this._handleEventMove({x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY});
+  }.bind(this));
+  e.addEventListener('touchend', this._handleEventEnd.bind(this));
+  e.addEventListener('touchcancel', this._handleEventEnd.bind(this));
+};
+
+ScrollViewControls.prototype._startShielding = function() {
+  document.body.appendChild(this._dragShielding);
+};
+
+ScrollViewControls.prototype._stopShielding = function() {
+  document.body.removeChild(this._dragShielding);
 };
 
 exports.ScrollView = ScrollView;
