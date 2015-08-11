@@ -270,11 +270,11 @@ ScrollViewControls.prototype._handleEventStart = function(coords) {
   } else if (relative.y >= scrollbarRect.y) {
     if (relative.x < scrollbarRect.x || relative.x >= scrollbarRect.x + scrollbarRect.width) {
       this._centerScrollbarAroundPoint(relative, scrollbarRect);
-    } else {
-      this._state = ScrollViewControls.STATE_DRAGGING_BAR;
-      this._dragInitialValue = scrollbarRect.x;
-      this._startShielding();
+      scrollbarRect = this._delegate.scrollbarRect();
     }
+    this._state = ScrollViewControls.STATE_DRAGGING_BAR;
+    this._dragInitialValue = scrollbarRect.x;
+    this._startShielding();
   }
   this._dragInitialX = coords.x;
 };
