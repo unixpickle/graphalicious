@@ -7,8 +7,15 @@
 function Canvas() {
   EventEmitter.call(this);
 
+  this._container = document.createElement('div');
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
+
+  this._container.appendChild(this._canvas);
+  this._container.style.position = 'relative';
+  this._canvas.style.position = 'absolute';
+  this._canvas.style.width = '100%';
+  this._canvas.style.height = '100%';
 
   this._animationsEnabled = true;
 
@@ -32,7 +39,7 @@ Canvas.prototype.dispose = function() {
 
 // element returns the DOM element for the Canvas.
 Canvas.prototype.element = function() {
-  return this._canvas;
+  return this._container;
 };
 
 // getAnimationsEnabled returns whether or not animations are enabled on this canvas.

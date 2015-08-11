@@ -29,8 +29,10 @@
       vp.context().fillRect(0, 0, vp.width(), vp.height());
       vp.context().fillStyle = 'black';
       vp.context().font = '16pt sans-serif';
-      vp.context().fillText('offset by '+scrollView.getPixelsScrolled(),
-        100-scrollView.getPixelsScrolled(), 26);
+      for (var i = 0; i < 150; i += 20) {
+        vp.context().fillText('offset by '+(i*6),
+          -scrollView.getPixelsScrolled() + i*6, 26 + i);
+      }
       vp.leave();
     }
 
@@ -38,7 +40,7 @@
       if (sv.isScrollingEnabled()) {
         sv.disableScrolling();
       } else {
-        sv.enableScrolling(600, 250);
+        sv.enableScrolling(1000, 700);
       }
     }
     </script>

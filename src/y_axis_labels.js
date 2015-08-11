@@ -170,7 +170,7 @@ YAxisLabelsTransition.prototype.labels = function() {
   var endLabels = this._endState.getLabels();
   var tempLabels = this._tempState.getLabels();
   var progress = this.progress();
-  for (var i = 0, len = endLabels.length; ++i) {
+  for (var i = 0, len = endLabels.length; i < len; ++i) {
     tempLabels[i].opacity = (1-progress)*startLabels[i].opacity + progress*endLabels[i].opacity;
   }
   this._tempState.setMaxValue((1-progress)*this._startState.getMaxValue() +

@@ -339,6 +339,9 @@ ScrollViewControls.prototype._registerWheelEvents = function() {
   var pendingDelta = 0;
   var pendingRequest = false;
   this._delegate.element().addEventListener('wheel', function(e) {
+    if (!this._delegate.scrolls()) {
+      return;
+    }
     if (!pendingRequest) {
       pendingRequest = true;
       requestAnimationFrame(function() {

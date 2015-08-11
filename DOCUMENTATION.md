@@ -9,6 +9,7 @@ Content does not have to reside on the client. It can load lazily from a server.
 The *content* interface should emit these events:
 
  * **change**() - the content has changed.
+ * **redraw**() - the content has remained mostly unchanged, but it must be redrawn because of a visual change (e.g. a color scheme change).
 
 ## Methods
 
