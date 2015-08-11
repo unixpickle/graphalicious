@@ -16,6 +16,9 @@ function Canvas() {
   this._canvas.style.position = 'absolute';
   this._canvas.style.width = '100%';
   this._canvas.style.height = '100%';
+  
+  disableUserSelection(this._container);
+  disableUserSelection(this._canvas);
 
   this._animationsEnabled = true;
 
@@ -86,5 +89,12 @@ Canvas.prototype._crystalCallback = function() {
 Canvas.prototype._scaleContextForRatio = function() {
   this._context.scale(this._ratio, this._ratio);
 };
+
+function disableUserSelection(element) {
+  element.style.webkitUserSelect = 'none';
+  element.style.MozUserSelect = 'none';
+  element.style.msUserSelect = 'none';
+  element.style.userSelect = 'none';
+}
 
 exports.Canvas = Canvas;
