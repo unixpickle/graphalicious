@@ -14,7 +14,7 @@ function ScrollView(canvas, colorScheme) {
 
   this._offscreenWidth = 0;
   this._contentWidth = 0;
-  this._amountScrolled = 0;
+  this._pixelsScrolled = 0;
 
   this._registerEvents();
 }
@@ -53,13 +53,24 @@ ScrollView.prototype.disableScrolling = function() {
 
 // enableScrolling makes the ScrollView scrollable.
 // In order to present the user with a scrollbar, it is necessary to provide two parameters.
+//
 // The contentWidth parameter specifies the width (in pixels) of the underlying content.
+//
 // The offscreenWidth parameter specifies the width (in pixels) of the part of the underlying
 // content that is not visible at a given time. The scroll view can be scrolled to any point between
 // 0 and offscreenWidth pixels.
-ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth) {
+//
+// The pixelsScrolled argument is optional. It sets the initial number of pixels that the content
+// should be scrolled to.
+//
+// This method may emit a 'draw' event.
+ScrollView.prototype.enableScrolling = function(contentWidth, offscreenWidth, pixelsScrolled) {
+  if ('number' !== typeof pixelsScrolled) {
+    pixelsScrolled = offscreenWidth;
+  }
   this._contentWidth = contentWidth;
   this._offscreenWidth = offscreenWidth;
+  this._pixelsScrolled = Math.min(Math.max(pixelsScrolled, 0), offscreenWidth);
   if (this.getAnimationsEnabled() || this._scrollbarAnimation !== null) {
     this._animateScrollbar(1);
     this._scrolls = true;
@@ -77,12 +88,29 @@ ScrollView.prototype.getAnimationsEnabled = function() {
 // getPixelsScrolled returns the number of pixels that the content is offset from its leftmost
 // position.
 ScrollView.prototype.getPixelsScrolled = function() {
-  return Math.round(this._offscreenWidth * this._amountScrolled);
+  if (!this._scrolls) {
+    throw new Error('getPixelsScrolled called when scrolling is disabled');
+  }
+  return this._pixelsScrolled;
 };
 
 // isScrollingEnabled returns a boolean indicating whether or not scrolling is enabled.
 ScrollView.prototype.isScrollingEnabled = function() {
   return this._scrolls;
+};
+
+// update modifies the contentWidth, offscreenWidth, and pixelsScrolled scrolling parameters.
+// This may trigger a 'draw' event and/or a 'scroll' event.
+ScrollView.prototype.update = function(contentWidth, offscreenWidth, pixelsScrolled) {
+  if (!this._scrolls) {
+    throw new Error('updateScrollingParameters called when scrolling is disabled');
+  }
+  if ('number' !== typeof pixelsScrolled) {
+    pixelsScrolled = this._pixelsScrolled;
+  }
+  this._contentWidth = contentWidth;
+  this._offscreenWidth = offscreenWidth;
+  this._setPixelsScrolled(pixelsScrolled);
 };
 
 ScrollView.prototype._animateScrollbar = function(endVal) {
@@ -110,7 +138,7 @@ ScrollView.prototype._computeScrollbarFrame = function(totalWidth) {
   }
   var maxX = totalWidth - width;
   return {
-    x: Math.round(maxX * this._amountScrolled),
+    x: Math.round(maxX * this._pixelsScrolled / this._offscreenWidth),
     width: width
   };
 };
@@ -209,9 +237,9 @@ ScrollView.prototype._registerEvents = function() {
 };
 
 ScrollView.prototype._setPixelsScrolled = function(pixels) {
-  var oldAmount = this._amountScrolled;
-  this._amountScrolled = Math.min(Math.max(pixels/this._offscreenWidth, 0), 1);
-  if (oldAmount !== this._amountScrolled) {
+  var old = this._pixelsScrolled;
+  this._pixelsScrolled = Math.min(Math.max(Math.round(pixels), 0), this._offscreenWidth);
+  if (old !== this._pixelsScrolled) {
     this._drawSetsToTrue = false;
     this.emit('scroll');
     if (!this._drawSetsToTrue) {
@@ -281,7 +309,7 @@ ScrollViewControls.prototype._handleEventStart = function(coords) {
 
 ScrollViewControls.prototype._handleEventMove = function(coords) {
   if (!this._delegate.scrolls() || this._state === ScrollViewControls.STATE_DRAGGING_NOTHING) {
-    return;
+    // NOTE: branch intentionally left empty.
   } else if (this._state === ScrollViewControls.STATE_DRAGGING_CONTENT) {
     this._delegate.setPixelsScrolled(this._dragInitialValue + this._dragInitialX - coords.x);
   } else if (this._state === ScrollViewControls.STATE_DRAGGING_BAR) {

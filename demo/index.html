@@ -8,6 +8,7 @@
     <script type="text/javascript">
     var gl = window.graphalicious;
     var sv;
+    var lastScrollOffset = 0;
     window.addEventListener('load', function() {
       var canvas = new gl.Canvas();
       var colorScheme = new gl.ColorScheme('#65bcd4');
@@ -23,6 +24,10 @@
     });
 
     function simpleContent(scrollView) {
+      if (scrollView.isScrollingEnabled()) {
+        lastScrollOffset = scrollView.getPixelsScrolled();
+      }
+      
       var vp = scrollView.contentViewport();
       vp.enter();
       vp.context().fillStyle = 'white';
@@ -30,8 +35,7 @@
       vp.context().fillStyle = 'black';
       vp.context().font = '16pt sans-serif';
       for (var i = 0; i < 150; i += 20) {
-        vp.context().fillText('offset by '+(i*6),
-          -scrollView.getPixelsScrolled() + i*6, 26 + i);
+        vp.context().fillText('offset by '+(i*6), 10 - lastScrollOffset + i*6, 26 + i);
       }
       vp.leave();
     }
@@ -40,7 +44,7 @@
       if (sv.isScrollingEnabled()) {
         sv.disableScrolling();
       } else {
-        sv.enableScrolling(1000, 700);
+        sv.enableScrolling(1000, 700, lastScrollOffset);
       }
     }
     </script>
