@@ -12,9 +12,10 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Make everything asynchronous:
-   * Content should asynchronously return a ContentPiece which is synchronous.
-   * The graph will scroll a ContentPiece until the new ContentPiece is loaded.
+ * Implement a system for showing externally defined views (i.e. loading and error panes) inside the graph canvas's bounds.
+ * Create test content which has built-in lag and random errors.
+ * Create a basic error pane and loading pane.
+ * Implement BaseStage *somehow*
 
 # License
 
