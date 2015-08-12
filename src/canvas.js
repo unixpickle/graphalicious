@@ -16,7 +16,9 @@ function Canvas() {
   this._canvas.style.position = 'absolute';
   this._canvas.style.width = '100%';
   this._canvas.style.height = '100%';
-  
+
+  this._currentOverlay = null;
+
   disableUserSelection(this._container);
   disableUserSelection(this._canvas);
 
@@ -55,6 +57,15 @@ Canvas.prototype.height = function() {
   return this._canvas.offsetHeight;
 };
 
+// hideOverlay hides the current overlay.
+Canvas.prototype.hideOverlay = function() {
+  if (this._currentOverlay === null) {
+    throw new Error('hideOverlay called without a current overlay');
+  }
+  this._container.removeChild(this._currentOverlay.element());
+  this._currentOverlay.hidden();
+};
+
 // layout re-draws the contents of the canvas.
 // The web application should call this whenever the canvas changes size.
 Canvas.prototype.layout = function() {
@@ -69,6 +80,29 @@ Canvas.prototype.layout = function() {
 // setAnimationsEnabled tells the canvas and everything drawing within it whether or not to animate.
 Canvas.prototype.setAnimationsEnabled = function(flag) {
   this._animationsEnabled = flag;
+};
+
+// showOverlay presents an overlay over the canvas.
+// If another overlay was already showing, it will be hidden.
+Canvas.prototype.showOverlay = function(overlay) {
+  var e = overlay.element();
+  e.style.position = 'absolute';
+  e.style.left = '0';
+  e.style.top = '0';
+  e.style.width = '100%';
+  e.style.height = '100%';
+  this._container.appendChild(e);
+
+  var oldOverlay = this._currentOverlay;
+  this._currentOverlay = overlay;
+
+  overlay.shown(this);
+
+  // NOTE: we remove the old overlay after adding the new one to avoid any kind of flicker.
+  if (oldOverlay !== null) {
+    this._container.removeChild(oldOverlay.element());
+    oldOverlay.hidden(this);
+  }
 };
 
 // viewport returns a Viewport that fills the canvas.
