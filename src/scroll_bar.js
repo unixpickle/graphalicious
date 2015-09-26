@@ -28,6 +28,7 @@ function ScrollBar(colorScheme) {
   this._thumbWidth = 0;
   this._thumbLeft = 0;
 
+  this._moveEventCallback = null;
   this._registerMouseEvents();
   this._registerTouchEvents();
 }
@@ -79,59 +80,82 @@ ScrollBar.prototype._updateThumb = function(width) {
   this._thumb.style.left = Math.round(this._thumbLeft) + 'px';
 };
 
+ScrollBar.prototype._eventBegan = function(startX) {
+  var scrollablePixels = this._totalPixels - this._visiblePixels;
+  var maxThumbLeft = this._trackWidth - this._thumbWidth;
+
+  var startThumbLeft = this._thumbLeft;
+  if (startX < startThumbLeft || startX > startThumbLeft + this._thumbWidth) {
+    startThumbLeft = Math.min(maxThumbLeft, Math.max(0, startX-this._thumbWidth/2));
+  }
+
+  this._moveEventCallback = function(x) {
+    var xOffset = x - startX;
+    var newThumbLeft = Math.min(maxThumbLeft, Math.max(0, startThumbLeft + xOffset));
+    var ratioScrolled = newThumbLeft / maxThumbLeft;
+    this._scrolledPixels = Math.round(scrollablePixels * ratioScrolled);
+    this._updateThumb();
+    this.emit('change');
+  }.bind(this);
+  this._moveEventCallback(startX);
+};
+
 ScrollBar.prototype._registerMouseEvents = function() {
-  var updateForEvent = null;
   var shielding = document.createElement('div');
   shielding.style.width = '100%';
   shielding.style.height = '100%';
   shielding.style.position = 'fixed';
 
   this._track.addEventListener('mousedown', function(e) {
+    if (this._moveEventCallback) {
+      return;
+    }
+
     // NOTE: this fixes a problem where the cursor becomes an ibeam.
     e.preventDefault();
     e.stopPropagation();
 
-    var scrollablePixels = this._totalPixels - this._visiblePixels;
-    var maxThumbLeft = this._trackWidth - this._thumbWidth;
-
-    var startX = e.clientX;
-    var startThumbLeft = this._thumbLeft;
-
-    if (startX < startThumbLeft || startX > startThumbLeft + this._thumbWidth) {
-      startThumbLeft = Math.min(maxThumbLeft, Math.max(0, startX-this._thumbWidth/2));
-    }
-
-    updateForEvent = function(e) {
-      var xOffset = e.clientX - startX;
-      var newThumbLeft = Math.min(maxThumbLeft, Math.max(0, startThumbLeft + xOffset));
-      var ratioScrolled = newThumbLeft / maxThumbLeft;
-      this._scrolledPixels = Math.round(scrollablePixels * ratioScrolled);
-      this._updateThumb();
-      this.emit('change');
-    }.bind(this);
-    updateForEvent(e);
-
+    this._eventBegan(e.clientX);
     document.body.appendChild(shielding);
   }.bind(this));
+
   window.addEventListener('mousemove', function(e) {
-    if ('function' === typeof updateForEvent) {
+    if (this._moveEventCallback) {
+      this._moveEventCallback(e.clientX);
+
       // NOTE: this fixes a problem where the cursor becomes an ibeam.
       e.preventDefault();
       e.stopPropagation();
-
-      updateForEvent(e);
     }
-  });
+  }.bind(this));
+
   window.addEventListener('mouseup', function() {
-    if ('function' === typeof updateForEvent) {
-      updateForEvent = null;
+    if (this._moveEventCallback) {
+      this._moveEventCallback = null;
       document.body.removeChild(shielding);
     }
-  });
+  }.bind(this));
 };
 
 ScrollBar.prototype._registerTouchEvents = function() {
-  // TODO: this.
+  var e = this._track;
+
+  e.addEventListener('touchstart', function(e) {
+    this._eventBegan(e.changedTouches[0].clientX);
+  }.bind(this));
+
+  e.addEventListener('touchmove', function(e) {
+    if (this._moveEventCallback) {
+      this._moveEventCallback(e.changedTouches[0].clientX);
+    }
+  }.bind(this));
+
+  var cancel = function() {
+    this._moveEventCallback = null;
+  }.bind(this);
+
+  e.addEventListener('touchend', cancel);
+  e.addEventListener('touchcancel', cancel);
 };
 
 // TODO: delete this. This shouldn't be exported.
