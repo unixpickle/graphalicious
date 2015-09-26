@@ -2,7 +2,7 @@
 
 The *DataSource* type asynchronously provides raw data to the graph. Since the underlying source of the data may be mutable, a *DataSource* can emit a number of different events when it is modified.
 
-# Overview &amp; Terminology
+# Overview & Terminology
 
 The basic unit of data is a **data point**. Every data point includes a *y-axis value*, a number indicating how "high" the data point is. Some data points may also contain a second number, the *secondary y-axis value*. Secondary y-axis values are used to show a set of data below the primary set of data. Data points themselves do not contain x-axis values.
 

@@ -1,0 +1,26 @@
+# Abstract
+
+While having a [DataSource](DATA_SOURCE.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](DATA_SOURCE.md).
+
+# Overview & Terminology
+
+The **total width** of a *ContentView* is the minimum width required to display it without scrolling. When a *ContentView* has a small enough total width to be rendered without scrolling, it may be asked to "stretch" itself&mdash;that is, fill more space than it's total width.
+
+Often times, a *ContentView* will need to scroll. In this case, there are a few measurements which have names. The **viewport width** is the width, in pixels, that can be visible at any given time. The **scroll value** represents the number of pixels to the right the user has scrolled. A scroll value of 0 means the leftmost content is visible. A scroll value of (total width - viewport width) means that the user is scrolled all the way to the right.
+
+Remember that a *DataSource* emits various events for remote changes. Since a *ContentView* is a visual representation of a *DataSource*, it can be affected by the same kinds of remote changes. At any time, a *ContentView* can redraw itself or change it's total width.
+
+# Methods
+
+A *ContentView* must implement the following methods:
+
+ * *int* totalWidth() - get the current total width of the *ContentView*.
+ * *DOMElement* element() - get the visual DOM element for the view
+ * *void* draw(viewportX, viewportWidth, height) - draw the content (or a subset of it). If viewportWidth is greater than the total width, then viewportX should be 0 and the *ContentView* will be "stretched".
+
+# Events
+
+A *ContentView* may emit the following events:
+
+ * widthChange() - the total width of the *ContentView* has changed. If the *ContentView* is being displayed in a *View*, this will automatically trigger a `draw`.
+ * redraw() - the *ContentView* has changed and wants an opportunity to redraw itself. If the *ContentView* is being displayed in a *View*, this will automatically trigger a `draw`.

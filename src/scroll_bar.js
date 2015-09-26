@@ -157,6 +157,3 @@ ScrollBar.prototype._registerTouchEvents = function() {
   e.addEventListener('touchend', cancel);
   e.addEventListener('touchcancel', cancel);
 };
-
-// TODO: delete this. This shouldn't be exported.
-exports.ScrollBar = ScrollBar;
