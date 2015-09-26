@@ -23,3 +23,5 @@ ColorScheme.prototype.update = function(primary, secondary) {
   this._secondary = secondary;
   this.emit('change');
 }
+
+exports.ColorScheme = ColorScheme;

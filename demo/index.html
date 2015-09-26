@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Graphalicious Demo</title>
+    <style type="text/css">
+    body, html {
+      margin: 0;
+    }
+    </style>
+    <script src="../build.js"></script>
+    <script>
+    function loadHandler() {
+      var colorScheme = new window.graphalicious.ColorScheme('#65bcd4', '#55acc4')
+      var bar = new window.graphalicious.ScrollBar(colorScheme);
+      document.body.appendChild(bar.element());
+      bar.setInfo(1000, 100, 300);
+      bar.layout(window.innerWidth, window.graphalicious.ScrollBar.HEIGHT);
+    }
+    </script>
+  </head>
+  <body onload="loadHandler()">
+  </body>
+</html>
