@@ -1,4 +1,4 @@
-# DataSource: Abstract
+# Abstract
 
 The *DataSource* type asynchronously provides raw data to the graph. Since the underlying source of the data may be mutable, a *DataSource* can emit a number of different events when it is modified.
 

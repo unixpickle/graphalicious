@@ -1,6 +1,7 @@
 // The View displays graph content.
 function View(colorScheme) {
   this._element = document.createElement('div');
+  this._element.style.position = 'relative';
   this._colorScheme = colorScheme;
 
   this._scrollBar = new ScrollBar(colorScheme);
@@ -9,20 +10,176 @@ function View(colorScheme) {
   this._content = null;
 
   this._scrolls = false;
-  this._scrollbarAnimationStart = null;
-  this._scrollbarAnimation = null;
+  this._animate = false;
+  this._scrollBarAnimationStart = null;
+  this._scrollBarAnimation = null;
+
+  this._width = 0;
+  this._height = 0;
+
+  this._boundWidthChange = this._contentWidthChange.bind(this);
+  this._boundDrawContent = this._drawContent.bind(this);
+  this._scrollBar.on('change', this._handleScrolled.bind(this));
 }
+
+View.BAR_HEIGHT = 5;
+View.BAR_SPACING = 5;
+View.BAR_ANIMATION_DURATION = 400;
 
 View.prototype.element = function() {
   return this._element;
 };
 
 View.prototype.layout = function(width, height) {
-  // TODO: layout the scrollbar and the content.
+  this._element.style.width = Math.round(width) + 'px';
+  this._element.style.height = Math.round(height) + 'px';
+
+  if (width != this._width) {
+    this._width = width;
+    if (this._content !== null) {
+      this._updateScrollBar();
+    }
+  }
+  this._height = height;
+
+  var barVisibility = this._scrollBarVisibility();
+  this._scrollBar.layout(width, View.BAR_HEIGHT * barVisibility);
+
+  if (this._content !== null) {
+    this._drawContent(barVisibility);
+  }
 };
 
-View.prototype._recomputeScrolls = function() {
-  // TODO: trigger an animation if this should scroll but it's not scrolling or vice versa.
+View.prototype.getContent = function() {
+  return this._content;
+};
+
+View.prototype.setContent = function(content) {
+  if (this._content !== null) {
+    this._element.removeChild(this._content.element());
+    this._content.removeListener('widthChange', this._boundWidthChange);
+    this._content.removeListener('redraw', this._boundDrawContent);
+  }
+
+  this._content = content;
+
+  if (this._content === null) {
+    this._updateScrollBar();
+    return;
+  }
+
+  this._content.setAnimate(this._animate);
+  this._content.on('widthChange', this._boundWidthChange);
+  this._content.on('redraw', this._boundDrawContent);
+  this._element.appendChild(this._content.element());
+
+  this._updateScrollBar();
+  this._drawContent();
+};
+
+View.prototype.getAnimate = function() {
+  return this._animate;
+};
+
+View.prototype.setAnimate = function(flag) {
+  this._animate = flag;
+  if (this._content !== null) {
+    this._content.setAnimate(flag);
+  }
+};
+
+View.prototype._contentWidthChange = function() {
+  this._updateScrollBar();
+  this._drawContent();
+};
+
+View.prototype._handleScrolled = function() {
+  if (!this._scrolls) {
+    return;
+  }
+  this._drawContent();
+};
+
+View.prototype._drawContent = function(barVisibility) {
+  barVisibility = barVisibility || this._scrollBarVisibility;
+
+  var viewportX = 0;
+  if (this._scrolls) {
+    viewportX = this._scrollBar.getScrolledPixels();
+  }
+  var height = this._height - barVisibility*(View.BAR_HEIGHT+View.BAR_SPACING);
+  var barShowingHeight = this._height - (View.BAR_HEIGHT + View.BAR_SPACING);
+  this._content.draw(viewportX, this._width, height, barShowingHeight);
+};
+
+View.prototype._updateScrollBar = function() {
+  if (this._needsToScroll() === this._scrolls) {
+    if (this._scrolls) {
+      var maxScrolled = this._content.getTotalWidth() - this._width;
+      var scrolled = Math.min(maxScrolled, this._scrollBar.getScrolledPixels());
+      this._scrollBar.setInfo(this._content.getTotalWidth(), this._width, scrolled);
+    }
+  }
+
+  this._scrolls = !this._scrolls;
+
+  if (this._scrolls) {
+    // TODO: the content may have a preferred initial scroll offset.
+    var scrolled = this._content.getTotalWidth() - this._width;
+    this._scrollBar.setInfo(this._content.getTotalWidth(), this._width, scrolled);
+  }
+
+  if (!this._animate) {
+    if (this._scrollBarAnimation !== null) {
+      window.cancelAnimationFrame(this._scrollBarAnimation);
+      this._scrollBarAnimation = null;
+    }
+    this._scrollBar.layout(this._width, View.BAR_HEIGHT * this._scrollBarVisibility());
+    return;
+  }
+
+  var startTime = new Date().getTime();
+  if (this._scrollBarAnimation !== null) {
+    startTime -= View.BAR_ANIMATION_DURATION - (startTime - this._scrollBarAnimationStart);
+    window.cancelAnimationFrame(this._scrollBarAnimation);
+  }
+
+  this._scrollBarAnimationStart = startTime;
+  this._scrollBarAnimation = window.requestAnimationFrame(this._animationFrame.bind(this));
+};
+
+View.prototype._scrollBarVisibility = function(now) {
+  if (this._scrollBarAnimation === null) {
+    return (this._scrolls ? 1 : 0);
+  }
+  var elapsed = new Date().getTime() - this._scrollBarAnimationStart;
+  var visibility = Math.max(0, Math.min(1, elapsed / View.BAR_ANIMATION_DURATION));
+  if (this._scrolls) {
+    return visibility;
+  } else {
+    return 1 - visibility;
+  }
+};
+
+View.prototype._animationFrame = function() {
+  var now = new Date().getTime();
+  if (now < this._scrollBarAnimationStart) {
+    // NOTE: if they change the system clock, don't let the animation run for minutes on end.
+    this._animationStart = now;
+  }
+  if (now - this._scrollBarAnimationStart < View.BAR_ANIMATION_DURATION) {
+    this._scrollBarAnimation = window.requestAnimationFrame(this._animationFrame.bind(this));
+  } else {
+    this._scrollBarAnimation = null;
+  }
+  this.layout(this._width, this._height);
+};
+
+View.prototype._needsToScroll = function() {
+  if (this._content === null) {
+    return false;
+  }
+  return this._content.getTotalWidth() > this._width;
 };
 
 exports.View = View;

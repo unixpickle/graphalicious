@@ -8,6 +8,10 @@ The **total width** of a *ContentView* is the minimum width required to display 
 
 Often times, a *ContentView* will need to scroll. In this case, there are a few measurements which have names. The **viewport width** is the width, in pixels, that can be visible at any given time. The **scroll value** represents the number of pixels to the right the user has scrolled. A scroll value of 0 means the leftmost content is visible. A scroll value of (total width - viewport width) means that the user is scrolled all the way to the right.
 
+When a *ContentView* is being drawn, its **height** measures how many pixels tall the view is. The **bar-showing height** is the height that the *ContentView* would have if a scrollbar were showing underneath it. If the *ContentView* scrolls, the height will equal the bar-showing height. The bar-showing height is useful for *ContentView*s which change their appearance based on their height, since it allows them to keep their appearance relatively constant when the scrollbar shows or hides.
+
+It would be silly for an off-screen *ContentView* to perform animations. Therefore, it is possible to tell a *ContentView* whether or not it should show animations.
+
 Remember that a *DataSource* emits various events for remote changes. Since a *ContentView* is a visual representation of a *DataSource*, it can be affected by the same kinds of remote changes. At any time, a *ContentView* can redraw itself or change it's total width.
 
 # Methods
@@ -16,7 +20,8 @@ A *ContentView* must implement the following methods:
 
  * *int* totalWidth() - get the current total width of the *ContentView*.
  * *DOMElement* element() - get the visual DOM element for the view
- * *void* draw(viewportX, viewportWidth, height) - draw the content (or a subset of it). If viewportWidth is greater than the total width, then viewportX should be 0 and the *ContentView* will be "stretched".
+ * *void* draw(viewportX, viewportWidth, height, barShowingHeight) - draw a portion of the content to fit inside a viewport. If viewport width is greater than the total width, then viewportX must be 0 and the *ContentView* will be "stretched".
+ * *void* setAnimate(flag) - enable or disable animations.
 
 # Events
 

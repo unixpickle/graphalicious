@@ -6,7 +6,7 @@ function ScrollBar(colorScheme) {
   this._track = document.createElement('div');
   this._track.style.backgroundColor = ScrollBar.TRACK_COLOR;
   this._track.style.width = '100%';
-  this._track.style.height = ScrollBar.HEIGHT + 'px';
+  this._track.style.height = '0px';
   this._track.style.position = 'absolute';
   this._track.style.bottom = '0';
 
@@ -33,7 +33,6 @@ function ScrollBar(colorScheme) {
   this._registerTouchEvents();
 }
 
-ScrollBar.HEIGHT = 5;
 ScrollBar.THUMB_MIN_WIDTH = 20;
 ScrollBar.TRACK_COLOR = '#ccc';
 
