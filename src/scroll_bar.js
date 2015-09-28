@@ -80,15 +80,14 @@ ScrollBar.prototype._updateThumb = function(width) {
 };
 
 ScrollBar.prototype._eventBegan = function(startX) {
-  var scrollablePixels = this._totalPixels - this._visiblePixels;
-  var maxThumbLeft = this._trackWidth - this._thumbWidth;
-
   var startThumbLeft = this._thumbLeft;
   if (startX < startThumbLeft || startX > startThumbLeft + this._thumbWidth) {
     startThumbLeft = Math.min(maxThumbLeft, Math.max(0, startX-this._thumbWidth/2));
   }
 
   this._moveEventCallback = function(x) {
+    var scrollablePixels = this._totalPixels - this._visiblePixels;
+    var maxThumbLeft = this._trackWidth - this._thumbWidth;
     var xOffset = x - startX;
     var newThumbLeft = Math.min(maxThumbLeft, Math.max(0, startThumbLeft + xOffset));
     var ratioScrolled = newThumbLeft / maxThumbLeft;
