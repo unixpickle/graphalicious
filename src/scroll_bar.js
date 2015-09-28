@@ -105,6 +105,24 @@ ScrollBar.prototype._registerMouseEvents = function() {
   shielding.style.height = '100%';
   shielding.style.position = 'fixed';
 
+  var mouseMove, mouseUp;
+
+  mouseMove = function(e) {
+    this._moveEventCallback(e.clientX);
+
+    // NOTE: this fixes a problem where the cursor becomes an ibeam.
+    e.preventDefault();
+    e.stopPropagation();
+  }.bind(this);
+
+  mouseUp = function() {
+    this._moveEventCallback = null;
+    document.body.removeChild(shielding);
+
+    window.removeEventListener('mousemove', mouseMove);
+    window.removeEventListener('mouseup', mouseUp);
+  }.bind(this);
+
   this._track.addEventListener('mousedown', function(e) {
     if (this._moveEventCallback) {
       return;
@@ -116,23 +134,9 @@ ScrollBar.prototype._registerMouseEvents = function() {
 
     this._eventBegan(e.clientX);
     document.body.appendChild(shielding);
-  }.bind(this));
 
-  window.addEventListener('mousemove', function(e) {
-    if (this._moveEventCallback) {
-      this._moveEventCallback(e.clientX);
-
-      // NOTE: this fixes a problem where the cursor becomes an ibeam.
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }.bind(this));
-
-  window.addEventListener('mouseup', function() {
-    if (this._moveEventCallback) {
-      this._moveEventCallback = null;
-      document.body.removeChild(shielding);
-    }
+    window.addEventListener('mousemove', mouseMove);
+    window.addEventListener('mouseup', mouseUp);
   }.bind(this));
 };
 
