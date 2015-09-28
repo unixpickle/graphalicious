@@ -28,7 +28,6 @@ function ScrollBar(colorScheme) {
   this._thumbWidth = 0;
   this._thumbLeft = 0;
 
-  this._moveEventCallback = null;
   this._registerMouseEvents();
   this._registerTouchEvents();
 }
@@ -79,13 +78,16 @@ ScrollBar.prototype._updateThumb = function(width) {
   this._thumb.style.left = Math.round(this._thumbLeft) + 'px';
 };
 
-ScrollBar.prototype._eventBegan = function(startX) {
+ScrollBar.prototype._makeEventCallback = function(startX) {
   var startThumbLeft = this._thumbLeft;
+
+  // If they clicked outside the thumb, the thumb jumps to center around their cursor.
   if (startX < startThumbLeft || startX > startThumbLeft + this._thumbWidth) {
+    var maxThumbLeft = this._trackWidth - this._thumbWidth;
     startThumbLeft = Math.min(maxThumbLeft, Math.max(0, startX-this._thumbWidth/2));
   }
 
-  this._moveEventCallback = function(x) {
+  var cb = function(x) {
     var scrollablePixels = this._totalPixels - this._visiblePixels;
     var maxThumbLeft = this._trackWidth - this._thumbWidth;
     var xOffset = x - startX;
@@ -95,7 +97,10 @@ ScrollBar.prototype._eventBegan = function(startX) {
     this._updateThumb();
     this.emit('change');
   }.bind(this);
-  this._moveEventCallback(startX);
+
+  cb(startX);
+
+  return cb;
 };
 
 ScrollBar.prototype._registerMouseEvents = function() {
@@ -105,22 +110,19 @@ ScrollBar.prototype._registerMouseEvents = function() {
   shielding.style.position = 'fixed';
 
   var mouseMove, mouseUp;
+  var eventCallback = null;
 
   mouseMove = function(e) {
-    if (this._moveEventCallback !== null) {
-      this._moveEventCallback(e.clientX);
+    eventCallback(e.clientX);
 
-      // NOTE: this fixes a problem where the cursor becomes an ibeam.
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    // NOTE: this fixes a problem where the cursor becomes an ibeam.
+    e.preventDefault();
+    e.stopPropagation();
   }.bind(this);
 
   mouseUp = function() {
-    if (this._moveEventCallback !== null) {
-      this._moveEventCallback = null;
-      document.body.removeChild(shielding);
-    }
+    eventCallback = null;
+    document.body.removeChild(shielding);
     window.removeEventListener('mousemove', mouseMove);
     window.removeEventListener('mouseup', mouseUp);
   }.bind(this);
@@ -134,29 +136,30 @@ ScrollBar.prototype._registerMouseEvents = function() {
     e.preventDefault();
     e.stopPropagation();
 
-    this._eventBegan(e.clientX);
     document.body.appendChild(shielding);
 
     window.addEventListener('mousemove', mouseMove);
     window.addEventListener('mouseup', mouseUp);
+    eventCallback = this._makeEventCallback(e.clientX);
   }.bind(this));
 };
 
 ScrollBar.prototype._registerTouchEvents = function() {
   var e = this._track;
+  var eventCallback = null;
 
   e.addEventListener('touchstart', function(e) {
-    this._eventBegan(e.changedTouches[0].clientX);
+    eventCallback = this._makeEventCallback(e.changedTouches[0].clientX);
   }.bind(this));
 
   e.addEventListener('touchmove', function(e) {
-    if (this._moveEventCallback) {
-      this._moveEventCallback(e.changedTouches[0].clientX);
+    if (eventCallback !== null) {
+      eventCallback(e.changedTouches[0].clientX);
     }
   }.bind(this));
 
   var cancel = function() {
-    this._moveEventCallback = null;
+    eventCallback = null;
   }.bind(this);
 
   e.addEventListener('touchend', cancel);
