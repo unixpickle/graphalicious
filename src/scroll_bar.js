@@ -108,17 +108,20 @@ ScrollBar.prototype._registerMouseEvents = function() {
   var mouseMove, mouseUp;
 
   mouseMove = function(e) {
-    this._moveEventCallback(e.clientX);
+    if (this._moveEventCallback !== null) {
+      this._moveEventCallback(e.clientX);
 
-    // NOTE: this fixes a problem where the cursor becomes an ibeam.
-    e.preventDefault();
-    e.stopPropagation();
+      // NOTE: this fixes a problem where the cursor becomes an ibeam.
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }.bind(this);
 
   mouseUp = function() {
-    this._moveEventCallback = null;
-    document.body.removeChild(shielding);
-
+    if (this._moveEventCallback !== null) {
+      this._moveEventCallback = null;
+      document.body.removeChild(shielding);
+    }
     window.removeEventListener('mousemove', mouseMove);
     window.removeEventListener('mouseup', mouseUp);
   }.bind(this);
