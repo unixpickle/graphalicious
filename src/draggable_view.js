@@ -4,10 +4,10 @@
 //
 // Subclasses of DraggableView must implement the following two methods:
 // - *DOMElement* element() - return the element on which touches should be captured
-// - *function(number)* _generateMoveFunction(x, y) - generate a function which will be called with
-//   x values as the user drags their mouse or finger along the screen. The x and y arguments are
-//   the client coordinates where the user clicked or touched to initiate movement. This can return
-//   *null* to indicate that the touch should be ignored.
+// - *function(number)* _generateDragFunction(x, y) - generate a function which will be called with
+//   x values as the user drags their mouse or finger along the screen. This will be called once for
+//   every time the user initiates a drag. All coordinate arguments are in client coordinates. This
+//   can return null to cancel the drag.
 //
 // DraggableView subclasses EventEmitter but does not fire any events.
 function DraggableView() {
@@ -22,8 +22,8 @@ DraggableView.prototype.element = function() {
   throw new Error('subclasses must override element()');
 };
 
-DraggableView.prototype._generateMoveFunction = function(x, y) {
-  throw new Error('subclasses must override _generateMoveFunction()');
+DraggableView.prototype._generateDragFunction = function(x, y) {
+  throw new Error('subclasses must override _generateDragFunction()');
 };
 
 DraggableView.prototype._registerMouseEvents = function() {
@@ -55,7 +55,7 @@ DraggableView.prototype._registerMouseEvents = function() {
       return;
     }
 
-    eventCallback = this._generateMoveFunction(e.clientX, e.clientY);
+    eventCallback = this._generateDragFunction(e.clientX, e.clientY);
     if (eventCallback === null) {
       return;
     }
@@ -78,7 +78,10 @@ DraggableView.prototype._registerTouchEvents = function() {
   e.addEventListener('touchstart', function(e) {
     if (eventCallback === null) {
       var touch = e.changedTouches[0];
-      eventCallback = this._generateMoveFunction(touch.clientX, touch.clientY);
+      eventCallback = this._generateDragFunction(touch.clientX, touch.clientY);
+      if (eventCallback !== null) {
+        e.preventDefault();
+      }
     }
   }.bind(this));
 

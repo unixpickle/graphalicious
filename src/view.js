@@ -1,3 +1,5 @@
+//deps draggable_view.js
+
 // The View displays graph content.
 function View(colorScheme) {
   this._element = document.createElement('div');
@@ -20,11 +22,15 @@ function View(colorScheme) {
   this._boundWidthChange = this._contentWidthChange.bind(this);
   this._boundDrawContent = this._drawContent.bind(this);
   this._scrollBar.on('change', this._handleScrolled.bind(this));
+
+  DraggableView.call(this);
 }
 
 View.BAR_HEIGHT = 5;
 View.BAR_SPACING = 5;
 View.BAR_ANIMATION_DURATION = 400;
+
+View.prototype = Object.create(DraggableView.prototype);
 
 View.prototype.element = function() {
   return this._element;
@@ -101,7 +107,7 @@ View.prototype._handleScrolled = function() {
 };
 
 View.prototype._drawContent = function(barVisibility) {
-  barVisibility = barVisibility || this._scrollBarVisibility;
+  barVisibility = barVisibility || this._scrollBarVisibility();
 
   var viewportX = 0;
   if (this._scrolls) {
@@ -180,6 +186,32 @@ View.prototype._needsToScroll = function() {
     return false;
   }
   return this._content.getTotalWidth() > this._width;
+};
+
+View.prototype._generateDragFunction = function(startX, startY) {
+  var barVisibility = this._scrollBarVisibility();
+  var contentHeight = this._height - barVisibility*(View.BAR_HEIGHT+View.BAR_SPACING);
+  if (startY - this.element().getBoundingClientRect().top > contentHeight) {
+    return null;
+  }
+
+  var startScrollX = this._scrollBar.getScrolledPixels();
+
+  return function(x) {
+    if (!this._scrolls) {
+      return;
+    }
+
+    var total = this._scrollBar.getTotalPixels();
+    var visible = this._scrollBar.getVisiblePixels();
+    var maxScrollX = total - visible;
+
+    var offset = startX - x;
+    var newScrollX = Math.max(0, Math.min(maxScrollX, startScrollX+offset));
+
+    this._scrollBar.setInfo(total, visible, newScrollX);
+    this._handleScrolled();
+  }.bind(this);
 };
 
 exports.View = View;

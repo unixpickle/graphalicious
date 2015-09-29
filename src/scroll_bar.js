@@ -1,8 +1,8 @@
+//deps draggable_view.js
+
 // ScrollBar implements a user-controlled scrollbar.
 // This will emit a 'change' event whenever the bar is scrolled.
 function ScrollBar(colorScheme) {
-  EventEmitter.call(this);
-
   this._track = document.createElement('div');
   this._track.style.backgroundColor = ScrollBar.TRACK_COLOR;
   this._track.style.width = '100%';
@@ -28,14 +28,13 @@ function ScrollBar(colorScheme) {
   this._thumbWidth = 0;
   this._thumbLeft = 0;
 
-  this._registerMouseEvents();
-  this._registerTouchEvents();
+  DraggableView.call(this);
 }
 
 ScrollBar.THUMB_MIN_WIDTH = 20;
 ScrollBar.TRACK_COLOR = '#ccc';
 
-ScrollBar.prototype = Object.create(EventEmitter.prototype);
+ScrollBar.prototype = Object.create(DraggableView.prototype);
 
 ScrollBar.prototype.element = function() {
   return this._track;
@@ -55,6 +54,14 @@ ScrollBar.prototype.layout = function(width, height) {
 
 ScrollBar.prototype.getScrolledPixels = function() {
   return this._scrolledPixels;
+};
+
+ScrollBar.prototype.getTotalPixels = function() {
+  return this._totalPixels;
+};
+
+ScrollBar.prototype.getVisiblePixels = function() {
+  return this._visiblePixels;
 };
 
 ScrollBar.prototype.setInfo = function(total, visible, scrolled) {
@@ -78,7 +85,7 @@ ScrollBar.prototype._updateThumb = function(width) {
   this._thumb.style.left = Math.round(this._thumbLeft) + 'px';
 };
 
-ScrollBar.prototype._makeEventCallback = function(startX) {
+ScrollBar.prototype._generateDragFunction = function(startX) {
   var startThumbLeft = this._thumbLeft;
 
   // If they clicked outside the thumb, the thumb jumps to center around their cursor.
@@ -101,67 +108,4 @@ ScrollBar.prototype._makeEventCallback = function(startX) {
   cb(startX);
 
   return cb;
-};
-
-ScrollBar.prototype._registerMouseEvents = function() {
-  var shielding = document.createElement('div');
-  shielding.style.width = '100%';
-  shielding.style.height = '100%';
-  shielding.style.position = 'fixed';
-
-  var mouseMove, mouseUp;
-  var eventCallback = null;
-
-  mouseMove = function(e) {
-    eventCallback(e.clientX);
-
-    // NOTE: this fixes a problem where the cursor becomes an ibeam.
-    e.preventDefault();
-    e.stopPropagation();
-  }.bind(this);
-
-  mouseUp = function() {
-    eventCallback = null;
-    document.body.removeChild(shielding);
-    window.removeEventListener('mousemove', mouseMove);
-    window.removeEventListener('mouseup', mouseUp);
-  }.bind(this);
-
-  this._track.addEventListener('mousedown', function(e) {
-    if (this._moveEventCallback) {
-      return;
-    }
-
-    // NOTE: this fixes a problem where the cursor becomes an ibeam.
-    e.preventDefault();
-    e.stopPropagation();
-
-    document.body.appendChild(shielding);
-
-    window.addEventListener('mousemove', mouseMove);
-    window.addEventListener('mouseup', mouseUp);
-    eventCallback = this._makeEventCallback(e.clientX);
-  }.bind(this));
-};
-
-ScrollBar.prototype._registerTouchEvents = function() {
-  var e = this._track;
-  var eventCallback = null;
-
-  e.addEventListener('touchstart', function(e) {
-    eventCallback = this._makeEventCallback(e.changedTouches[0].clientX);
-  }.bind(this));
-
-  e.addEventListener('touchmove', function(e) {
-    if (eventCallback !== null) {
-      eventCallback(e.changedTouches[0].clientX);
-    }
-  }.bind(this));
-
-  var cancel = function() {
-    eventCallback = null;
-  }.bind(this);
-
-  e.addEventListener('touchend', cancel);
-  e.addEventListener('touchcancel', cancel);
 };
