@@ -23,6 +23,8 @@ function View(colorScheme) {
   this._boundDrawContent = this._drawContent.bind(this);
   this._scrollBar.on('change', this._handleScrolled.bind(this));
 
+  this._registerScrollWheelEvents();
+
   DraggableView.call(this);
 }
 
@@ -188,30 +190,54 @@ View.prototype._needsToScroll = function() {
   return this._content.getTotalWidth() > this._width;
 };
 
+View.prototype._addScrollValue = function(delta) {
+  if (!this._scrolls) {
+    return;
+  }
+
+  var total = this._scrollBar.getTotalPixels();
+  var visible = this._scrollBar.getVisiblePixels();
+  var oldScrollX = this._scrollBar.getScrolledPixels();
+  var maxScrollX = total - visible;
+  var newScrollX = Math.max(0, Math.min(maxScrollX, oldScrollX+delta));
+
+  this._scrollBar.setInfo(total, visible, newScrollX);
+  this._handleScrolled();
+};
+
 View.prototype._generateDragFunction = function(startX, startY) {
+  // NOTE: dragging should not work in the space between the content and the scrollbar.
   var barVisibility = this._scrollBarVisibility();
   var contentHeight = this._height - barVisibility*(View.BAR_HEIGHT+View.BAR_SPACING);
-  if (startY - this.element().getBoundingClientRect().top > contentHeight) {
+  if (startY > this.element().getBoundingClientRect().top + contentHeight) {
     return null;
   }
 
   var startScrollX = this._scrollBar.getScrolledPixels();
-
+  var lastX = startX;
   return function(x) {
-    if (!this._scrolls) {
-      return;
-    }
-
-    var total = this._scrollBar.getTotalPixels();
-    var visible = this._scrollBar.getVisiblePixels();
-    var maxScrollX = total - visible;
-
-    var offset = startX - x;
-    var newScrollX = Math.max(0, Math.min(maxScrollX, startScrollX+offset));
-
-    this._scrollBar.setInfo(total, visible, newScrollX);
-    this._handleScrolled();
+    this._addScrollValue(lastX - x);
+    lastX = x;
   }.bind(this);
+};
+
+View.prototype._registerScrollWheelEvents = function() {
+  // Join wheel events to go along with requestAnimationFrame. Otherwise they will come in at too
+  // high a frequency in Safari on OS X.
+  var pendingDelta = 0;
+  var pendingRequest = false;
+  this._element.addEventListener('wheel', function(e) {
+    if (!pendingRequest) {
+      pendingRequest = true;
+      window.requestAnimationFrame(function() {
+        this._addScrollValue(pendingDelta);
+        pendingDelta = 0;
+        pendingRequest = false;
+      }.bind(this));
+    }
+    pendingDelta += e.deltaX;
+    e.preventDefault();
+  }.bind(this));
 };
 
 exports.View = View;
