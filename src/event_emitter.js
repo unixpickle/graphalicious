@@ -54,3 +54,5 @@ EventEmitter.prototype.emit = function(name) {
     listeners[i].apply(null, eventArgs);
   }
 };
+
+exports.EventEmitter = EventEmitter;
