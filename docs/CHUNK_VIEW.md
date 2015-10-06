@@ -8,7 +8,7 @@ A *ChunkView* draws the contents of a chunk into a canvas. The visual representa
 
 A *ChunkView* has an **inherent width** but no inherent height. A *ChunkView* can be drawn at any height. It is possible for a *ChunkView* to be horizontally **stretched**, in which case it is drawn at a width greater than its inherent width.
 
-A *ChunkView* whose chunk contains every data point in the data set is called a **complete *ChunkView***. Naturally, any *ChunkView* can be thought of as part of a wider (or equally wide) complete *ChunkView*. A *ChunkView*'s hypothetical distance from the leftmost and rightmost sides of its containing complete *ChunkView* are called its **left offset** and **right offset**, respectively. It follows that the formula *left offset + right offset + inherent width* gives the inherent width of any *ChunkView*'s complete *ChunkView*. It also follows that the left offset and right offset of any complete *ChunkView* are both 0.
+A *ChunkView* whose chunk contains every data point in the data set is called a **complete ChunkView**. Naturally, any *ChunkView* can be thought of as part of a wider (or equally wide) complete *ChunkView*. A *ChunkView*'s hypothetical distance from the leftmost and rightmost sides of its containing complete *ChunkView* are called its **left offset** and **right offset**, respectively. It follows that the formula *left offset + right offset + inherent width* gives the inherent width of any *ChunkView*'s complete *ChunkView*. It also follows that the left offset and right offset of any complete *ChunkView* are both 0.
 
 Animations are an important part of a *ChunkView*'s job. At any time, a chunk view can emit an event indicating that its visual properties have been altered. For example, suppose a new data point is added to the *ChunkView*'s underlying chunk and the corresponding animation involves gradually widening the *ChunkView*. In this case, the *ChunkView* would change its inherent width in increments and emit these changes accordingly.
 
@@ -36,17 +36,17 @@ A parallel set of methods exists for predicting properties of the *ChunkView* on
 
 You must manually notify a *ChunkView* when its chunk changes. This is done through the following methods:
 
- * deletionBefore(oldIndex) - a data point was deleted which was before any of the data points in the *ChunkView*'s chunk.
- * deletionAfter(oldIndex) - a data point was deleted which was after any of the data points in the *ChunkView*'s chunk.
- * deletionInside(oldIndex) - a data point was deleted which was inside the *ChunkView*'s chunk.
- * addAfter() - a data point was added after the *ChunkView*'s chunk.
- * addInside() - a data point was added to the end of the *ChunkView*'s chunk.
- * modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
+ * *void* deletionBefore(oldIndex) - a data point was deleted which was before any of the data points in the *ChunkView*'s chunk.
+ * *void* deletionAfter(oldIndex) - a data point was deleted which was after any of the data points in the *ChunkView*'s chunk.
+ * *void* deletionInside(oldIndex) - a data point was deleted which was inside the *ChunkView*'s chunk.
+ * *void* addAfter() - a data point was added after the *ChunkView*'s chunk.
+ * *void* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
+ * *void* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
 
 A chunk view can be drawn within a canvas's 2D drawing context:
 
- * draw(regionLeft, regionWidth, x, y, height, ctx) - draw a subregion of the *ContentView* within the given context at the x and y values, stretched to a certain height.
- * drawStretched(x, y, width, height, ctx) - draw the entire *ContentView*, stretched to a given width and height, at the given coordinates inside the given context.
+ * *void* draw(regionLeft, regionWidth, x, y, height, ctx) - draw a subregion of the *ContentView* within the given context at the x and y values, stretched to a certain height.
+ * *void* drawStretched(x, y, width, height, ctx) - draw the entire *ContentView*, stretched to a given width and height, at the given coordinates inside the given context.
 
 # Events
 
