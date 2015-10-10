@@ -64,6 +64,7 @@ View.prototype.getContent = function() {
 
 View.prototype.setContent = function(content) {
   if (this._content !== null) {
+    this._content.setAnimate(false);
     this._element.removeChild(this._content.element());
     this._content.removeListener('widthChange', this._boundWidthChange);
     this._content.removeListener('redraw', this._boundDrawContent);

@@ -43,10 +43,11 @@ You must manually notify a *ChunkView* when its chunk changes. This is done thro
  * *void* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
  * *void* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
 
-A chunk view can be drawn within a canvas's 2D drawing context:
+Drawing and animations can be controlled with these methods:
 
  * *void* draw(regionLeft, regionWidth, x, y, height, ctx) - draw a subregion of the *ContentView* within the given context at the x and y values, stretched to a certain height.
  * *void* drawStretched(x, y, width, height, ctx) - draw the entire *ContentView*, stretched to a given width and height, at the given coordinates inside the given context.
+ * *void* setAnimate(flag) - enable or disable animations.
 
 # Events
 
