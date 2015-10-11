@@ -73,7 +73,7 @@ YLabelContentView.prototype._setState = function(state) {
     return;
   }
 
-  if (this._state === YLabelContentView.STATE_SHOWING_CONTENT) {
+  if (state === YLabelContentView.STATE_SHOWING_CONTENT) {
     this._splashScreen.setAnimate(false);
     this._element.innerHTML = '';
     this._addContentElements();
