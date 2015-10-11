@@ -1,6 +1,6 @@
 (function() {
 
-  var SPINNER_SIZE = 20;
+  var SPINNER_SIZE = 30;
   var RELOAD_SIZE = 46;
   var SPIN_RATE = 0.3;
 
