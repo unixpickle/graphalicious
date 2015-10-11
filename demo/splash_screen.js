@@ -1,12 +1,12 @@
 (function() {
 
   var SPINNER_SIZE = 20;
-  var RELOAD_SIZE = 24;
+  var RELOAD_SIZE = 46;
   var SPIN_RATE = 0.3;
 
   function SplashScreen(colorScheme) {
     window.graphalicious.EventEmitter.call(this);
-    
+
     this._colorScheme = colorScheme;
 
     var container = document.createElement('div');
@@ -15,7 +15,6 @@
 
     container.innerHTML = RELOAD_BUTTON_SVG;
     this._reloadButton = container.firstChild;
-    this._reloadButton.style.cursor = 'pointer';
 
     layoutAndCenter(this._reloadButton, RELOAD_SIZE);
     layoutAndCenter(this._spinner, SPINNER_SIZE);
@@ -133,11 +132,13 @@
     'height="0.306931" /><rect fill="inherit" x="0.693069" y="0.693069" ' +
     'width="0.306931" height="0.306931" /></g></svg>';
 
-  var RELOAD_BUTTON_SVG = '<svg viewBox="12 12 26 26" version="1.1">' +
+  var RELOAD_BUTTON_SVG = '<svg viewBox="2 2 46 46" version="1.1">' +
+    '<g class="hoverable-button">' +
+    '<circle cx="25" cy="25" fill="currentColor" r="23" />' +
     '<path d="M33.660254038,30 a10,10 0 1 1 0,-10' +
     'm-7.372666366,0 l7.372666366,0 l0,-7.372666366" ' +
-    'stroke="currentColor" fill="none" stroke-width="2" />' +
-    '</svg>';
+    'stroke="white" fill="none" stroke-width="2" />' +
+    '</g></svg>';
 
   window.SplashScreen = SplashScreen;
 
