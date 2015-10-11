@@ -72,7 +72,7 @@
     }
     this._element.removeChild(this._spinner);
     this._element.appendChild(this._reloadButton);
-    this._showingError = false;
+    this._showingError = true;
     if (this._animationFrame !== null) {
       window.cancelAnimationFrame(this._animationFrame);
       this._animationFrame = null;
