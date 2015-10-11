@@ -7,31 +7,58 @@
     <style type="text/css">
     body, html {
       margin: 0;
+      background-color: #65bcd4;
+    }
+
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 40px;
+      width: 100%;
+      background-color: white;
+    }
+
+    #footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 300px;
+      width: 100%;
+      background-color: #f0f0f0;
     }
     </style>
+    <script src="crystal.js"></script>
     <script src="../build.js"></script>
     <script src="static_data_source.js"></script>
+    <script src="splash_screen.js"></script>
     <script>
     var view;
     function loadHandler() {
       var colorScheme = new window.graphalicious.ColorScheme('#65bcd4', '#55acc4')
       view = new window.graphalicious.View(colorScheme);
-      document.body.appendChild(view.element());
-      view.layout(300, 200);
-      
-      var element = document.createElement('div');
-      var demoContent = {
-        element: function() { return element; },
-        getTotalWidth: function() { return 1000; },
-        draw: function() {},
-        on: function() {},
-        removeListener: function() {},
-        setAnimate: function() {}
-      };
-      view.setContent(demoContent);
+      document.getElementById('footer').appendChild(view.element());
+      view.element().style.backgroundColor = 'white';
+      view.element().style.position = 'absolute';
+      view.element().style.left = '100px';
+
+      var splashScreen = new window.SplashScreen(colorScheme);
+      var content = new window.graphalicious.YLabelContentView(null, null, splashScreen);
+      view.setContent(content);
+      layoutView();
+      view.setAnimate(true);
+
+      window.addEventListener('resize', layoutView);
+    }
+    function layoutView() {
+      var width = window.innerWidth - 300;
+      var height = document.getElementById('footer').offsetHeight;
+      view.layout(width, height);
     }
     </script>
   </head>
   <body onload="loadHandler()">
+    <div id="header"></div>
+    <div id="footer"></div>
   </body>
 </html>

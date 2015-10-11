@@ -14,4 +14,4 @@ A splash screen is a loading screen which the user sees before a graph loads.
 
 This emits the following event:
 
- * refresh() - the user would like to make another attempt to load the graph.
+ * reload() - the user would like to make another attempt to load the graph.

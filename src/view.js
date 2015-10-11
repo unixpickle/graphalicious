@@ -124,18 +124,19 @@ View.prototype._drawContent = function(barVisibility) {
 View.prototype._updateScrollBar = function() {
   if (this._needsToScroll() === this._scrolls) {
     if (this._scrolls) {
-      var maxScrolled = this._content.getTotalWidth() - this._width;
+      var maxScrolled = this._content.totalWidth() - this._width;
       var scrolled = Math.min(maxScrolled, this._scrollBar.getScrolledPixels());
-      this._scrollBar.setInfo(this._content.getTotalWidth(), this._width, scrolled);
+      this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
     }
+    return;
   }
 
   this._scrolls = !this._scrolls;
 
   if (this._scrolls) {
     // TODO: the content may have a preferred initial scroll offset.
-    var scrolled = this._content.getTotalWidth() - this._width;
-    this._scrollBar.setInfo(this._content.getTotalWidth(), this._width, scrolled);
+    var scrolled = this._content.totalWidth() - this._width;
+    this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
   }
 
   if (!this._animate) {
@@ -188,7 +189,7 @@ View.prototype._needsToScroll = function() {
   if (this._content === null) {
     return false;
   }
-  return this._content.getTotalWidth() > this._width;
+  return this._content.totalWidth() > this._width;
 };
 
 View.prototype._addScrollValue = function(delta) {

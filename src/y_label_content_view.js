@@ -1,3 +1,5 @@
+//deps event_emitter.js
+
 // YLabelContentView draws a ViewProvider with y-axis labels.
 function YLabelContentView(provider, dataSource, splashScreen) {
   EventEmitter.call(this);
@@ -26,8 +28,16 @@ YLabelContentView.STATE_SHOWING_CONTENT = 2;
 
 YLabelContentView.prototype = Object.create(EventEmitter.prototype);
 
-YLabelContentView.prototype.getAnimate = function() {
-  return this._animate;
+YLabelContentView.prototype.element = function() {
+  return this._element;
+};
+
+YLabelContentView.prototype.totalWidth = function() {
+  if (this._state === YLabelContentView.STATE_SHOWING_CONTENT) {
+    return this._provider.getWidthApproximation();
+  } else {
+    return 0;
+  }
 };
 
 YLabelContentView.prototype.setAnimate = function(animate) {
@@ -47,6 +57,14 @@ YLabelContentView.prototype.setAnimate = function(animate) {
     window.crystal.addListener(this._crystalCallback);
   } else {
     window.crystal.removeListener(this._crystalCallback);
+  }
+};
+
+YLabelContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowingHeight) {
+  if (this._state !== YLabelContentView.STATE_SHOWING_CONTENT) {
+    this._splashScreen.layout(viewportWidth, height);
+  } else {
+    // TODO: this.
   }
 };
 
@@ -92,3 +110,5 @@ YLabelContentView.prototype._pixelRatioChanged = function() {
   // TODO: redraw the canvas here.
   this._drawCanvas();
 };
+
+exports.YLabelContentView = YLabelContentView;
