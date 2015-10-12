@@ -115,6 +115,7 @@ function PositiveState(attrs) {
   this.leftmostChunk = attrs.leftmostChunk || null;
   this.visibleChunk = attrs.visibleChunk || null;
   this.chunkView = attrs.chunkView || null;
+  this.dataSourceLength = attrs.dataSourceLength || 0;
 
   this.animating = attrs.animating || false;
   this.startYLabels = attrs.startYLabels || null;
@@ -125,8 +126,47 @@ function PositiveState(attrs) {
   this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || 0;
 
   this.scrollOffset = attrs.scrollOffset || 0;
-  this.totalWidth = attrs.totalWidth || 0;
+  this.contentWidth = attrs.contentWidth || 0;
+  this.viewportWidth = attrs.viewportWidth || 0;
 }
+
+// showingSplashScreen returns true if there is not enough loaded information to display anything
+// besides a splash screen.
+PositiveState.prototype.showingSplashScreen = function() {
+  return this.chunkView === null || this.leftmostYLabels === null;
+};
+
+// leftBufferSpace returns the number of pixels that the user would have to scroll to the left
+// before seeing the leftmost edge of the current ChunkView. If this is negative, then the ChunkView
+// cannot fully take up the current viewport (although y-axis labels may cover the gap).
+//
+// If the state does not contain a ChunkView, this returns -1.
+PositiveState.prototype.leftBufferSpace = function() {
+  if (this.chunkView === null) {
+    return -1;
+  }
+  return this.scrollOffset - (this.leftmostYLabels.width + this.chunkView.getLeftOffset());
+};
+
+// rightBufferSpace is like leftBufferSpace, but it is an equivalent measure for scrolling right to
+// see the rightmost part of the ChunkView.
+PositiveState.prototype.rightBufferSpace = function() {
+  if (this.chunkView === null) {
+    return -1;
+  }
+  var rightX = this.leftmostYLabels.width + this.chunkView.getLeftOffset() +
+    this.chunkView.getInherentWidth();
+  var scrolledRightX = rightX - this.scrollOffset;
+  return scrolledRightX - this.viewportWidth;
+};
+
+// hasCompleteChunk returns true if the current chunk contains all the data in the data source.
+PositiveState.prototype.hasCompleteChunk = function() {
+  if (this.visibleChunk === null) {
+    return false;
+  }
+  return this.visibleChunk.getLength() === this.dataSourceLength;
+};
 
 function NormativeState(attrs) {
   this.needsLeftmostChunk = attrs.needsLeftmostChunk || false;
