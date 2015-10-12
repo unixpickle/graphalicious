@@ -34,6 +34,11 @@ A parallel set of methods exists for predicting properties of the *ChunkView* on
  * *int* postAnimationFirstVisibleDataPoint(leftOffset)
  * *int* postAnimationLastVisibleDataPoint(endLeftOffset)
 
+The animation behavior of a *ChunkView* can be controlled:
+
+ * *void* setAnimate(flag) - enable or disable animations.
+ * *void* finishAnimation() - finish the current animation early.
+
 You must manually notify a *ChunkView* when its chunk changes. This is done through the following methods:
 
  * *void* deletionBefore(oldIndex) - a data point was deleted which was before any of the data points in the *ChunkView*'s chunk.
@@ -43,11 +48,10 @@ You must manually notify a *ChunkView* when its chunk changes. This is done thro
  * *void* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
  * *void* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
 
-Drawing and animations can be controlled with these methods:
+Drawing can be performed with these methods:
 
  * *void* draw(regionLeft, regionWidth, x, y, height, ctx) - draw a subregion of the *ContentView* within the given context at the x and y values, stretched to a certain height.
  * *void* drawStretched(x, y, width, height, ctx) - draw the entire *ContentView*, stretched to a given width and height, at the given coordinates inside the given context.
- * *void* setAnimate(flag) - enable or disable animations.
 
 # Events
 

@@ -1,6 +1,6 @@
 # Abstract
 
-A splash screen is a loading screen which the user sees before a graph loads.
+A *SplashScreen* is used by a [YLabelContentView](Y_LABEL_CONTENT_VIEW.md) to visually indicate that the graph is loading. The *SplashScreen* is also responsible for displaying an error screen which gives the user the option to "retry" a load operation.
 
 # Methods
 
