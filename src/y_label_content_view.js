@@ -111,4 +111,32 @@ YLabelContentView.prototype._pixelRatioChanged = function() {
   this._drawCanvas();
 };
 
+function PositiveState(attrs) {
+  this.leftmostChunk = attrs.leftmostChunk || null;
+  this.visibleChunk = attrs.visibleChunk || null;
+  this.chunkView = attrs.chunkView || null;
+
+  this.animating = attrs.animating || false;
+  this.startYLabels = attrs.startYLabels || null;
+  this.endYLabels = attrs.endYLabels || null;
+
+  this.yLabels = attrs.yLabels || null;
+  this.leftmostYLabels = attrs.leftmostYLabels || null;
+  this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || 0;
+
+  this.scrollOffset = attrs.scrollOffset || 0;
+  this.totalWidth = attrs.totalWidth || 0;
+}
+
+function NormativeState(attrs) {
+  this.needsLeftmostChunk = attrs.needsLeftmostChunk || false;
+  this.loadingLeftmostChunk = attrs.loadingLeftmostChunk || false;
+  this.leftmostChunkLength = attrs.leftmostChunkLength || 0;
+
+  this.needsVisibleChunk = attrs.needsVisibleChunk || false;
+  this.loadingVisibleChunk = attrs.loadingVisibleChunk || false;
+  this.visibleChunkStart = attrs.visibleChunkStart || 0;
+  this.visibleChunkLength = attrs.visibleChunkLength || 0;
+}
+
 exports.YLabelContentView = YLabelContentView;
