@@ -1,7 +1,7 @@
 (function() {
 
   var SPINNER_SIZE = 30;
-  var RELOAD_SIZE = 46;
+  var RETRY_SIZE = 46;
   var SPIN_RATE = 0.3;
 
   function SplashScreen(colorScheme) {
@@ -13,10 +13,10 @@
     container.innerHTML = SPINNER_SVG;
     this._spinner = container.firstChild;
 
-    container.innerHTML = RELOAD_BUTTON_SVG;
-    this._reloadButton = container.firstChild;
+    container.innerHTML = RETRY_BUTTON_SVG;
+    this._retryButton = container.firstChild;
 
-    layoutAndCenter(this._reloadButton, RELOAD_SIZE);
+    layoutAndCenter(this._retryButton, RETRY_SIZE);
     layoutAndCenter(this._spinner, SPINNER_SIZE);
 
     this._element = document.createElement('div');
@@ -30,7 +30,7 @@
     this._updateColorScheme();
     colorScheme.on('change', this._updateColorScheme.bind(this));
 
-    this._spinner.addEventListener('click', this.emit.bind(this, 'reload'));
+    this._spinner.addEventListener('click', this.emit.bind(this, 'retry'));
   }
 
   SplashScreen.prototype = Object.create(window.graphalicious.EventEmitter.prototype);
@@ -54,11 +54,11 @@
     }
   };
 
-  SplashScreen.prototype.start = function() {
+  SplashScreen.prototype.showLoading = function() {
     if (!this._showingError) {
       return;
     }
-    this._element.removeChild(this._reloadButton);
+    this._element.removeChild(this._retryButton);
     this._element.appendChild(this._spinner);
     this._showingError = false;
     if (this._animate) {
@@ -71,7 +71,7 @@
       return;
     }
     this._element.removeChild(this._spinner);
-    this._element.appendChild(this._reloadButton);
+    this._element.appendChild(this._retryButton);
     this._showingError = true;
     if (this._animationFrame !== null) {
       window.cancelAnimationFrame(this._animationFrame);
@@ -107,7 +107,7 @@
 
   SplashScreen.prototype._updateColorScheme = function() {
     this._spinner.style.color = this._colorScheme.getPrimary();
-    this._reloadButton.style.color = this._colorScheme.getPrimary();
+    this._retryButton.style.color = this._colorScheme.getPrimary();
   };
 
   function layoutAndCenter(element, size) {
@@ -132,7 +132,7 @@
     'height="0.306931" /><rect fill="inherit" x="0.693069" y="0.693069" ' +
     'width="0.306931" height="0.306931" /></g></svg>';
 
-  var RELOAD_BUTTON_SVG = '<svg viewBox="2 2 46 46" version="1.1">' +
+  var RETRY_BUTTON_SVG = '<svg viewBox="2 2 46 46" version="1.1">' +
     '<g class="hoverable-button">' +
     '<circle cx="25" cy="25" fill="currentColor" r="23" />' +
     '<path d="M33.660254038,30 a10,10 0 1 1 0,-10' +
