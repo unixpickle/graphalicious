@@ -2,13 +2,14 @@
 
 So far you have seen that a [DataSource](DATA_SOURCE.md) provides chunks of data, a [ChunkView](CHUNK_VIEW.md) renders those chunks, and a [ContentView](CONTENT_VIEW.md) renders everything shown in a graph. It seems that a *ContentView* should make use of *ChunkView*s for drawing, but there is an essential piece missing from the picture.
 
-The *ViewProvider* uses a data source to generate *ChunkView*s for its parent view to draw. It also provides various layout information, allowing the *ContentView* to determine its total width before any *ChunkView*s have been created.
+The *ViewProvider* uses a data source to generate *ChunkView*s for its parent view to draw. It also provides various layout information, allowing the *ContentView* to do things such as determine its total width before any *ChunkView*s have been created.
 
 # Methods
 
  * *int* getWidthApproximation() - get an approximation of the inherent width of the complete *ChunkView* for the current data source.
  * *int* pointCountForWidth(width) - get the minimum number of points required for a *ChunkView* to fill up at least a certain width.
  * [ChunkView](CHUNK_VIEW.md) createChunkView(chunk) - create a chunk view for the given chunk.
+ * *float* fractionalIndexForX(xValue) - get the point index for a given x value. The point index may be fractional. Flooring the point index gives the highest point index at or before the x value, while ceiling it gives the lowest point index at or after the x value.
 
 # Events
 
