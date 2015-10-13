@@ -180,4 +180,34 @@ function NormativeState(attrs) {
   this.visibleChunkLength = attrs.visibleChunkLength || 0;
 }
 
+NormativeState.LEFTMOST_START_BUFFER = 1000;
+NormativeState.LEFTMOST_MIN_BUFFER = 0;
+
+NormativeState.prototype.recompute = function(provider, positiveState) {
+  var newState = new NormativeState(this);
+  newState._recomputeLeftmost(provider, positiveState);
+
+  // TODO: recompute the visible chunk state here.
+};
+
+NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) {
+  if (positiveState.hasCompleteLeftmostChunk()) {
+    return;
+  }
+
+  var startWidth = Math.min(positiveState.viewportWidth+NormativeState.LEFTMOST_START_BUFFER,
+    positiveState.contentWidth);
+  var minWidth = Math.min(positiveState.viewportWidth+NormativeState.LEFTMOST_MIN_BUFFER,
+    positiveState.contentWidth);
+
+  var existingChunkLength = (this.needsLeftmostChunk ? this.leftmostChunkLength :
+    positiveState.leftmostChunkLength);
+  var minChunkLength = provider.pointCountForWidth(minWidth);
+  if (existingChunkLength < minChunkLength) {
+    this.needsLeftmostChunk = true;
+    this.leftmostChunkLength = provider.pointCountForWidth(startWidth);
+    this.loadingLeftmostChunk = true;
+  }
+};
+
 exports.YLabelContentView = YLabelContentView;
