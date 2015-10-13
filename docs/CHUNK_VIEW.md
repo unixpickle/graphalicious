@@ -16,6 +16,17 @@ At any given time, a *ChunkView* may have a greater inherent width than its cont
 
 Since a *ChunkView* knows where individual data points will be drawn, it is responsible for reporting which points will appear in a given subregion. In addition, a *ChunkView* must be able to report which data points will be in a subregion after its current animation is complete. This makes it possible for the containing *ContentView* to animate various things on its own (such as y-axis labels).
 
+The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. Since the height of a *ChunkView* is determined externally, it must be specified as an argument to the event handlers. In addition, since a *ChunkView* can be stretched horizontally, the stretched width may be specified as well.
+
+# The PointerPosition type
+
+The *PointerPosition* type expresses the coordinates of a pointer (e.g. the mouse) in a *ChunkView*'s coordinate system. A *PointerPosition* object has the following fields:
+
+ * *number* x - the x-axis coordinate, relative to the leftmost part of the *ChunkView*. If the *ChunkView* is not being stretched, this is between 0 and the *ChunkView*'s inherent width. If the *ChunkView* is being stretched, this is between 0 and the *ChunkView*'s stretched width.
+ * *number* y - the y-axis coordinate, relative to the top of the *ChunkView*. This is between 0 and the current height of the *ChunkView*.
+ * *number* width - the width to which the *ChunkView* is being stretched. If the *ChunkView* is not being stretched, this is the *ChunkView*'s inherent width.
+ * *number* height - the current height of the *ChunkView*.
+
 # Methods
 
 A set of methods can be used to get the current properties of a *ChunkView*. These will be updated as an animation runs:
@@ -47,6 +58,13 @@ You must manually notify a *ChunkView* when its chunk changes. This is done thro
  * *void* addAfter() - a data point was added after the *ChunkView*'s chunk.
  * *void* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
  * *void* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
+
+You must manually notify a *ChunkView* of any pertinent pointer events. These events take [PointerPosition](#the-pointerposition-type) arguments:
+
+ * *void* pointerMove(pos)
+ * *void* pointerDown(pos)
+ * *void* pointerUp(pos)
+ * *void* pointerLeave()
 
 Drawing can be performed with these methods:
 
