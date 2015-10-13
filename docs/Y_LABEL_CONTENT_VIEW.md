@@ -16,7 +16,7 @@ Whenever the [ChunkView](CHUNK_VIEW.md) performs an animation, the y-axis labels
 
 It is rather difficult to take into account animations, scrolling, data changes, y-axis label computation, and various other details. To make this task manageable, the YLCV is implemented using two different types of state:
 
- * The **positive state** describes how the YLCV looks "right now". It includes things like the current y-axis labels, the current [ChunkView](CHUNK_VIEW.md), animation information, and the width of the leftmost y-axis labels.
+ * The **positive state** describes how the YLCV looks "right now". It includes things like the current y-axis labels, the current [ChunkView](CHUNK_VIEW.md), and the width of the leftmost y-axis labels.
  * The **normative state** describes how the YLCV's positive state should change. It gets updated whenever content changes, the user scrolls, or the viewport is resized. In particular, the normative state stores information about data loading.
 
 # Creation
