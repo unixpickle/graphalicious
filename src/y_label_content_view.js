@@ -129,45 +129,6 @@ function PositiveState(attrs) {
   this.viewportWidth = attrs.viewportWidth || 0;
 }
 
-// leftBufferSpace returns the number of pixels that the user would have to scroll to the left
-// before seeing the leftmost edge of the current ChunkView. If this is negative, then the ChunkView
-// cannot fully take up the current viewport (although y-axis labels may cover the gap).
-//
-// If the left buffer space is fully taken up (i.e. the chunk view starts completely at the left),
-// this returns Infinity.
-//
-// If the state does not contain a ChunkView, this returns -1.
-PositiveState.prototype.leftBufferSpace = function() {
-  if (this.chunkViewLeftOffset < 0) {
-    return -1;
-  } else if (this.visibleChunkStart === 0) {
-    return Infinity;
-  }
-  return this.scrollOffset - (this.leftmostYLabelsWidth + this.chunkViewLeftOffset);
-};
-
-// rightBufferSpace is like leftBufferSpace, but it is an equivalent measure for scrolling right to
-// see the rightmost part of the ChunkView.
-PositiveState.prototype.rightBufferSpace = function() {
-  if (this.chunkViewLeftOffset < 0) {
-    return -1;
-  } else if (this.visibleChunkStart + this.visibleChunkLength === this.dataSourceLength) {
-    return Infinity;
-  }
-  var rightX = this.leftmostYLabelsWidth + this.chunkViewLeftOffset +
-    this.chunkViewInherentWidth;
-  var scrolledRightX = rightX - this.scrollOffset;
-  return scrolledRightX - this.viewportWidth;
-};
-
-// hasCompleteLeftmostChunk returns true if the leftmost chunk is complete.
-PositiveState.prototype.hasCompleteLeftmostChunk = function() {
-  if (this.leftmostChunk === null) {
-    return false;
-  }
-  return this.leftmostChunkLength === this.dataSourceLength;
-};
-
 function NormativeState(attrs) {
   this.needsLeftmostChunk = attrs.needsLeftmostChunk || false;
   this.loadingLeftmostChunk = attrs.loadingLeftmostChunk || false;
@@ -191,55 +152,70 @@ NormativeState.prototype.recompute = function(provider, positiveState) {
 };
 
 NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) {
-  if (positiveState.hasCompleteLeftmostChunk()) {
+  var minWidth = positiveState.viewportWidth + NormativeState.LEFTMOST_MIN_BUFFER;
+  var minLength = provider.computeTheoreticalChunk({width: minWidth, left: 0},
+    positiveState.dataSourceLength).length;
+
+  if (positiveState.leftmostChunkLength >= minLength) {
     this.needsLeftmostChunk = false;
     this.loadingLeftmostChunk = false;
-    return;
-  }
-
-  var startWidth = Math.min(positiveState.viewportWidth+NormativeState.LEFTMOST_START_BUFFER,
-    positiveState.contentWidth);
-  var minWidth = Math.min(positiveState.viewportWidth+NormativeState.LEFTMOST_MIN_BUFFER,
-    positiveState.contentWidth);
-
-  var existingChunkLength = (this.needsLeftmostChunk ? this.leftmostChunkLength :
-    positiveState.leftmostChunkLength);
-  var minChunkLength = Math.min(provider.pointCountForWidth(minWidth),
-    positiveState.dataSourceLength);
-  if (existingChunkLength < minChunkLength) {
-    this.needsLeftmostChunk = true;
-    this.leftmostChunkLength = Math.min(provider.pointCountForWidth(startWidth),
-      positiveState.dataSourceLength);
+  } else if (!this.needsLeftmostChunk || this.leftmostChunkLength < minLength) {
     this.loadingLeftmostChunk = true;
-  } else {
-    this.needsLeftmostChunk = false;
+    this.needsLeftmostChunk = true;
+
+    var theoreticalChunk = {
+      left: 0,
+      width: positiveState.viewportWidth + NormativeState.LEFTMOST_START_BUFFER
+    };
+    this.leftmostChunkLength = provider.computeTheoreticalChunk(theoreticalChunk,
+      positiveState.dataSourceLength).length;
   }
 };
 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
-  if (positiveState.leftBufferSpace() >= NormativeState.VISIBLE_MIN_BUFFER &&
-      positiveState.rightBufferSpace() >= NormativeState.VISIBLE_MIN_BUFFER) {
+  var minRegion = {
+    left: positiveState.scrollOffset - positiveState.leftmostYLabels -
+      NormativeState.VISIBLE_MIN_BUFFER,
+    width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth
+  };
+  var minChunk = provider.computeTheoreticalChunk(minRegion);
+
+  var visibleChunkEnd = positiveState.visibleChunkStart + positiveState.visibleChunkLength;
+  if (positiveState.visibleChunkStart <= minChunk.start &&
+      visibleChunkEnd >= minChunk.start+minChunk.length) {
     this.needsVisibleChunk = false;
     this.loadingVisibleChunk = false;
     return;
   }
 
-  // TODO: if we are loading something already, check if it already meets the visible min buffer
-  // requirements before attempting to fetch anything further.
+  if (this.needsVisibleChunk) {
+    var gettingChunkEnd = this.visibleChunkStart + this.visibleChunkLength;
+    if (this.visibleChunkStart <= minChunk.start &&
+        gettingChunkEnd >= minChunk.start+minChunk.length) {
+      return;
+    }
+  }
 
-  var startX = Math.max(Math.min(positiveState.scrollOffset - positiveState.leftmostYLabelsWidth -
-    NormativeState.VISIBLE_START_BUFFER, positiveState.contentWidth), 0);
-  var startIndex = Math.min(Math.floor(provider.indexForX(startX)),
-    positiveState.dataSourceLength-1);
+  var needRegion = {
+    left: positiveState.scrollOffset - positiveState.leftmostYLabelsWidth -
+      NormativeState.VISIBLE_START_BUFFER,
+    width: NormativeState.VISIBLE_START_BUFFER*2 + positiveState.viewportWidth
+  };
 
-  var width = NormativeState.VISIBLE_START_BUFFER*2 + positiveState.viewportWidth;
-  var pointCount = Math.max(Math.min(provider.pointCountForWidth(width),
-    positiveState.dataSourceLength-startIndex), 0);
+  // NOTE: we do this to ensure that we use up as much buffer space as possible even if the user is
+  // scrolled all the way to the left or to the right.
+  if (needRegion.left+needRegion.width > positiveState.contentWidth) {
+    needRegion.left -= needRegion.left + needRegion.width - positiveState.contentWidth;
+  } else if (needRegion.left < 0) {
+    needRegion.left = 0;
+  }
+
+  var needChunk = provider.computeTheoreticalChunk(needRegion, positiveState.dataSourceLength);
 
   this.needsVisibleChunk = true;
   this.loadingVisibleChunk = true;
-  this.visibleChunkStart = startIndex;
-  this.visibleChunkLength = pointCount;
+  this.visibleChunkStart = needChunk.startIndex;
+  this.visibleChunkLength = needChunk.length;
 };
 
 exports.YLabelContentView = YLabelContentView;
