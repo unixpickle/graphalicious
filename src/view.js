@@ -45,7 +45,7 @@ View.prototype.layout = function(width, height) {
   if (width != this._width) {
     this._width = width;
     if (this._content !== null) {
-      this._updateScrollBar();
+      this._updateScrollBar(true);
     }
   }
   this._height = height;
@@ -73,7 +73,7 @@ View.prototype.setContent = function(content) {
   this._content = content;
 
   if (this._content === null) {
-    this._updateScrollBar();
+    this._updateScrollBar(false);
     return;
   }
 
@@ -82,7 +82,7 @@ View.prototype.setContent = function(content) {
   this._content.on('redraw', this._boundDrawContent);
   this._element.appendChild(this._content.element());
 
-  this._updateScrollBar();
+  this._updateScrollBar(false);
   this._drawContent();
 };
 
@@ -97,8 +97,8 @@ View.prototype.setAnimate = function(flag) {
   }
 };
 
-View.prototype._contentWidthChange = function() {
-  this._updateScrollBar();
+View.prototype._contentWidthChange = function(keepRightOffset) {
+  this._updateScrollBar(keepRightOffset);
   this._drawContent();
 };
 
@@ -121,12 +121,19 @@ View.prototype._drawContent = function(barVisibility) {
   this._content.draw(viewportX, this._width, height, barShowingHeight);
 };
 
-View.prototype._updateScrollBar = function() {
+View.prototype._updateScrollBar = function(keepRightOffset) {
   if (this._needsToScroll() === this._scrolls) {
     if (this._scrolls) {
-      var maxScrolled = this._content.totalWidth() - this._width;
-      var scrolled = Math.min(maxScrolled, this._scrollBar.getScrolledPixels());
-      this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
+      if (keepRightOffset) {
+        var scrollRight = this._scrollBar.getTotalPixels() - this._scrollBar.getVisiblePixels() -
+          this._scrollBar.getScrolledPixels();
+        var scrolled = Math.max(0, this._content.totalWidth() - this._width - scrollRight);
+        this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
+      } else {
+        var maxScrolled = this._content.totalWidth() - this._width;
+        var scrolled = Math.min(maxScrolled, this._scrollBar.getScrolledPixels());
+        this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
+      }
     }
     return;
   }
