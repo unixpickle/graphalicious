@@ -38,6 +38,10 @@ A *YLabelContentView* implements all the same methods as a *ChunkView*:
  * *void* draw(viewportX, viewportWidth, height, barShowingHeight) - draw a portion of the content to fit inside a viewport. If viewport width is greater than the total width, then viewportX must be 0 and the *ContentView* will be "stretched".
  * *void* setAnimate(flag) - enable or disable animations. While animations are disabled on the YLCV, they will also be disabled on the current *ChunkView*, *SplashScreen* and *InlineLoaderView*s.
 
+It implements more methods, too:
+
+ * *void* dispose() - completely destroy any resources being consumed by the YLCV. This stops the YLCV from accessing the *InlineLoaderView*s, the *SplashScreen*, the *DataSource*, and the *ViewProvider*.
+
 # Events
 
 A *YLabelContentView* emits all the same events as a *ChunkView*:

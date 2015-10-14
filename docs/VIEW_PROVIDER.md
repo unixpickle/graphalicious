@@ -35,6 +35,7 @@ The TheoreticalChunk type has two fields:
  * [TheoreticalChunk](#the-theoreticalchunk-type) computeTheoreticalChunk(region, pointCount) - compute the smallest theoretical chunk whose theoretical *ChunkView* would cover the given region. You must pass the number of points in the data source so that margins can be accounted for. The returned theoretical chunk will be bounded so that its indices are not negative and do not exceed the point count.
  * [Region](#the-region-type) computeRegion(theoreticalChunk, pointCount) - compute the region of the theoretical *ChunkView* for a theoretical chunk. You must pass the number of points in the data source so that margins can be accounted for. The indices within the theoretical chunk can be negative or exceed the point count; they will be bounded to valid values during the computation.
  * [ChunkView](CHUNK_VIEW.md) createChunkView(chunk, dataSource) - create a *ChunkView* for the given chunk.
+ * *void* destroyChunkView(chunkView) - destroy the given *ChunkView*. Every *ChunkView* which is created through createChunkView should be destroyed through destroyChunkView to prevent resource leaks.
 
 # Events
 

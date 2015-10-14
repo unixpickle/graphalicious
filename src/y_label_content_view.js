@@ -6,25 +6,28 @@ function YLabelContentView(provider, dataSource, splashScreen) {
 
   this._element = document.createElement('div');
   this._element.position = 'absolute';
-
   this._splashScreen = splashScreen;
   this._canvas = document.createElement('canvas');
+  this._element.appendChild(splashScreen.element());
+  splashScreen.setAnimate(false);
 
   this._provider = provider;
   this._dataSource = dataSource;
-  this._chunkView = null;
 
-  this._state = YLabelContentView.STATE_LOADING;
-  this._element.appendChild(splashScreen.element());
-  splashScreen.setAnimate(false);
+  this._chunkView = null;
+  this._yLabels = null;
+  this._keepRightOnNextChange = false;
+
+  this._animating = false;
+  this._startYLabels = null;
+  this._endYLabels = null;
+
+  this._positiveState = new PositiveState({});
+  this._normativeState = new NormativeState({});
 
   this._animate = false;
   this._crystalCallback = this._pixelRatioChanged.bind(this);
 }
-
-YLabelContentView.STATE_LOADING = 0;
-YLabelContentView.STATE_FAILED = 1;
-YLabelContentView.STATE_SHOWING_CONTENT = 2;
 
 YLabelContentView.prototype = Object.create(EventEmitter.prototype);
 
@@ -33,8 +36,9 @@ YLabelContentView.prototype.element = function() {
 };
 
 YLabelContentView.prototype.totalWidth = function() {
-  if (this._state === YLabelContentView.STATE_SHOWING_CONTENT) {
-    return this._provider.getWidthApproximation();
+  if (this._showingContent()) {
+    return this._chunkView.getInherentWidth() + this._chunkView.getRightOffset() +
+      this._chunkView.getLeftOffset();
   } else {
     return 0;
   }
@@ -46,55 +50,29 @@ YLabelContentView.prototype.setAnimate = function(animate) {
   }
   this._animate = animate;
 
-  if (this._state !== YLabelContentView.STATE_SHOWING_CONTENT) {
-    this._splashScreen.setAnimate(animate);
-  }
-  if (this._chunkView !== null) {
-    this._chunkView.setAnimate(animate);
-  }
-
   if (animate) {
     window.crystal.addListener(this._crystalCallback);
   } else {
     window.crystal.removeListener(this._crystalCallback);
   }
+
+  if (this._showingContent()) {
+    this._chunkView.setAnimate(animate);
+  } else {
+    this._splashScreen.setAnimate(animate);
+  }
 };
 
 YLabelContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowingHeight) {
-  if (this._state !== YLabelContentView.STATE_SHOWING_CONTENT) {
+  // TODO: update the positive state here and then update the normative state based on it.
+  // TODO: update the size of the canvas if necessary.
+  this._lastHeight = height;
+
+  if (!this._showingContent()) {
     this._splashScreen.layout(viewportWidth, height);
   } else {
-    // TODO: this.
-  }
-};
-
-YLabelContentView.prototype._setState = function(state) {
-  if (state === this._state) {
-    return;
-  }
-
-  if (state === YLabelContentView.STATE_SHOWING_CONTENT) {
-    this._splashScreen.setAnimate(false);
-    this._element.innerHTML = '';
-    this._addContentElements();
-  } else if (!this._splashScreen.element().parentNode) {
-    this._splashScreen.setAnimate(this._animate);
-    this._element.innerHTML = '';
-    this._element.appendChild(this._splashScreen.element());
-  }
-
-  this._state = state;
-
-  switch (state) {
-  case YLabelContentView.STATE_LOADING:
-    this._splashScreen.start();
-    break;
-  case YLabelContentView.STATE_FAILED:
-    this._splashScreen.showError();
-    break;
-  case YLabelContentView.STATE_SHOWING_CONTENT:
     this._drawCanvas();
-    break;
+    // TODO: position the inline loaders if necessary.
   }
 };
 
@@ -107,8 +85,12 @@ YLabelContentView.prototype._drawCanvas = function() {
 };
 
 YLabelContentView.prototype._pixelRatioChanged = function() {
-  // TODO: redraw the canvas here.
+  // TODO: update the size of the canvas here.
   this._drawCanvas();
+};
+
+YLabelContentView.prototype._showingContent = function() {
+  return this._chunkView !== null && !this._normativeState.needsLeftmostChunk;
 };
 
 // The PositiveState stores information about the current visual state of a YLabelContentView.
