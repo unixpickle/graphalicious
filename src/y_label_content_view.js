@@ -11,6 +11,8 @@ function YLabelContentView(provider, dataSource, splashScreen) {
   this._element.appendChild(splashScreen.element());
   splashScreen.setAnimate(false);
 
+  this._pixelRatio = 0;
+
   this._provider = provider;
   this._dataSource = dataSource;
 
@@ -52,6 +54,7 @@ YLabelContentView.prototype.setAnimate = function(animate) {
 
   if (animate) {
     window.crystal.addListener(this._crystalCallback);
+    this._pixelRatioChanged();
   } else {
     window.crystal.removeListener(this._crystalCallback);
   }
@@ -66,8 +69,6 @@ YLabelContentView.prototype.setAnimate = function(animate) {
 YLabelContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowingHeight) {
   // TODO: update the positive state here and then update the normative state based on it.
   // TODO: update the size of the canvas if necessary.
-  this._lastHeight = height;
-
   if (!this._showingContent()) {
     this._splashScreen.layout(viewportWidth, height);
   } else {
@@ -85,7 +86,13 @@ YLabelContentView.prototype._drawCanvas = function() {
 };
 
 YLabelContentView.prototype._pixelRatioChanged = function() {
-  // TODO: update the size of the canvas here.
+  var newRatio = Math.ceil(window.crystal.getRatio());
+  if (this._pixelRatio === newRatio) {
+    return;
+  }
+  this._pixelRatio = newRatio;
+  this._canvas.width = this._positiveState.viewportWidth * newRatio;
+  this._canvas.height = this._positiveState.viewportHeight * newRatio;
   this._drawCanvas();
 };
 
@@ -109,6 +116,7 @@ function PositiveState(attrs) {
   this.scrollOffset = attrs.scrollOffset || 0;
   this.contentWidth = attrs.contentWidth || 0;
   this.viewportWidth = attrs.viewportWidth || 0;
+  this.viewportHeight = attrs.viewportHeight || 0;
 }
 
 function NormativeState(attrs) {
