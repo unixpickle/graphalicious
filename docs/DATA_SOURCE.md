@@ -35,7 +35,8 @@ A *DataSource* must implement the following methods:
  * *int* getLength() - get the total number of data points in the data source.
  * [Chunk](#the-chunk-type) getChunk(chunkIndex) - get one of the two chunks. This will return `null` if the chunk is currently available (i.e. it is still loading).
  * *string* getXAxisLabel(index) - get the x-axis label for the given data point index. If there are no x-axis labels, this should return the empty string.
- * *void* fetchChunk(chunkIndex, start, length) - get a chunk and set it to chunk0 or chunk1 respectively. While the chunk is loading, the existing chunk will not be affected (i.e. it will not become null).
+ * *void* fetchChunk(chunkIndex, start, length) - get a chunk and set it to chunk0 or chunk1 respectively. While the chunk is loading, the existing chunk will not be affected (i.e. it will not become null). If a fetch operation was already underway for the given chunkIndex, it will be cancelled and replaced with this new fetch operation.
+ * *void* cancel(chunkIndex) - cancel a chunk0 or chunk1 fetch operation. This will not affect the current value of the chunk.
  * *bool* isLoadingChunk(chunkIndex) - get whether or not a new value for a chunk is being loaded.
 
 # Events

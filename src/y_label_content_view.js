@@ -1,5 +1,8 @@
 //deps event_emitter.js
 
+var LEFTMOST_CHUNK_INDEX = 0;
+var VISIBLE_CHUNK_INDEX = 1;
+
 // YLabelContentView draws a ViewProvider with y-axis labels.
 function YLabelContentView(provider, dataSource, splashScreen) {
   EventEmitter.call(this);
@@ -93,7 +96,37 @@ YLabelContentView.prototype._pixelRatioChanged = function() {
   this._pixelRatio = newRatio;
   this._canvas.width = this._positiveState.viewportWidth * newRatio;
   this._canvas.height = this._positiveState.viewportHeight * newRatio;
-  this._drawCanvas();
+  if (this._showingContent()) {
+    this._drawCanvas();
+  }
+};
+
+YLabelContentView.prototype._handleNormativeChange = function(oldState) {
+  if (this._normativeState.loadingLeftmostChunk !== oldState.loadingLeftmostChunk) {
+    if (this._normativeState.loadingLeftmostChunk) {
+      this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0,
+        this._normativeState.leftmostChunkLength);
+    } else {
+      this._dataSource.cancel(LEFTMOST_CHUNK_INDEX);
+    }
+  } else if (this._normativeState.loadingLeftmostChunk &&
+             this._normativeState.leftmostChunkLength !== oldState.leftmostChunkLength) {
+    this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0, this._normativeState.leftmostChunkLength);
+  }
+
+  if (this._normativeState.loadingVisibleChunk !== oldState.loadingVisibleChunk) {
+    if (this._normativeState.loadingVisibleChunk) {
+      this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
+        this._normativeState.visibleChunkLength);
+    } else {
+      this._dataSource.cancel(VISIBLE_CHUNK_INDEX);
+    }
+  } else if (this._normativeState.loadingVisibleChunk &&
+             (this._normativeState.visibleChunkLength !== oldState.visibleChunkLength ||
+              this._normativeState.visibleChunkStart !== oldState.visibleChunkStart)) {
+    this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
+      this._normativeState.visibleChunkLength);
+  }
 };
 
 YLabelContentView.prototype._showingContent = function() {
