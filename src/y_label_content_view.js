@@ -58,7 +58,7 @@ YLabelContentView.prototype.dispose = function() {
 YLabelContentView.prototype.totalWidth = function() {
   if (this._showingContent()) {
     return this._chunkView.getInherentWidth() + this._chunkView.getRightOffset() +
-      this._chunkView.getLeftOffset();
+      this._chunkView.getLeftOffset() + this._positiveState.leftmostYLabelsWidth;
   } else {
     return 0;
   }
@@ -95,8 +95,9 @@ YLabelContentView.prototype.draw = function(viewportX, viewportWidth, height, ba
   }
 };
 
-YLabelContentView.prototype._addContentElements = function() {
-  this._element.appendChild(this._canvas);
+YLabelContentView.prototype._redraw = function() {
+  this.draw(this._positiveState.viewportX, this._positiveState.viewportWidth,
+    this._positiveState.viewportHeight, this._positiveState.barShowingHeight);
 };
 
 YLabelContentView.prototype._drawCanvas = function() {
@@ -217,10 +218,11 @@ function PositiveState(attrs) {
   this.leftmostYLabelsWidth = attrs.leftmostYLabelsWidth || -1;
   this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || -1;
 
-  this.scrollOffset = attrs.scrollOffset || 0;
+  this.viewportX = attrs.viewportX || 0;
   this.contentWidth = attrs.contentWidth || 0;
   this.viewportWidth = attrs.viewportWidth || 0;
   this.viewportHeight = attrs.viewportHeight || 0;
+  this.barShowingHeight = attrs.barShowingHeight || 0;
 }
 
 function NormativeState(attrs) {
@@ -268,7 +270,7 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   var minRegion = {
-    left: positiveState.scrollOffset - positiveState.leftmostYLabels -
+    left: positiveState.viewportX - positiveState.leftmostYLabels -
       NormativeState.VISIBLE_MIN_BUFFER,
     width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth
   };
@@ -291,7 +293,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   }
 
   var needRegion = {
-    left: positiveState.scrollOffset - positiveState.leftmostYLabelsWidth -
+    left: positiveState.viewportX - positiveState.leftmostYLabelsWidth -
       NormativeState.VISIBLE_START_BUFFER,
     width: NormativeState.VISIBLE_START_BUFFER*2 + positiveState.viewportWidth
   };
