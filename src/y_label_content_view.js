@@ -21,7 +21,7 @@ function YLabelContentView(provider, dataSource, splashScreen) {
 
   this._chunkView = null;
   this._yLabels = null;
-  this._keepRightOnNextChange = false;
+  this._keepRightOnNextChange = true;
 
   this._animating = false;
   this._startYLabels = null;
@@ -154,7 +154,7 @@ YLabelContentView.prototype._registerDataSourceEvents = function() {
   var eventNames = ['Load', 'Error', 'Delete', 'Add', 'Modify', 'Invalidate'];
   for (var i = 0, len = eventNames.length; i < len; ++i) {
     var eventName = eventNames[i];
-    var handler = this['_handleDataSource'][eventName].bind(this);
+    var handler = this['_handleDataSource' + eventName.bind(this);
     this._boundDataSourceEvents[eventName.toLowerCase()] = handler;
     this._dataSource.on(eventName.toLowerCase(), handler)
   }
