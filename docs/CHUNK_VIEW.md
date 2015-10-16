@@ -10,11 +10,11 @@ A *ChunkView* has an **inherent width** but no inherent height. A *ChunkView* ca
 
 A *ChunkView* whose chunk contains every data point in the data set is called a **complete ChunkView**. Naturally, any *ChunkView* can be thought of as part of a wider (or equally wide) complete *ChunkView*. A *ChunkView*'s hypothetical distance from the leftmost and rightmost sides of its containing complete *ChunkView* are called its **left offset** and **right offset**, respectively. It follows that the formula *left offset + right offset + inherent width* gives the inherent width of any *ChunkView*'s complete *ChunkView*. It also follows that the left offset and right offset of any complete *ChunkView* are both 0.
 
-Animations are an important part of a *ChunkView*'s job. At any time, a chunk view can emit an event indicating that its visual properties have been altered. For example, suppose a new data point is added to the *ChunkView*'s underlying chunk and the corresponding animation involves gradually widening the *ChunkView*. In this case, the *ChunkView* would change its inherent width in increments and emit these changes accordingly.
+Animations are an important part of a *ChunkView*'s job. Any change to a *ChunkView*'s underlying chunk may trigger an animation. During an animation, a *ChunkView* repeatedly emits that its state has changed. For example, suppose a new data point is added to the *ChunkView*'s underlying chunk and the corresponding animation involves gradually widening the *ChunkView*. In this case, the *ChunkView* would change its inherent width in increments and emit these changes accordingly.
 
 At any given time, a *ChunkView* may have a greater inherent width than its containing *ContentView*'s viewport width. This leads to the idea of a **subregion**, a horizontal region within a *ChunkView*. A subregion has two components: a width and a left offset. The left offset is the distance in pixels between the beginning of the subregion and the beginning of the *ChunkView*. The width of a subregion is how many pixels it takes up, starting from its left offset.
 
-Since a *ChunkView* knows where individual data points will be drawn, it is responsible for reporting which points will appear in a given subregion. In addition, a *ChunkView* must be able to report which data points will be in a subregion after its current animation is complete. This makes it possible for the containing *ContentView* to animate various things on its own (such as y-axis labels).
+Since a *ChunkView* knows where individual data points will be drawn, it is responsible for reporting which points will appear in a given subregion. It must also be able to report the left offset at which the x-axis label for each data point should be placed. Since a *ChunkView*'s visual state might be changing during an animation, it must be able to report these pieces of information both during and after an animation. In other words, a *ChunkView* must be able to look into the future and predict what it will look like post-animation. This makes it possible for the containing *ContentView* to animate various things on its own (such as the x- and y-axis labels).
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. Since the height of a *ChunkView* is determined externally, it must be specified as an argument to the event handlers. In addition, since a *ChunkView* can be stretched horizontally, the stretched width may be specified as well.
 
@@ -36,6 +36,7 @@ A set of methods can be used to get the current properties of a *ChunkView*. The
  * *int* getRightOffset() - get the right offset of the *ChunkView*.
  * *int* firstVisibleDataPoint(leftOffset) - get the first visible data point (as a chunk-relative index) within a subregion which starts at the given left offset.
  * *int* lastVisibleDataPoint(endLeftOffset) - get the last visible data point (as a chunk-relative index) within a subregion which ends at the given left offset.
+ * *int* xAxisLabelPosition(pointIndex) - given a chunk-relative index, get the left offset (relative to the left of the *ChunkView*) for an x-axis label.
 
 A parallel set of methods exists for predicting properties of the *ChunkView* once it has completed its current animation:
 
@@ -44,20 +45,21 @@ A parallel set of methods exists for predicting properties of the *ChunkView* on
  * *int* getPostAnimationRightOffset()
  * *int* postAnimationFirstVisibleDataPoint(leftOffset)
  * *int* postAnimationLastVisibleDataPoint(endLeftOffset)
+ * *int* postAnimationXAxisLabelPosition(pointIndex)
 
 The animation behavior of a *ChunkView* can be controlled:
 
  * *void* setAnimate(flag) - enable or disable animations.
  * *void* finishAnimation() - finish the current animation early.
 
-You must manually notify a *ChunkView* when its chunk changes. This is done through the following methods:
+You must manually notify a *ChunkView* when its chunk changes using several methods. Some of these methods return a boolean value. If this boolean value is *true*, it means that the *ChunkView* has begun animating. These methods are as follows:
 
  * *void* deletionBefore(oldIndex) - a data point was deleted which was before any of the data points in the *ChunkView*'s chunk.
  * *void* deletionAfter(oldIndex) - a data point was deleted which was after any of the data points in the *ChunkView*'s chunk.
- * *void* deletionInside(oldIndex) - a data point was deleted which was inside the *ChunkView*'s chunk.
+ * *bool* deletionInside(oldIndex) - a data point was deleted which was inside the *ChunkView*'s chunk.
  * *void* addAfter() - a data point was added after the *ChunkView*'s chunk.
- * *void* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
- * *void* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
+ * *bool* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
+ * *bool* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
 
 You must manually notify a *ChunkView* of any pertinent pointer events. These events take [PointerPosition](#the-pointerposition-type) arguments:
 
@@ -76,6 +78,5 @@ Drawing can be performed with these methods:
 A *ChunkView* may emit the following events:
 
  * redraw() - request a redraw for any reason other than an animation frame.
- * animationStart() - an animation has begun.
  * redrawAnimation(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is.
- * animationEnd() - an animation has ended. Every animationStart must be matched with an animationEnd.
+ * animationEnd() - an animation has ended.
