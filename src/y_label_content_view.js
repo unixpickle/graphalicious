@@ -32,12 +32,27 @@ function YLabelContentView(provider, dataSource, splashScreen) {
 
   this._animate = false;
   this._crystalCallback = this._pixelRatioChanged.bind(this);
+
+  this._registerDataSourceEvents();
+  this._registerProviderEvents();
 }
 
 YLabelContentView.prototype = Object.create(EventEmitter.prototype);
 
 YLabelContentView.prototype.element = function() {
   return this._element;
+};
+
+YLabelContentView.prototype.dispose = function() {
+  this._dataSource.cancel(LEFTMOST_CHUNK_INDEX);
+  this._dataSource.cancel(VISIBLE_CHUNK_INDEX);
+
+  if (this._chunkView) {
+    this._provider.destroyChunkView(this._chunkView);
+  }
+
+  this._deregisterDataSourceEvents();
+  this._deregisterProviderEvents();
 };
 
 YLabelContentView.prototype.totalWidth = function() {
@@ -131,6 +146,62 @@ YLabelContentView.prototype._handleNormativeChange = function(oldState) {
 
 YLabelContentView.prototype._showingContent = function() {
   return this._chunkView !== null && !this._normativeState.needsLeftmostChunk;
+};
+
+YLabelContentView.prototype._registerDataSourceEvents = function() {
+  this._boundDataSourceEvents = {};
+  var eventNames = ['Load', 'Error', 'Delete', 'Add', 'Modify', 'Invalidate'];
+  for (var i = 0, len = eventNames.length; i < len; ++i) {
+    var eventName = eventNames[i];
+    var handler = this['_handleDataSource'][eventName].bind(this);
+    this._boundDataSourceEvents[eventName.toLowerCase()] = handler;
+    this._dataSource.on(eventName.toLowerCase(), handler)
+  }
+};
+
+YLabelContentView.prototype._deregisterDataSourceEvents = function() {
+  var keys = Object.keys(this._boundDataSourceEvents);
+  for (var i = 0, len = keys.length; i < len; ++i) {
+    var key = keys[i];
+    this._dataSource.removeListener(key, this._boundDataSourceEvents[key])
+  }
+};
+
+YLabelContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._handleDataSourceError = function(chunkIndex) {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._handleDataSourceDelete = function(oldIndex, inChunk0, inChunk1) {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._handleDataSourceAdd = function() {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._handleDataSourceModify = function(index) {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._handleDataSourceInvalidate = function() {
+  // TODO: this.
+};
+
+YLabelContentView.prototype._registerProviderEvents = function() {
+  this._boundProviderChange = this._handleProviderChange.bind(this);
+  this._provider.on('change', this._boundProviderChange);
+};
+
+YLabelContentView.prototype._deregisterProviderEvents = function() {
+  this._provider.removeListener('change', this._boundProviderChange);
+};
+
+YLabelContentView.prototype._handleProviderChange = function() {
+  // TODO: this.
 };
 
 // The PositiveState stores information about the current visual state of a YLabelContentView.
