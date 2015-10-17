@@ -44,15 +44,18 @@
     <script>
     var view;
     function loadHandler() {
-      var colorScheme = new window.graphalicious.ColorScheme('#65bcd4', '#55acc4')
-      view = new window.graphalicious.View(colorScheme);
+      var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
+      view = new window.graphalicious.base.View(colorScheme);
       document.getElementById('footer').appendChild(view.element());
       view.element().style.backgroundColor = 'white';
       view.element().style.position = 'absolute';
       view.element().style.left = '100px';
 
       var splashScreen = new window.SplashScreen(colorScheme);
-      var content = new window.graphalicious.YLabelContentView(null, null, splashScreen);
+      var dataSource = window.StaticDataSource.random(10, 100, false);
+      var provider = new window.graphalicious.base.EventEmitter();
+      var content = new window.graphalicious.ylcv.YLabelContentView(provider, dataSource,
+        splashScreen);
       view.setContent(content);
       layoutView();
       view.setAnimate(true);

@@ -1,7 +1,9 @@
 (function() {
 
+  var EventEmitter = window.graphalicious.base.EventEmitter;
+
   function StaticDataSource(dataPoints) {
-    window.graphalicious.EventEmitter.call(this);
+    EventEmitter.call(this);
     this._dataPoints = dataPoints;
     this._chunks = [null, null];
     this._loading = [false, false];
@@ -21,7 +23,7 @@
     return new StaticDataSource(points);
   };
 
-  StaticDataSource.prototype = Object.create(window.graphalicious.EventEmitter.prototype);
+  StaticDataSource.prototype = Object.create(EventEmitter.prototype);
 
   StaticDataSource.prototype.getLength = function() {
     return this._dataPoints.length;

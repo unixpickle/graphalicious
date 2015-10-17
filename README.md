@@ -12,9 +12,12 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Implement data source structure
+ * Split up YLabelContentView into two parts, one for state management and one for drawing.
+ * Create method for computing leftmost y-axis label width
+ * Give short buffer times to avoid "flashing"
+   * Short time before showing the splash screen
+   * Minimum time to show splash screen
  * Figure out how alternating x-axis labels will work
- * Figure out how scrolling out of bounds will work
 
 # License
 

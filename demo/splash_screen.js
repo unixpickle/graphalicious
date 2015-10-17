@@ -1,11 +1,13 @@
 (function() {
 
+  var EventEmitter = window.graphalicious.base.EventEmitter;
+
   var SPINNER_SIZE = 30;
   var RETRY_SIZE = 46;
   var SPIN_RATE = 0.3;
 
   function SplashScreen(colorScheme) {
-    window.graphalicious.EventEmitter.call(this);
+    EventEmitter.call(this);
 
     this._colorScheme = colorScheme;
 
@@ -33,7 +35,7 @@
     this._spinner.addEventListener('click', this.emit.bind(this, 'retry'));
   }
 
-  SplashScreen.prototype = Object.create(window.graphalicious.EventEmitter.prototype);
+  SplashScreen.prototype = Object.create(EventEmitter.prototype);
 
   SplashScreen.prototype.element = function() {
     return this._element;
