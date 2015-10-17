@@ -54,8 +54,7 @@
       var splashScreen = new window.SplashScreen(colorScheme);
       var dataSource = window.StaticDataSource.random(10, 100, false);
       var provider = new window.graphalicious.base.EventEmitter();
-      var content = new window.graphalicious.ylcv.YLabelContentView(provider, dataSource,
-        splashScreen);
+      var content = new window.graphalicious.ylcv.ContentView(provider, dataSource, splashScreen);
       view.setContent(content);
       layoutView();
       view.setAnimate(true);
