@@ -19,7 +19,7 @@ Remember that a *DataSource* emits various events for remote changes. Since a *C
 A *ContentView* must implement the following methods:
 
  * *int* totalWidth() - get the current total width of the *ContentView*.
- * *DOMElement* element() - get the visual DOM element for the view
+ * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
  * *void* draw(viewportX, viewportWidth, height, barShowingHeight) - draw a portion of the content to fit inside a viewport. If viewport width is greater than the total width, then viewportX must be 0 and the *ContentView* will be "stretched".
  * *void* setAnimate(flag) - enable or disable animations.
 
