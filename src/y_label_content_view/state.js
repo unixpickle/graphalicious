@@ -1,3 +1,34 @@
+// StateViewState stores a State and some additional information used for a StateView specifically.
+// These states are used internally by a StateView.
+function StateViewState(positive, normative, attrs) {
+  this.positive = state.positive;
+  this.normative = state.normative;
+
+  this.yLabels = attrs.yLabels || null;
+  this.yLabelsStartIndex = attrs.yLabelsStartIndex || -1;
+  this.yLabelsLength = attrs.yLabelsEndIndex || -1;
+
+  this.chunkView = attrs.chunkView || null;
+
+  this.showingContent = attrs.showingContent || false;
+  this.animate = attrs.animate || false;
+
+  this.animating = attrs.animating || false;
+  this.animationProgress = attrs.animationProgress || 0;
+  this.startYLabels = attrs.startYLabels || null;
+
+  this.liveLeftmostLabelWidth = attrs.liveLeftmostLabelWidth || 0;
+  this.liveContentWidth = attrs.liveContentWidth || 0;
+}
+
+// copy generates a quasi-deep copy of this state.
+// The yLabels, chunkView, startYLabels and endYLabels are not copied, but everything else is copied
+// deeply.
+StateViewState.prototype.copy = function() {
+  return new StateViewState(new PositiveState(this.positive), new NormativeState(this.normative),
+    this);
+};
+
 // State stores both a PositiveState and NormativeState.
 function State(positive, normative) {
   this.positive = positive;
@@ -17,7 +48,6 @@ function PositiveState(attrs) {
   this.chunkViewInherentWidth = attrs.chunkViewInherentWidth || -1;
 
   this.dataSourceLength = attrs.dataSourceLength || 0;
-
   this.leftmostChunkLength = attrs.leftmostChunkLength || -1;
   this.leftmostYLabelsWidth = attrs.leftmostYLabelsWidth || -1;
   this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || -1;

@@ -47,6 +47,9 @@
   };
 
   SplashScreen.prototype.setAnimate = function(animate) {
+    if (this._animate === animate) {
+      return;
+    }
     this._animate = animate;
     if (animate && !this._showingError && this._animationFrame === null) {
       this._startSpinning();
