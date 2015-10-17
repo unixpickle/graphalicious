@@ -1,4 +1,4 @@
-var EventEmitter = includeAPI('base').EventEmitter;
+//deps includes.js
 
 var LEFTMOST_CHUNK_INDEX = 0;
 var VISIBLE_CHUNK_INDEX = 1;
