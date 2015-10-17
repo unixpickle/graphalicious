@@ -85,17 +85,16 @@ StateView.prototype.dispose = function() {
 // updateState indicates that the state changed for some reason other than a deletion, addition, or
 // modification of a data point or from invalidation of the data set.
 StateView.prototype.updateState = function(newState) {
-  var state = new StateViewState(newState.positive, newState.normative, this._state);
+  var oldState = this._state;
+  this._state = new StateViewState(newState.positive, newState.normative, this._state);
 
+  this._updateStateAnimation(oldState);
+  this._updateStateLiveMeasurements();
   // TODO: (re)generate the ChunkView if necessary.
   // TODO: (re)generate the y-axis labels if necessary.
-  // TODO: cancel the current animation if necessary.
   // TODO: play with this._splashScreenDelay and this._doneLoadingTimeout if necessary.
   // TODO: compute the showingContent field of the new state.
-  // TODO: update the liveContentWidth and liveLeftmostLabelWidth.
 
-  var oldState = this._state;
-  this._state = state;
   this._handleStateChange(oldState);
 };
 
@@ -117,6 +116,48 @@ StateView.prototype.updateStateModify = function(newState, index) {
 // updateStateInvalidate indicates that the state changed specifically due to a data invalidation.
 StateView.prototype.updateStateInvalidate = function(newState) {
   // TODO: this.
+};
+
+// _updateStateAnimation updates the animation parameters of this._state.
+StateView.prototype._updateStateAnimation = function(oldState) {
+  if (!this._state.animating) {
+    return;
+  }
+
+  if (!oldState.animating) {
+    this._state.animationProgress = 0;
+    this._state.startYLabels = oldState.yLabels;
+    this._state.startLeftmostLabelWidth = oldState.positive.leftmostYLabelsWidth;
+  }
+
+  if (!this._state.chunkView) {
+    this._state.animating = false;
+  } else if (!this._state.animate) {
+    this._state.animating = false;
+    this._state.chunkView.finishAnimation();
+  } else {
+    var change = (this._state.positive.viewportWidth !== oldState.positive.viewportWidth) ||
+      (this._state.positive.barShowingHeight !== oldState.positive.barShowingHeight);
+    // TODO: detect scrolling to cancel the animation there as well.
+    if (change) {
+      this._state.animating = false;
+      this._state.chunkView.finishAnimation();
+    }
+  }
+};
+
+StateView.prototype._updateStateLiveMeasurements = function() {
+  if (!this._state.animating) {
+    this._state.liveLeftmostLabelWidth = this._state.positive.leftmostYLabelsWidth;
+    this._state.liveContentWidth = this._state.positive.contentWidth;
+  } else {
+    var left = (1-this._state.animationProgress)*this._state.startLeftmostLabelWidth +
+      this._state.animationProgress*this._state.positive.leftmostYLabelsWidth;
+    this._state.liveLeftmostLabelWidth = left;
+
+    this._state.liveContentWidth = this._state.chunkView.leftOffset() +
+      this._state.chunkView.rightOffset() + this._state.chunkView.inherentWidth;
+  }
 };
 
 // _handleStateChange performs all the needed visual tasks due to a change in the StateViewState.

@@ -15,6 +15,7 @@ function StateViewState(positive, normative, attrs) {
 
   this.animating = attrs.animating || false;
   this.animationProgress = attrs.animationProgress || 0;
+  this.startLeftmostLabelWidth = attrs.startLeftmostLabelWidth || 0;
   this.startYLabels = attrs.startYLabels || null;
 
   this.liveLeftmostLabelWidth = attrs.liveLeftmostLabelWidth || 0;
