@@ -14,17 +14,17 @@ function StateViewState(positive, normative, attrs) {
   this.animate = attrs.animate || false;
 
   this.animating = attrs.animating || false;
-  this.animationProgress = attrs.animationProgress || 0;
-  this.startLeftmostLabelWidth = attrs.startLeftmostLabelWidth || 0;
+  this.animationChunkView = attrs.animationChunkView || null;
+  this.animationProgress = attrs.animationProgress || -1;
+  this.startLeftmostLabelWidth = attrs.startLeftmostLabelWidth || -1;
   this.startYLabels = attrs.startYLabels || null;
 
-  this.liveLeftmostLabelWidth = attrs.liveLeftmostLabelWidth || 0;
-  this.liveContentWidth = attrs.liveContentWidth || 0;
+  this.liveLeftmostLabelWidth = attrs.liveLeftmostLabelWidth || -1;
+  this.liveContentWidth = attrs.liveContentWidth || -1;
 }
 
 // copy generates a quasi-deep copy of this state.
-// The yLabels, chunkView, startYLabels and endYLabels are not copied, but everything else is copied
-// deeply.
+// Every y-label and ChunkView is shallow copied, but everything else is deeply copied.
 StateViewState.prototype.copy = function() {
   return new StateViewState(new PositiveState(this.positive), new NormativeState(this.normative),
     this);
@@ -43,18 +43,17 @@ State.prototype.copy = function() {
 
 // PositiveState stores information about the current visual state of a ContentView.
 function PositiveState(attrs) {
+  this.dataSourceLength = attrs.dataSourceLength || 0;
+
   this.visibleChunkStart = attrs.visibleChunkStart || -1;
   this.visibleChunkLength = attrs.visibleChunkLength || -1;
-  this.chunkViewLeftOffset = attrs.chunkViewLeftOffset || -1;
-  this.chunkViewInherentWidth = attrs.chunkViewInherentWidth || -1;
 
-  this.dataSourceLength = attrs.dataSourceLength || 0;
   this.leftmostChunkLength = attrs.leftmostChunkLength || -1;
   this.leftmostYLabelsWidth = attrs.leftmostYLabelsWidth || -1;
   this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || -1;
 
-  this.viewportX = attrs.viewportX || 0;
   this.contentWidth = attrs.contentWidth || 0;
+  this.viewportX = attrs.viewportX || 0;
   this.viewportWidth = attrs.viewportWidth || 0;
   this.viewportHeight = attrs.viewportHeight || 0;
   this.barShowingHeight = attrs.barShowingHeight || 0;

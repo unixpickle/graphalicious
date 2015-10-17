@@ -19,6 +19,7 @@ function StateView(state, attrs) {
   this._loader2 = attrs.loader2;
   this._splashScreen = attrs.splashScreen;
   this._dataSource = attrs.dataSource;
+  this._provider = attrs.provider;
 
   this._element = document.createElement('div');
   this._element.position = 'absolute';
@@ -84,18 +85,17 @@ StateView.prototype.dispose = function() {
 
 // updateState indicates that the state changed for some reason other than a deletion, addition, or
 // modification of a data point or from invalidation of the data set.
+// The caller should pass a new State.
 StateView.prototype.updateState = function(newState) {
-  var oldState = this._state;
-  this._state = new StateViewState(newState.positive, newState.normative, this._state);
+  this._updateState(new StateViewState(newState.positive, newState.normative, this._state));
+};
 
-  this._updateStateAnimation(oldState);
-  this._updateStateLiveMeasurements();
-  // TODO: (re)generate the ChunkView if necessary.
-  // TODO: (re)generate the y-axis labels if necessary.
-  // TODO: play with this._splashScreenDelay and this._doneLoadingTimeout if necessary.
-  // TODO: compute the showingContent field of the new state.
-
-  this._handleStateChange(oldState);
+// updateStateVisualStyleChange indicates that the visual style changed in some way.
+// This is just like updateState, except it is guaranteed to re-generate the current ChunkView.
+StateView.prototype.updateStateVisualStyleChange = function(newState) {
+  var state = new StateViewState(newState.positive, newState.normative, this._state);
+  state.chunkView = null;
+  this._updateState(state);
 };
 
 // updateStateDeletion indicates that the state changed specifically due to a deletion.
@@ -118,19 +118,48 @@ StateView.prototype.updateStateInvalidate = function(newState) {
   // TODO: this.
 };
 
-// _updateStateAnimation updates the animation parameters of this._state.
+StateView.prototype._updateState = function(newStateViewState) {
+  var oldState = this._state;
+  this._state = newStateViewState;
+
+  this._updateStateChunkView(oldState);
+  this._updateStateAnimation(oldState);
+  this._updateStateLiveMeasurements();
+  // TODO: (re)generate the y-axis labels if necessary.
+  // TODO: play with this._splashScreenDelay and this._doneLoadingTimeout if necessary.
+  // TODO: compute the showingContent field of the new state.
+
+  this._handleStateChange(oldState);
+};
+
+StateView.prototype._updateStateChunkView = function(oldState) {
+  var needsNewChunkView = false;
+  if (this._state.chunkView !== null &&
+      this._state.positive.visibleChunkStart === oldState.positive.visibleChunkStart &&
+      this._state.positive.visibleChunkLength === oldState.positive.visibleChunkLength) {
+    return;
+  }
+  if (this._state.positive.visibleChunkStart < 0) {
+    this._state.chunkView = null;
+  } else {
+    var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+    this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
+  }
+};
+
 StateView.prototype._updateStateAnimation = function(oldState) {
   if (!this._state.animating) {
     return;
   }
 
   if (!oldState.animating) {
+    this._state.animationChunkView = this._state.chunkView;
     this._state.animationProgress = 0;
     this._state.startYLabels = oldState.yLabels;
     this._state.startLeftmostLabelWidth = oldState.positive.leftmostYLabelsWidth;
   }
 
-  if (!this._state.chunkView) {
+  if (this._state.chunkView === null || this._state.positive.visibleChunkStart < 0) {
     this._state.animating = false;
   } else if (!this._state.animate) {
     this._state.animating = false;
@@ -155,8 +184,8 @@ StateView.prototype._updateStateLiveMeasurements = function() {
       this._state.animationProgress*this._state.positive.leftmostYLabelsWidth;
     this._state.liveLeftmostLabelWidth = left;
 
-    this._state.liveContentWidth = this._state.chunkView.leftOffset() +
-      this._state.chunkView.rightOffset() + this._state.chunkView.inherentWidth;
+    this._state.liveContentWidth = this._state.animationChunkView.leftOffset() +
+      this._state.animationChunkView.rightOffset() + this._state.animationChunkView.inherentWidth();
   }
 };
 
