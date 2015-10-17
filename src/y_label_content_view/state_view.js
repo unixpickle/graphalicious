@@ -17,6 +17,13 @@ function StateView(state, attrs) {
   this._canvas = document.createElement('canvas');
   this._element.appendChild(this._splashScreen.element());
   this._splashScreen.setAnimate(false);
+  
+  this._yLabels = null;
+
+  this._animate = false;
+  this._animating = false;
+  this._startYLabels = null;
+  this._endYLabels = null;
 }
 
 StateView.prototype = Object.create(EventEmitter.prototype);
@@ -41,7 +48,15 @@ StateView.prototype.draw = function() {
 
 // setAnimate enables/disables animations on the StateView.
 StateView.prototype.setAnimate = function(flag) {
-  // TODO: this.
+  if (flag === this._animate) {
+    return;
+  }
+  this._animate = flag;
+  if (this._showingContent()) {
+    this._chunkView.setAnimate(flag);
+  } else {
+    this._splashScreen.setAnimate(flag);
+  }
 };
 
 // dispose removes a StateView's references to the provider, data source, and ChunkView.
@@ -75,4 +90,8 @@ StateView.prototype.updateStateModify = function(newState, index) {
 // updateStateInvalidate indicates that the state changed specifically due to a data invalidation.
 StateView.prototype.updateStateInvalidate = function(newState) {
   // TODO: this.
+};
+
+StateView.prototype._showingContent = function() {
+  return this._chunkView !== null && !this._state.normative.needsLeftmostChunk;
 };

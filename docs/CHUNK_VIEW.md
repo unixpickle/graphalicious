@@ -18,6 +18,8 @@ Since a *ChunkView* knows where individual data points will be drawn, it is resp
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. Since the height of a *ChunkView* is determined externally, it must be specified as an argument to the event handlers. In addition, since a *ChunkView* can be stretched horizontally, the stretched width may be specified as well.
 
+A *ChunkView* should only change its *inherent width* when the underlying chunk changes. Otherwise, there should never be a reason for a *ChunkView*'s width to change.
+
 # The PointerPosition type
 
 The *PointerPosition* type expresses the coordinates of a pointer (e.g. the mouse) in a *ChunkView*'s coordinate system. A *PointerPosition* object has the following fields:
@@ -77,6 +79,6 @@ Drawing can be performed with these methods:
 
 A *ChunkView* may emit the following events:
 
- * redraw() - request a redraw for any reason other than an animation frame.
- * redrawAnimation(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is.
+ * redraw() - request a redraw for a *ChunkView*-specific reason. This will most likely be due to a color change or some other theme change. It is not necessary&mdash;and not recommended&mdash;to manually request a redraw from within a chunk mutation handler such as *deletionBefore*.
+ * animationFrame(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is.
  * animationEnd() - an animation has ended.

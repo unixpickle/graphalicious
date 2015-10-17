@@ -6,7 +6,7 @@ A *ViewProvider* can create new *ChunkView*s. It can also predict how large *Chu
 
 # Overview & Terminology
 
-A **visual style** is a means of presenting uniformly spaced data points. For example, a bar graph with 50 pixel bars, 10 pixel spacing, and 20 pixel margins is a visual style. A visual style in and of itself determines the width of a certain number of data points. In a sense, a *ViewProvider* is the embodiment of a visual style. All of a *ViewProvider*'s calculations are done based on the visual style it represents. A *ViewProvider* creates *ChunkView*s which reflect its visual style.
+A **visual style** is a means of presenting uniformly spaced data points. For example, a bar graph with 50 pixel bars, 10 pixel spacing, and 20 pixel margins is a visual style. A visual style in and of itself determines the width of a certain number of data points. In a sense, a *ViewProvider* is the embodiment of a visual style. All of a *ViewProvider*'s calculations are done based on the visual style it represents. A *ViewProvider* creates *ChunkView*s which reflect its current visual style.
 
 A **theoretical ChunkView** is an abstract concept used to refer to a *ChunkView* which has not yet been created. A **theoretical chunk** is a pair of numbers (start index and length) representing the position and size of a chunk.
 
@@ -41,4 +41,4 @@ The TheoreticalChunk type has two fields:
 
 When the data or any visual settings change, a *ChunkView* may emit the following events:
 
- * change() - the visual style changed in some way. By the time this event fires, the widths and offsets of any *ChunkView*s returned by this *ViewProvider* will already have changed accordingly.
+ * change() - the visual style changed in some way. *ChunkView*s created before the visual style change will be unaffected by the change.
