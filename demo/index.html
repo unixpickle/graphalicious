@@ -27,12 +27,12 @@
       width: 100%;
       background-color: #f0f0f0;
     }
-    
+
     .hoverable-button {
       color: #65bcd4;
       cursor: pointer;
     }
-    
+
     .hoverable-button:hover {
       color: #5196aa;
     }
@@ -51,10 +51,12 @@
       view.element().style.position = 'absolute';
       view.element().style.left = '100px';
 
-      var splashScreen = new window.SplashScreen(colorScheme);
-      var dataSource = window.StaticDataSource.random(10, 100, false);
-      var provider = new window.graphalicious.base.EventEmitter();
-      var content = new window.graphalicious.ylcv.ContentView(provider, dataSource, splashScreen);
+      var config = {
+        splashScreen: new window.SplashScreen(colorScheme),
+        dataSource: window.StaticDataSource.random(10, 100, false),
+        provider: new window.graphalicious.base.EventEmitter()
+      };
+      var content = new window.graphalicious.ylcv.ContentView(config);
       view.setContent(content);
       layoutView();
       view.setAnimate(true);

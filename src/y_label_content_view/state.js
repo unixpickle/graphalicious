@@ -1,8 +1,8 @@
 // StateViewState stores a State and some additional information used for a StateView specifically.
 // These states are used internally by a StateView.
 function StateViewState(positive, normative, attrs) {
-  this.positive = state.positive;
-  this.normative = state.normative;
+  this.positive = positive;
+  this.normative = normative;
 
   this.yLabels = attrs.yLabels || null;
   this.yLabelsStartIndex = attrs.yLabelsStartIndex || -1;

@@ -166,10 +166,10 @@ StateView.prototype._handleAnimateChange = function(contentChanged) {
 
   if (this._state.showingContent) {
     if (this._state.chunkView) {
-      this._state.chunkView.setAnimate(flag);
+      this._state.chunkView.setAnimate(this._state.animate);
     }
   } else {
-    this._splashScreen.setAnimate(flag);
+    this._splashScreen.setAnimate(this._state.animate);
   }
 };
 
