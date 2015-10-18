@@ -116,9 +116,6 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleCh
 
     state.animating = state.chunkView.deletionInside(oldIndex);
     --state.chunkViewLength;
-    if (animating) {
-      state.animating = true;
-    }
   } else if (oldIndex < state.chunkViewStartIndex) {
     this._keepRightOnWidthChange = true;
     --state.chunkViewStartIndex;
@@ -133,7 +130,27 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleCh
 
 // updateStateAdd indicates that the state changed specifically due to an addition.
 StateView.prototype.updateStateAdd = function(newState) {
-  // TODO: this.
+  var state = new ViewState(newState.positive, newState.normative, this._state);
+
+  if (state.animating) {
+    state.animating = false;
+    state.animationChunkView.finishAnimation();
+  }
+
+  if (newState.positive.visibleChunkLength > this._state.positive.visibleChunkLength) {
+    var rightOffset = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
+      state.positive.viewportWidth - this._chunkView.getLeftOffset();
+    var rightIndex = this._chunkView.lastVisibleDataPoint(rightOffset);
+    this._keepRightOnWidthChange = (rightIndex === this._state.positive.visibleChunkLength-1);
+
+    state.animating = this._chunkView.addInside();
+    ++state.chunkViewLength;
+  } else {
+    this._keepRightOnWidthChange = false;
+    this._chunkView.addAfter();
+  }
+
+  this._updateState(state);
 };
 
 // updateStateModify indicates that the state changed specifically due to a modification.
