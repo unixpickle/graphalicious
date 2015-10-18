@@ -138,6 +138,8 @@ StateView.prototype.updateStateAdd = function(newState) {
   }
 
   if (newState.positive.visibleChunkLength > this._state.positive.visibleChunkLength) {
+    assert(newState.positive.visibleChunkLength === this._state.positive.visibleChunkLength + 1);
+
     var rightOffset = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
       state.positive.viewportWidth - state.chunkView.getLeftOffset();
     var rightIndex = state.chunkView.lastVisibleDataPoint(rightOffset);
