@@ -173,7 +173,9 @@ StateView.prototype.updateStateModify = function(newState, index) {
 
 // updateStateInvalidate indicates that the state changed specifically due to a data invalidation.
 StateView.prototype.updateStateInvalidate = function(newState) {
-  // TODO: this.
+  var state = new ViewState(newState.positive, newState.normative, this._state);
+  assert(state.positive.visibleChunkIndex < 0 && state.positive.leftmostChunkLength < 0);
+  this._updateState(state);
 };
 
 StateView.prototype._updateState = function(newViewState) {
@@ -205,17 +207,11 @@ StateView.prototype._updateStateAnimation = function(oldState) {
     this._state.startLeftmostLabelWidth = oldState.positive.leftmostYLabelsWidth;
   }
 
-  var cancel = false;
-
-  if (this._state.positive.visibleChunkStart < 0 || !this._state.animate) {
-    cancel = true;
-  } else {
-    cancel = (this._state.positive.viewportWidth !== oldState.positive.viewportWidth) ||
-      (this._state.positive.barShowingHeight !== oldState.positive.barShowingHeight);
-    // TODO: detect scrolling to cancel the animation in that case as well.
-  }
-
-  if (cancel) {
+  // TODO: detect scrolling to cancel the animation in that case as well.
+  if (this._state.positive.visibleChunkStart < 0 ||
+      !this._state.showingContent || !this._state.animate ||
+      this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
+      this._state.positive.barShowingHeight !== oldState.positive.barShowingHeight) {
     this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
     this._state.animationChunkView.finishAnimation();
     this._state.animating = false;
