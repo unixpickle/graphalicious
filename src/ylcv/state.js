@@ -1,8 +1,8 @@
-// StateViewState stores a State and some additional information used for a StateView specifically.
+// ViewState stores a State and some additional information used for a StateView specifically.
 // These states are used internally by a StateView.
-function StateViewState(positive, normative, attrs) {
-  this.positive = positive;
-  this.normative = normative;
+function ViewState(positive, normative, attrs) {
+  this.positive = new PositiveState(positive);
+  this.normative = new NormativeState(normative);
 
   this.yLabels = attrs.yLabels || null;
   this.yLabelsStartIndex = attrs.yLabelsStartIndex || -1;
@@ -27,9 +27,8 @@ function StateViewState(positive, normative, attrs) {
 
 // copy generates a quasi-deep copy of this state.
 // Every y-label and ChunkView is shallow copied, but everything else is deeply copied.
-StateViewState.prototype.copy = function() {
-  return new StateViewState(new PositiveState(this.positive), new NormativeState(this.normative),
-    this);
+ViewState.prototype.copy = function() {
+  return new ViewState(this.positive, this.normative, this);
 };
 
 // State stores both a PositiveState and NormativeState.

@@ -15,7 +15,7 @@ var DEFAULT_KEEP_RIGHT = true;
 function StateView(state, attrs) {
   EventEmitter.call(this);
 
-  this._state = new StateViewState(state.positive, state.normative, {});
+  this._state = new ViewState(state.positive, state.normative, {});
 
   this._loader1 = attrs.loader1;
   this._loader2 = attrs.loader2;
@@ -87,22 +87,21 @@ StateView.prototype.dispose = function() {
 
 // updateState indicates that the state changed for some reason other than a deletion, addition, or
 // modification of a data point or from invalidation of the data set.
-// The caller should pass a new State.
 StateView.prototype.updateState = function(newState) {
-  this._updateState(new StateViewState(newState.positive, newState.normative, this._state));
+  this._updateState(new ViewState(newState.positive, newState.normative, this._state));
 };
 
 // updateStateVisualStyleChange indicates that the visual style changed in some way.
 // This is just like updateState, except it is guaranteed to re-generate the current ChunkView.
 StateView.prototype.updateStateVisualStyleChange = function(newState) {
-  var state = new StateViewState(newState.positive, newState.normative, this._state);
+  var state = new ViewState(newState.positive, newState.normative, this._state);
   state.chunkView = null;
   this._updateState(state);
 };
 
 // updateStateDeletion indicates that the state changed specifically due to a deletion.
 StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleChunk) {
-  var state = new StateViewState(newState.positive, newState.normative, this._state);
+  var state = new ViewState(newState.positive, newState.normative, this._state);
 
   if (state.animating) {
     state.animating = false;
@@ -147,9 +146,9 @@ StateView.prototype.updateStateInvalidate = function(newState) {
   // TODO: this.
 };
 
-StateView.prototype._updateState = function(newStateViewState) {
+StateView.prototype._updateState = function(newViewState) {
   var oldState = this._state;
-  this._state = newStateViewState;
+  this._state = newViewState;
 
   this._updateStateAnimation(oldState);
   this._updateStateChunkView();
@@ -226,7 +225,7 @@ StateView.prototype._updateStateLiveMeasurements = function() {
   }
 };
 
-// _handleStateChange performs all the needed visual tasks due to a change in the StateViewState.
+// _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
 StateView.prototype._handleStateChange = function(oldState) {
   // TODO: handle normative state changes here.
 
