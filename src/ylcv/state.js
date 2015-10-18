@@ -9,6 +9,8 @@ function StateViewState(positive, normative, attrs) {
   this.yLabelsLength = attrs.yLabelsEndIndex || -1;
 
   this.chunkView = attrs.chunkView || null;
+  this.chunkViewStartIndex = attrs.chunkViewStartIndex || -1;
+  this.chunkViewLength = attrs.chunkViewLength || -1;
 
   this.showingContent = attrs.showingContent || false;
   this.animate = attrs.animate || false;

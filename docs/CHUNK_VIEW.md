@@ -36,8 +36,8 @@ A set of methods can be used to get the current properties of a *ChunkView*. The
  * *int* getInherentWidth() - get the current inherent width of the *ChunkView*.
  * *int* getLeftOffset() - get the left offset of the *ChunkView*.
  * *int* getRightOffset() - get the right offset of the *ChunkView*.
- * *int* firstVisibleDataPoint(leftOffset) - get the first visible data point (as a chunk-relative index) within a subregion which starts at the given left offset.
- * *int* lastVisibleDataPoint(endLeftOffset) - get the last visible data point (as a chunk-relative index) within a subregion which ends at the given left offset.
+ * *int* firstVisibleDataPoint(leftOffset) - get the first visible data point (as a chunk-relative index) within a subregion which starts at the given left offset. The leftOffset will not be bounded; the ChunkView is responsible for clipping it. The return value should be between 0 and pointCount-1 inclusive.
+ * *int* lastVisibleDataPoint(endLeftOffset) - get the last visible data point (as a chunk-relative index) within a subregion which ends at the given left offset. The endLeftOffset will not be bounded; the ChunkView is responsible for clipping it. The return value should be between 0 and pointCount-1 inclusive.
  * *int* xAxisLabelPosition(pointIndex) - given a chunk-relative index, get the left offset (relative to the left of the *ChunkView*) for an x-axis label.
 
 A parallel set of methods exists for predicting properties of the *ChunkView* once it has completed its current animation:

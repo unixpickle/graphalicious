@@ -8,6 +8,8 @@ var SPLASH_SCREEN_DELAY = 50;
 // shown consecutively. This prevents "flickers" of the SplashScreen.
 var MIN_SPLASH_SCREEN_TIME = 300;
 
+var DEFAULT_KEEP_RIGHT = true;
+
 // StateView is responsible for drawing a state and rendering animations.
 // The StateView is not responsible for updating the state, just for handling state changes.
 function StateView(state, attrs) {
@@ -30,7 +32,7 @@ function StateView(state, attrs) {
   this._pixelRatio = 0;
   this._crystalCallback = this._updatePixelRatio.bind(this);
 
-  this._keepRightOnWidthChange = true;
+  this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
 
   // this._splashScreenDelay will be set to a timeout ID if the SplashScreen should be displayed
   // after a very short interval.
@@ -100,7 +102,34 @@ StateView.prototype.updateStateVisualStyleChange = function(newState) {
 
 // updateStateDeletion indicates that the state changed specifically due to a deletion.
 StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleChunk) {
-  // TODO: this.
+  var state = new StateViewState(newState.positive, newState.normative, this._state);
+
+  if (state.animating) {
+    state.animating = false;
+    state.animationChunkView.finishAnimation();
+  }
+
+  if (inVisibleChunk) {
+    var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
+      state.positive.viewportWidth/2 - this._chunkView.getLeftOffset();
+    var middleIndex = this._chunkView.firstVisibleDataPoint(middleLeft);
+    this._keepRightOnWidthChange = (oldIndex < middleIndex);
+
+    state.animating = state.chunkView.deletionInside(oldIndex);
+    --state.chunkViewLength;
+    if (animating) {
+      state.animating = true;
+    }
+  } else if (oldIndex < state.chunkViewStartIndex) {
+    this._keepRightOnWidthChange = true;
+    --state.chunkViewStartIndex;
+    state.chunkView.deletionBefore(oldIndex);
+  } else {
+    this._keepRightOnWidthChange = false;
+    state.chunkView.deletionAfter(oldIndex);
+  }
+
+  this._updateState(state);
 };
 
 // updateStateAdd indicates that the state changed specifically due to an addition.
@@ -122,8 +151,8 @@ StateView.prototype._updateState = function(newStateViewState) {
   var oldState = this._state;
   this._state = newStateViewState;
 
-  this._updateStateChunkView(oldState);
   this._updateStateAnimation(oldState);
+  this._updateStateChunkView();
   this._updateStateLiveMeasurements();
   // TODO: (re)generate the y-axis labels if necessary.
   // TODO: play with this._splashScreenDelay and this._doneLoadingTimeout if necessary.
@@ -132,23 +161,11 @@ StateView.prototype._updateState = function(newStateViewState) {
   this._handleStateChange(oldState);
 };
 
-StateView.prototype._updateStateChunkView = function(oldState) {
-  var needsNewChunkView = false;
-  if (this._state.chunkView !== null &&
-      this._state.positive.visibleChunkStart === oldState.positive.visibleChunkStart &&
-      this._state.positive.visibleChunkLength === oldState.positive.visibleChunkLength) {
-    return;
-  }
-  if (this._state.positive.visibleChunkStart < 0) {
-    this._state.chunkView = null;
-  } else {
-    var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
-    this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
-  }
-};
-
 StateView.prototype._updateStateAnimation = function(oldState) {
   if (!this._state.animating) {
+    if (oldState.animating) {
+      this._animationChunkView.finishAnimation();
+    }
     return;
   }
 
@@ -159,19 +176,39 @@ StateView.prototype._updateStateAnimation = function(oldState) {
     this._state.startLeftmostLabelWidth = oldState.positive.leftmostYLabelsWidth;
   }
 
-  if (this._state.chunkView === null || this._state.positive.visibleChunkStart < 0) {
-    this._state.animating = false;
-  } else if (!this._state.animate) {
-    this._state.animating = false;
-    this._state.chunkView.finishAnimation();
+  var cancel = false;
+
+  if (this._state.positive.visibleChunkStart < 0 || !this._state.animate) {
+    cancel = true;
   } else {
-    var change = (this._state.positive.viewportWidth !== oldState.positive.viewportWidth) ||
+    cancel = (this._state.positive.viewportWidth !== oldState.positive.viewportWidth) ||
       (this._state.positive.barShowingHeight !== oldState.positive.barShowingHeight);
-    // TODO: detect scrolling to cancel the animation there as well.
-    if (change) {
-      this._state.animating = false;
-      this._state.chunkView.finishAnimation();
-    }
+    // TODO: detect scrolling to cancel the animation in that case as well.
+  }
+
+  if (cancel) {
+    this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
+    this._state.animationChunkView.finishAnimation();
+    this._state.animating = false;
+  }
+};
+
+StateView.prototype._updateStateChunkView = function() {
+  var needsNewChunkView = false;
+  if (this._state.chunkView !== null &&
+      this._state.chunkViewStartIndex === this._state.positive.visibleChunkStart &&
+      this._state.chunkViewLength === this._state.positive.visibleChunkLength) {
+    return;
+  }
+  if (this._state.positive.visibleChunkStart < 0) {
+    this._state.chunkView = null;
+    this._state.chunkViewStartIndex = -1;
+    this._state.chunkViewLength = -1;
+  } else {
+    var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+    this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
+    this._state.chunkViewStartIndex = chunk.getStartIndex();
+    this._state.chunkViewLength = chunk.getlength();
   }
 };
 
@@ -183,14 +220,16 @@ StateView.prototype._updateStateLiveMeasurements = function() {
     var left = (1-this._state.animationProgress)*this._state.startLeftmostLabelWidth +
       this._state.animationProgress*this._state.positive.leftmostYLabelsWidth;
     this._state.liveLeftmostLabelWidth = left;
-
-    this._state.liveContentWidth = this._state.animationChunkView.leftOffset() +
-      this._state.animationChunkView.rightOffset() + this._state.animationChunkView.inherentWidth();
+    this._state.liveContentWidth = this._state.animationChunkView.getInherentWidth() +
+      this._state.animationChunkView.getLeftOffset() +
+      this._state.animationChunkView.getRightOffset();
   }
 };
 
 // _handleStateChange performs all the needed visual tasks due to a change in the StateViewState.
 StateView.prototype._handleStateChange = function(oldState) {
+  // TODO: handle normative state changes here.
+
   var redraw = false;
   var widthChanged = false;
 
