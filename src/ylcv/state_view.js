@@ -110,8 +110,8 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleCh
 
   if (inVisibleChunk) {
     var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-      state.positive.viewportWidth/2 - this._chunkView.getLeftOffset();
-    var middleIndex = this._chunkView.firstVisibleDataPoint(middleLeft);
+      state.positive.viewportWidth/2 - state.chunkView.getLeftOffset();
+    var middleIndex = state.chunkView.firstVisibleDataPoint(middleLeft);
     this._keepRightOnWidthChange = (oldIndex < middleIndex);
 
     state.animating = state.chunkView.deletionInside(oldIndex);
@@ -139,15 +139,15 @@ StateView.prototype.updateStateAdd = function(newState) {
 
   if (newState.positive.visibleChunkLength > this._state.positive.visibleChunkLength) {
     var rightOffset = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-      state.positive.viewportWidth - this._chunkView.getLeftOffset();
-    var rightIndex = this._chunkView.lastVisibleDataPoint(rightOffset);
+      state.positive.viewportWidth - state.chunkView.getLeftOffset();
+    var rightIndex = state.chunkView.lastVisibleDataPoint(rightOffset);
     this._keepRightOnWidthChange = (rightIndex === this._state.positive.visibleChunkLength-1);
 
-    state.animating = this._chunkView.addInside();
+    state.animating = state.chunkView.addInside();
     ++state.chunkViewLength;
   } else {
     this._keepRightOnWidthChange = false;
-    this._chunkView.addAfter();
+    state.chunkView.addAfter();
   }
 
   this._updateState(state);
@@ -155,7 +155,18 @@ StateView.prototype.updateStateAdd = function(newState) {
 
 // updateStateModify indicates that the state changed specifically due to a modification.
 StateView.prototype.updateStateModify = function(newState, index) {
-  // TODO: this.
+  var state = new ViewState(newState.positive, newState.normative, this._state);
+
+  if (state.animating) {
+    state.animating = false;
+    state.animationChunkView.finishAnimation();
+  }
+
+  if (index >= state.chunkViewStartIndex && index < state.chunkViewStartIndex+chunkViewLength) {
+    state.animating = state.chunkView.modifyInside(index);
+  }
+
+  this._updateState(state);
 };
 
 // updateStateInvalidate indicates that the state changed specifically due to a data invalidation.
@@ -308,7 +319,7 @@ StateView.prototype._handleShowingContentChange = function() {
   } else {
     this._element.removeChild(this._canvas);
     if (this._state.chunkView !== null) {
-      this._chunkView.setAnimate(false);
+      this._state.chunkView.setAnimate(false);
     }
     this._element.appendChild(this._splashScreen.element());
     this._splashScreen.setAnimate(this._state.animate);
