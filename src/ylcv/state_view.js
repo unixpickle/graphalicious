@@ -261,6 +261,12 @@ StateView.prototype._handleStateChange = function(oldState) {
   if (oldState.animate !== this._state.animate) {
     this._handleAnimateChange();
   }
+
+  if (this._state.animating !== oldState.animating ||
+      (this._state.animating && this._state.animationProgress !== oldState.animationProgress)) {
+    redraw = true;
+  }
+
   if (oldState.showingContent !== this._state.showingContent) {
     this._handleShowingContentChange();
     widthChanged = true;
@@ -280,10 +286,14 @@ StateView.prototype._handleStateChange = function(oldState) {
     }
   }
 
-  // TODO: check for animation changes here.
-  // TODO: check for viewport changes here.
+  if (this._state.positive.viewportX !== oldState.positive.viewportX ||
+      this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
+      this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
+    redraw = true;
+  }
 
   if (widthChanged) {
+    // NOTE: this should trigger a draw so we don't need to draw manually here.
     this.emit('widthChange', this._keepRightOnWidthChange);
   } else if (redraw) {
     this.draw();
