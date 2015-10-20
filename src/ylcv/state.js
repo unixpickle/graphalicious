@@ -4,6 +4,8 @@ function ViewState(positive, normative, attrs) {
   this.positive = new PositiveState(positive);
   this.normative = new NormativeState(normative);
 
+  this.viewFrozen = attrs.viewFrozen || false;
+
   this.yLabels = attrs.yLabels || null;
   this.yLabelsStartIndex = attrs.yLabelsStartIndex || -1;
   this.yLabelsLength = attrs.yLabelsEndIndex || -1;

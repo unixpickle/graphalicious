@@ -62,17 +62,6 @@ StateView.prototype.totalWidth = function() {
   }
 };
 
-// draw instructs the StateView to draw itself given the current state.
-// This will also account for the current animation.
-StateView.prototype.draw = function() {
-  if (!this._state.showingContent) {
-    return;
-  }
-
-  this._drawCanvas();
-  // TODO: position the inline loaders if necessary.
-};
-
 // setAnimate enables/disables animations on the StateView.
 StateView.prototype.setAnimate = function(flag) {
   var oldState = this._state.copy();
@@ -193,9 +182,8 @@ StateView.prototype._updateState = function(newViewState) {
   this._updateStateAnimation(oldState);
   this._updateStateChunkView();
   this._updateStateLiveMeasurements();
+  this._updateStateShowingContent();
   // TODO: (re)generate the y-axis labels if necessary.
-  // TODO: play with this._splashScreenDelay and this._doneLoadingTimeout if necessary.
-  // TODO: compute the showingContent field of the new state.
 
   this._handleStateChange(oldState);
 };
@@ -259,6 +247,11 @@ StateView.prototype._updateStateLiveMeasurements = function() {
   }
 };
 
+StateView.prototype._updateStateShowingContent = function() {
+  // TODO: update the viewFrozen and showingContent attributes here and manipulate the timers as
+  // needed.
+};
+
 // _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
 StateView.prototype._handleStateChange = function(oldState) {
   // TODO: handle normative state changes here.
@@ -280,38 +273,48 @@ StateView.prototype._handleStateChange = function(oldState) {
     widthChanged = true;
     redraw = true;
   }
-  if (oldState.chunkView !== this._state.chunkView) {
-    redraw = true;
-  }
-  if (oldState.yLabels !== this._state.yLabels) {
-    redraw = true;
-  }
-  if (!widthChanged && this._state.showingContent) {
-    var oldTotalWidth = oldState.liveLeftmostLabelWidth + oldState.liveContentWidth;
-    var newTotalWidth = this._state.liveLeftmostLabelWidth + this._state.liveContentWidth;
-    if (oldTotalWidth !== newTotalWidth) {
-      widthChanged = true;
-    }
-  }
 
-  if (this._state.positive.viewportX !== oldState.positive.viewportX ||
-      this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
+  if (this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
       this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
     redraw = true;
   }
 
+  if (!this._state.viewFrozen) {
+    if (this._state.positive.viewportX !== oldState.positive.viewportX ||
+        oldState.chunkView !== this._state.chunkView ||
+        oldState.yLabels !== this._state.yLabels) {
+      redraw = true;
+    }
+    if (!widthChanged && this._state.showingContent) {
+      var oldTotalWidth = oldState.liveLeftmostLabelWidth + oldState.liveContentWidth;
+      var newTotalWidth = this._state.liveLeftmostLabelWidth + this._state.liveContentWidth;
+      if (oldTotalWidth !== newTotalWidth) {
+        widthChanged = true;
+      }
+    }
+  } else if (oldState.viewFrozen) {
+    // NOTE: the width might have changed while the view was frozen.
+    // TODO: this could be "optimized" to check if the width *actually* changed, but it'd be
+    // premature for now.
+    widthChanged = true;
+  }
+
   if (widthChanged) {
-    // NOTE: this should trigger a draw so we don't need to draw manually here.
     this.emit('widthChange', this._keepRightOnWidthChange);
+    // TODO: see if widthChange triggered a redraw. If it did, don't do it again here.
+    this._draw();
   } else if (redraw) {
-    this.draw();
+    this._draw();
   };
 };
 
 StateView.prototype._handleAnimateChange = function(contentChanged) {
   if (this._state.animate) {
     window.crystal.addListener(this._crystalCallback);
-    this._updatePixelRatio();
+
+    // NOTE: this is not done synchronously because that could trigger a state change while handling
+    // an existing state change.
+    window.requestAnimationFrame(this._updatePixelRatio.bind(this));
   } else {
     window.crystal.removeListener(this._crystalCallback);
   }
@@ -342,6 +345,22 @@ StateView.prototype._handleShowingContentChange = function() {
   }
 };
 
+// _draw instructs the StateView to draw itself given the current state.
+// This will also accounts for the current animation.
+StateView.prototype._draw = function() {
+  // TODO: this might trigger a state change and redraw. Avoid doing a second redraw if possible.
+  this._finishSplashScreenDelay();
+
+  if (!this._state.showingContent) {
+    this._splashScreen.layout(this._state.positive.viewportWidth,
+      this._state.positive.viewportHeight);
+    return;
+  }
+
+  this._drawCanvas();
+  // TODO: position the inline loaders if necessary.
+};
+
 StateView.prototype._drawCanvas = function() {
   // TODO: draw the ChunkView (possibly stretched) and the ziggity zaggity (edge of content) here.
   // TODO: also draw the y-axis labels and the horizontal lines.
@@ -367,26 +386,36 @@ StateView.prototype._startSplashScreenDelay = function() {
     SPLASH_SCREEN_DELAY);
 };
 
-StateView.prototype._finishSplashScreenDelay = function() {
+StateView.prototype._startLoadingTimeout = function() {
   if (this._splashScreenDelay !== null) {
     clearTimeout(this._splashScreenDelay);
     this._splashScreenDelay = null;
-
-    if (this._state.chunkView === null || this._state.normative.needsLeftmostChunk) {
-      var oldState = this._state.copy();
-      this._state.showingContent = false;
-      this._handleStateChange(oldState);
-
-      this._doneLoadingTimeout = setTimeout(function() {
-        this._doneLoadingTimeout = null;
-        if (this._state.chunkView !== null && !this._state.normative.needsLeftmostChunk) {
-          var oldState = this._state.copy();
-          this._state.showingContent = true;
-          this._handleStateChange(oldState);
-        }
-      }.bind(this), MIN_SPLASH_SCREEN_TIME);
-    }
   }
+  this._doneLoadingTimeout = setTimeout(function() {
+    this._doneLoadingTimeout = null;
+    if (this._state.chunkView !== null && !this._state.normative.needsLeftmostChunk) {
+      var oldState = this._state.copy();
+      this._state.showingContent = true;
+      this._handleStateChange(oldState);
+    }
+  }.bind(this), MIN_SPLASH_SCREEN_TIME);
+};
+
+StateView.prototype._finishSplashScreenDelay = function() {
+  if (this._splashScreenDelay === null) {
+    return;
+  }
+
+  assert(this._state.chunkView === null || this._state.normative.needsLeftmostChunk);
+
+  clearTimeout(this._splashScreenDelay);
+  this._splashScreenDelay = null;
+
+  this._startLoadingTimeout();
+  var oldState = this._state.copy();
+  this._state.showingContent = false;
+  this._state.viewFrozen = false;
+  this._handleStateChange(oldState);
 };
 
 // middleVisiblePointIndex takes a state and returns the index of the point closest to the middle of

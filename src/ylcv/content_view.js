@@ -27,6 +27,14 @@ ContentView.prototype.dispose = function() {
   this._deregisterProviderEvents();
 };
 
+ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowingHeight) {
+  this._currentState.positive.viewportX = viewportX;
+  this._currentState.positive.viewportWidth = viewportWidth;
+  this._currentState.positive.viewportHeight = height;
+  this._currentState.positive.barShowingHeight = barShowingHeight;
+  this.updateState(this._currentState);
+};
+
 ContentView.prototype._registerDataSourceEvents = function() {
   this._boundDataSourceEvents = {};
   var eventNames = ['Load', 'Error', 'Delete', 'Add', 'Modify', 'Invalidate'];
