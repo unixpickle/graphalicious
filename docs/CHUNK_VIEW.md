@@ -59,8 +59,9 @@ You must manually notify a *ChunkView* when its chunk changes using several meth
  * *void* deletionBefore(oldIndex) - a data point was deleted which was before any of the data points in the *ChunkView*'s chunk.
  * *void* deletionAfter(oldIndex) - a data point was deleted which was after any of the data points in the *ChunkView*'s chunk.
  * *bool* deletionInside(oldIndex) - a data point was deleted which was inside the *ChunkView*'s chunk.
- * *void* addAfter() - a data point was added after the *ChunkView*'s chunk.
- * *bool* addInside() - a data point was added to the end of the *ChunkView*'s chunk.
+ * *void* insertionBefore() - a data point was added before the *ChunkView*'s chunk.
+ * *bool* insertionInside(index) - a data point was added inside the *ChunkView*'s chunk.
+ * *void* insertionAfter() - a data point was added after the *ChunkView*'s chunk.
  * *bool* modifyInside(index) - a data point inisde the *ChunkView*'s chunk was modified.
 
 You must manually notify a *ChunkView* of any pertinent pointer events. These events take [PointerPosition](#the-pointerposition-type) arguments:

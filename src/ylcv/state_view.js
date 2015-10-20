@@ -100,7 +100,7 @@ StateView.prototype.updateStateVisualStyleChange = function(newState) {
 };
 
 // updateStateDeletion indicates that the state changed specifically due to a deletion.
-StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleChunk) {
+StateView.prototype.updateStateDelete = function(newState, oldIndex) {
   var state = new ViewState(newState.positive, newState.normative, this._state);
 
   if (state.animating) {
@@ -108,28 +108,31 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex, inVisibleCh
     state.animationChunkView.finishAnimation();
   }
 
-  if (inVisibleChunk) {
-    var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-      state.positive.viewportWidth/2 - state.chunkView.getLeftOffset();
-    var middleIndex = state.chunkView.firstVisibleDataPoint(middleLeft);
-    this._keepRightOnWidthChange = (oldIndex < middleIndex);
+  var inVisibleChunk = state.positive.visibleChunkLength < this._state.positive.visibleChunkLength;
+  var beforeVisibleChunk = state.positive.visibleChunkIndex <
+    this._state.positive.visibleChunkIndex;
 
+  if (inVisibleChunk) {
+    this._keepRightOnWidthChange = (oldIndex < middleVisiblePointIndex(state));
     state.animating = state.chunkView.deletionInside(oldIndex);
     --state.chunkViewLength;
-  } else if (oldIndex < state.chunkViewStartIndex) {
+  } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
-    --state.chunkViewStartIndex;
     state.chunkView.deletionBefore(oldIndex);
+    --state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
     state.chunkView.deletionAfter(oldIndex);
   }
 
+  assert(state.positive.visibleChunkIndex === state.chunkViewStartIndex);
+  assert(state.positive.visibleChunkLength === state.chunkViewLength);
+
   this._updateState(state);
 };
 
-// updateStateAdd indicates that the state changed specifically due to an addition.
-StateView.prototype.updateStateAdd = function(newState) {
+// updateStateInsert indicates that the state changed specifically due to an insertion.
+StateView.prototype.updateStateInsert = function(newState, index) {
   var state = new ViewState(newState.positive, newState.normative, this._state);
 
   if (state.animating) {
@@ -137,20 +140,25 @@ StateView.prototype.updateStateAdd = function(newState) {
     state.animationChunkView.finishAnimation();
   }
 
-  if (newState.positive.visibleChunkLength > this._state.positive.visibleChunkLength) {
-    assert(newState.positive.visibleChunkLength === this._state.positive.visibleChunkLength + 1);
+  var inVisibleChunk = state.positive.visibleChunkLength > this._state.positive.visibleChunkLength;
+  var beforeVisibleChunk = state.positive.visibleChunkIndex >
+    this._state.positive.visibleChunkIndex;
 
-    var rightOffset = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-      state.positive.viewportWidth - state.chunkView.getLeftOffset();
-    var rightIndex = state.chunkView.lastVisibleDataPoint(rightOffset);
-    this._keepRightOnWidthChange = (rightIndex === this._state.positive.visibleChunkLength-1);
-
-    state.animating = state.chunkView.addInside();
+  if (inVisibleChunk) {
+    this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
+    state.animating = state.chunkView.insertionInside(index);
     ++state.chunkViewLength;
+  } else if (beforeVisibleChunk) {
+    this._keepRightOnWidthChange = true;
+    state.chunkView.insertionBefore();
+    --state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
-    state.chunkView.addAfter();
+    state.chunkView.insertionAfter();
   }
+
+  assert(state.positive.visibleChunkIndex === state.chunkViewStartIndex);
+  assert(state.positive.visibleChunkLength === state.chunkViewLength);
 
   this._updateState(state);
 };
@@ -380,3 +388,11 @@ StateView.prototype._finishSplashScreenDelay = function() {
     }
   }
 };
+
+// middleVisiblePointIndex takes a state and returns the index of the point closest to the middle of
+// the viewport.
+function middleVisiblePointIndex(state) {
+  var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
+    state.positive.viewportWidth/2 - state.chunkView.getLeftOffset();
+  return state.chunkView.firstVisibleDataPoint(middleLeft);
+}
