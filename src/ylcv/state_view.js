@@ -182,7 +182,7 @@ StateView.prototype._updateState = function(newViewState) {
   this._updateStateAnimation(oldState);
   this._updateStateChunkView();
   this._updateStateLiveMeasurements();
-  this._updateStateShowingContent();
+  this._updateStateShowingContent(oldState);
   // TODO: (re)generate the y-axis labels if necessary.
 
   this._handleStateChange(oldState);
@@ -247,9 +247,25 @@ StateView.prototype._updateStateLiveMeasurements = function() {
   }
 };
 
-StateView.prototype._updateStateShowingContent = function() {
-  // TODO: update the viewFrozen and showingContent attributes here and manipulate the timers as
-  // needed.
+StateView.prototype._updateStateShowingContent = function(oldState) {
+  if (this._doneLoadingTimeout !== null) {
+    return;
+  }
+
+  var shouldHideContent = (this._state.chunkView === null ||
+    this._state.normative.needsLeftmostChunk);
+  var oldShouldHideContent = (oldState.chunkView === null || oldState.normative.needsLeftmostChunk)
+
+  if (shouldHideContent && !oldShouldHideContent) {
+    assert(this._splashScreenDelay === null);
+    this._startLoadingTimeout();
+  } else if (!shouldHideContent && oldShouldHideContent) {
+    if (this._splashScreenDelay !== null) {
+      clearTimeout(this._splashScreenDelay);
+      this._splashScreenDelay = null;
+    }
+    this._state.showingContent = true;
+  }
 };
 
 // _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
