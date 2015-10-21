@@ -270,7 +270,18 @@ StateView.prototype._updateStateShowingContent = function(oldState) {
 
 // _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
 StateView.prototype._handleStateChange = function(oldState) {
-  // TODO: handle normative state changes here.
+  if (this._state.normative.loadingVisibleChunk) {
+    this._loader1.showLoading();
+    this._loader2.showLoading();
+  } else {
+    this._loader1.showError();
+    this._loader2.showError();
+  }
+  if (this._state.normative.loadingVisibleChunk || this._state.normative.loadingLeftmostChunk) {
+    this._splashScreen.showLoading();
+  } else {
+    this._splashScreen.showError();
+  }
 
   var redraw = false;
   var widthChanged = false;
@@ -333,6 +344,11 @@ StateView.prototype._handleAnimateChange = function(contentChanged) {
     window.requestAnimationFrame(this._updatePixelRatio.bind(this));
   } else {
     window.crystal.removeListener(this._crystalCallback);
+  }
+
+  if (!this._state.animate) {
+    this._loader1.setAnimate(false);
+    this._loader2.setAnimate(false);
   }
 
   if (this._state.showingContent) {
