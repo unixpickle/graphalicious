@@ -1,7 +1,7 @@
-function YAxisLabels(text, values, font) {
+function Labels(text, values, font) {
   if (!Array.isArray(text) || !Array.isArray(values) || text.length !== values.length ||
       this.text.length < 2) {
-    throw new Error('expected two array arguments of equal length with at least two elements');
+    throw new Error('invalid arguments');
   }
   this.text = text;
   this.values = values;
@@ -11,14 +11,14 @@ function YAxisLabels(text, values, font) {
   }
 }
 
-YAxisLabels.widthContext = document.createElement('canvas').getContext('2d');
+Labels.widthContext = document.createElement('canvas').getContext('2d');
 
-YAxisLabels.measureLabel = function(text, font) {
-  YAxisLabels.widthContext.font = font;
-  return YAxisLabels.widthContext.measureText(text);
+Labels.measureLabel = function(text, font) {
+  Labels.widthContext.font = font;
+  return Labels.widthContext.measureText(text);
 };
 
-YAxisLabels.prototype.draw = function(ctx, leftX, topY, height) {
+Labels.prototype.draw = function(ctx, leftX, topY, height) {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'end';
 
