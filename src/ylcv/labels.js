@@ -1,13 +1,13 @@
 function LabelSettings(attrs) {
   this.leftMargin = attrs.leftMargin || LabelSettings.DEFAULT_MARGIN;
   this.rightMargin = attrs.rightMargin || LabelSettings.DEFAULT_MARGIN;
-  this.textColor = attrs.textColor || LabelSettings.DEFAULT_TEXT_COLOR;
+  this.color = attrs.color || LabelSettings.DEFAULT_COLOR;
   this.font = attrs.font || LabelSettings.DEFAULT_FONT;
   this.opacity = attrs.opacity || 1;
 }
 
 LabelSettings.DEFAULT_MARGIN = 10;
-LabelSettings.DEFAULT_TEXT_COLOR = '#999';
+LabelSettings.DEFAULT_COLOR = '#999';
 LabelSettings.DEFAULT_FONT = '10px sans-serif';
 
 LabelSettings.prototype.margin = function() {
@@ -44,6 +44,11 @@ Labels.prototype.width = function() {
 Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'end';
+  ctx.font = this.settings.font;
+  ctx.fillStyle = this.settings.color;
+
+  var oldAlpha = ctx.globalAlpha;
+  ctx.globalAlpha *= this.settings.opacity;
 
   var count = this.text.length;
   var spacing = (bottomY - topY) / (count - 1);
@@ -51,4 +56,6 @@ Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {
     var y = bottomY - spacing*i;
     ctx.fillText(this.text[i], y, leftX+this._width-this.settings.rightMargin);
   }
+
+  ctx.globalAlpha = oldAlpha;
 };
