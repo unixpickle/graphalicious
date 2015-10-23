@@ -22,6 +22,9 @@ function StateView(state, attrs) {
   this._splashScreen = attrs.splashScreen;
   this._dataSource = attrs.dataSource;
   this._provider = attrs.provider;
+  this._labelGenerator = attrs.labelGenerator;
+  this._topMargin = attrs.topMargin;
+  this._bottomMargin = attrs.bottomMargin;
 
   this._element = document.createElement('div');
   this._element.position = 'absolute';
@@ -183,7 +186,7 @@ StateView.prototype._updateState = function(newViewState) {
   this._updateStateChunkView();
   this._updateStateLiveMeasurements();
   this._updateStateShowingContent(oldState);
-  // TODO: (re)generate the y-axis labels if necessary.
+  this._updateStateYLabels();
 
   this._handleStateChange(oldState);
 };
@@ -265,6 +268,38 @@ StateView.prototype._updateStateShowingContent = function(oldState) {
       this._splashScreenDelay = null;
     }
     this._state.showingContent = true;
+  }
+};
+
+StateView.prototype._updateStateYLabels = function() {
+  if (!this._chunkView) {
+    return;
+  }
+
+  // TODO: here, predict what the viewportX will be at the end of the animation using
+  // this._keepRightOnWidthChange and the chunkView's animation info.
+  var predictedViewportX = this._state.viewportX;
+
+  var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
+  var subregionLeft = startLeft - this._chunkView.getPostAnimationLeftOffset();
+  var endLeft = subregionLeft + this._state.positive.viewportWidth;
+
+  var firstPoint = this._chunkView.postAnimationFirstVisibleDataPoint(subregionLeft);
+  var lastPoint = this._chunkView.postANimationLastVisibleDataPoint(endLeft);
+
+  var maxValue = 0;
+  var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+  for (var i = firstPoint; i <= lastPoint; ++i) {
+    maxValue = Math.max(maxValue, chunk.getDataPoint(i).primary);
+  }
+
+  var usableHeight = this._state.positive.barShowingHeight - this._topMargin - this._bottomMargin;
+  if (usableHeight < 0) {
+    usableHeight = 0;
+  }
+  var newLabels = this._labelGenerator.createLabels(maxValue, usableHeight);
+  if (this._state.yLabels === null || !newLabels.equals(this._state.yLabels)) {
+    this._state.yLabels = newLabels;
   }
 };
 

@@ -7,8 +7,6 @@ function ViewState(positive, normative, attrs) {
   this.viewFrozen = attrs.viewFrozen || false;
 
   this.yLabels = attrs.yLabels || null;
-  this.yLabelsStartIndex = attrs.yLabelsStartIndex || -1;
-  this.yLabelsLength = attrs.yLabelsEndIndex || -1;
 
   this.chunkView = attrs.chunkView || null;
   this.chunkViewStartIndex = attrs.chunkViewStartIndex || -1;

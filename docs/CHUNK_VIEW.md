@@ -40,7 +40,7 @@ A set of methods can be used to get the current properties of a *ChunkView*. The
  * *int* lastVisibleDataPoint(endLeftOffset) - get the last visible data point (as a chunk-relative index) within a subregion which ends at the given left offset. The endLeftOffset will not be bounded; the ChunkView is responsible for clipping it. The return value should be between 0 and pointCount-1 inclusive.
  * *int* xAxisLabelPosition(pointIndex) - given a chunk-relative index, get the left offset (relative to the left of the *ChunkView*) for an x-axis label.
 
-A parallel set of methods exists for predicting properties of the *ChunkView* once it has completed its current animation:
+A parallel set of methods exists for predicting properties of the *ChunkView* once it has completed its current animation. If no animation is running, these should behave like their live-animation counterparts:
 
  * *int* getPostAnimationInherentWidth()
  * *int* getPostAnimationLeftOffset()

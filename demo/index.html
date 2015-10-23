@@ -56,7 +56,9 @@
         dataSource: window.StaticDataSource.random(10, 100, false),
         provider: new window.graphalicious.base.EventEmitter(),
         loader1: new window.SplashScreen(colorScheme),
-        loader2: new window.SplashScreen(colorScheme)
+        loader2: new window.SplashScreen(colorScheme),
+        topMargin: 5,
+        bottomMargin: 5
       };
       var content = new window.graphalicious.ylcv.ContentView(config);
       view.setContent(content);

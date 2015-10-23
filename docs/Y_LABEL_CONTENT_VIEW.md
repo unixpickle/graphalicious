@@ -52,6 +52,8 @@ The *YLabelContentView* constructor takes one object argument. This object must 
  * [InlineLoaderView](INLINE_LOADER_VIEW.md) loader1
  * [InlineLoaderView](INLINE_LOADER_VIEW.md) loader2
  * [LabelGenerator](#the-labelgenerator-interface) labelGenerator
+ * *number* topMargin
+ * *number* bottomMargin
 
 # Methods
 
