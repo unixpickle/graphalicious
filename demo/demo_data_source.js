@@ -123,7 +123,7 @@
   };
 
   StaticChunk.prototype.getDataPoint = function(relIdx) {
-    return this._points[start+relIdx];
+    return this._points[this._start+relIdx];
   };
 
   window.DemoDataSource = DemoDataSource;
