@@ -163,3 +163,6 @@ IntegerLabelFormat.prototype.createLabels = function(maxValue, height, settings)
 
   return new Labels(text, values, settings);
 };
+
+exports.DurationLabelFormat;
+exports.IntegerLabelFormat;
