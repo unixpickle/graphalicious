@@ -12,14 +12,37 @@ The width of the content is the width of the [ViewProvider](VIEW_PROVIDER.md) pl
 
 Whenever the [ChunkView](CHUNK_VIEW.md) performs an animation, the y-axis labels, content width, and various other attributes may change. The YLCV does its best to animate these changes while the [ChunkView](CHUNK_VIEW.md) does its thing.
 
-# Internal states
+# The LabelSettings type
 
-It is rather difficult to take into account animations, scrolling, data changes, y-axis label computation, and various other details. To make this task manageable, the YLCV is implemented using two different types of state:
+The *LabelSettings* class stores and manipulates visual settings for drawing y-axis labels. The *LabelSettings* constructor takes an object with the following attributes:
 
- * The **positive state** describes how the YLCV looks "right now". It includes things like the current y-axis labels, the current [ChunkView](CHUNK_VIEW.md), and the width of the leftmost y-axis labels.
- * The **normative state** describes how the YLCV's positive state should change. It gets updated whenever content changes, the user scrolls, or the viewport is resized. In particular, the normative state stores information about data loading.
+ * *int* leftMargin - the minimum number of pixels which should appear to the left of the text of any label
+ * *int* rightMargin - the minimum number of pixels which should appear to the right of the text of any label
+ * *string* color - a CSS color string
+ * *string* font - a CSS font string
+ * *number* opacity - the global opacity at which to draw the labels
 
-# Creation
+# The Labels interface & type
+
+The *Labels* interface provides methods for measuring and drawing labels. The YLCV implementation comes with an implementation of this interface, also called *Labels*.
+
+The *Labels* interface has the following methods:
+
+ * *number* width() - get the width of the labels in pixels
+ * *bool* equals(labels) - return true if and only if this object is equivalent to another labels object. Both instances are guaranteed to be created using the same [LabelGenerator](#the-labelgenerator-interface).
+ * *void* draw(context, leftX, topY, bottomY) - draw the labels in the given 2D drawing context at the left offset with the height requirements. Note that *Labels* can be vertically stretched or compressed by changing the distance between topY and bottomY.
+
+The *Labels* implementation which ships with YLabelContentView can be constructed as follows:
+
+ * Labels(text, values, settings) - create a *Labels* object with the specified settings, label text, and label values. The `text` and `values` arguments must be arrays with the same number of elements. These arrays must have two or more elements.
+
+# The LabelGenerator interface
+
+A *YLabelContentView* uses a *LabelGenerator* to generate the y-axis labels that it draws. These generators must implement the following method:
+
+ * *Labels* createLabels(maxValue, height) - generate *Labels* which span from 0 to `maxValue` which fit nicely in `height` pixels (i.e. without being stretched to a visually displeasing degree).
+
+# Construction
 
 The *YLabelContentView* constructor takes one object argument. This object must have the following keys:
 
@@ -28,6 +51,7 @@ The *YLabelContentView* constructor takes one object argument. This object must 
  * [SplashScreen](SPLASH_SCREEN.md) splashScreen
  * [InlineLoaderView](INLINE_LOADER_VIEW.md) loader1
  * [InlineLoaderView](INLINE_LOADER_VIEW.md) loader2
+ * [LabelGenerator](#the-labelgenerator-interface) labelGenerator
 
 # Methods
 
