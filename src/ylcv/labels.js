@@ -15,6 +15,11 @@ LabelSettings.prototype.margin = function() {
   return this.leftMargin + this.rightMargin;
 };
 
+LabelSettings.prototype.equals = function(s) {
+  return this.leftMargin === s.leftMargin && this.rightMargin === s.rightMargin &&
+    this.color === s.color && this.font === s.font && this.opacity === s.opacity;
+};
+
 // Labels represents a group of vertically-stacked labels, each backed by a numerical value.
 function Labels(text, values, settings) {
   if (!Array.isArray(text) || !Array.isArray(values) || text.length !== values.length ||
@@ -41,6 +46,20 @@ Labels.measureLabel = function(text, font) {
 
 Labels.prototype.width = function() {
   return this.width;
+};
+
+Labels.prototype.equals = function(labels) {
+  if (this.text.length !== labels.text.length || this._width !== labels._width) {
+    return false;
+  } if (!this.settings.equals(labels.settings)) {
+    return false;
+  }
+  for (var i = 0, len = this.text.length; i < len; ++i) {
+    if (this.text[i] !== labels.text[i] || this.values[i] !== labels.values[i]) {
+      return false;
+    }
+  }
+  return true;
 };
 
 Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {
