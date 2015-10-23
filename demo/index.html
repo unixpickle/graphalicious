@@ -39,7 +39,7 @@
     </style>
     <script src="crystal.js"></script>
     <script src="../build.js"></script>
-    <script src="static_data_source.js"></script>
+    <script src="demo_data_source.js"></script>
     <script src="splash_screen.js"></script>
     <script>
     var view;
@@ -53,7 +53,7 @@
 
       var config = {
         splashScreen: new window.SplashScreen(colorScheme),
-        dataSource: window.StaticDataSource.random(10, 100, false),
+        dataSource: window.DemoDataSource.random(10, 100, false),
         provider: new window.graphalicious.base.EventEmitter(),
         loader1: new window.SplashScreen(colorScheme),
         loader2: new window.SplashScreen(colorScheme),

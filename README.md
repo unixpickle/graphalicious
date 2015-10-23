@@ -12,7 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Implement configurable DataStore in demo
  * Implement state computations in YLCV
    * Methods to update positive state
    * Methods to update normative state
