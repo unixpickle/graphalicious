@@ -81,9 +81,8 @@ NormativeState.VISIBLE_MIN_BUFFER = 1000;
 // recompute uses a ViewProvider and a PositiveState to update this normative state's fields based
 // on what data should be loaded.
 NormativeState.prototype.recompute = function(provider, positiveState) {
-  var newState = new NormativeState(this);
-  newState._recomputeLeftmost(provider, positiveState);
-  newState._recomputeVisible(provider, positiveState);
+  this._recomputeLeftmost(provider, positiveState);
+  this._recomputeVisible(provider, positiveState);
 };
 
 NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) {

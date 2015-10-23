@@ -14,7 +14,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
  * Implement state computations in YLCV
    * Methods to update positive state
-   * Methods to update normative state
  * Implement dummy ChunkView and ViewProvider in demo
  * Implement draw routines in StateView
    * Regular drawing and mid-animation drawing

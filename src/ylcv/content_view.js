@@ -10,6 +10,9 @@ function ContentView(attrs) {
 
   this._provider = attrs.provider;
   this._dataSource = attrs.dataSource;
+  this._labelGenerator = attrs.labelGenerator;
+  this._topMargin = attrs.topMargin;
+  this._bottomMargin = attrs.bottomMargin;
 
   this._registerDataSourceEvents();
   this._registerProviderEvents();
@@ -32,6 +35,8 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   this._currentState.positive.viewportWidth = viewportWidth;
   this._currentState.positive.viewportHeight = height;
   this._currentState.positive.barShowingHeight = barShowingHeight;
+  this._recomputeLeftmostLabelWidth(false);
+  this._recomputeNormativeState();
   this.updateState(this._currentState);
 };
 
@@ -88,7 +93,54 @@ ContentView.prototype._deregisterProviderEvents = function() {
 };
 
 ContentView.prototype._handleProviderChange = function() {
-  // TODO: this.
+  var theoreticalChunk = {
+    startIndex: 0,
+    length: this._dataSource.getLength()
+  };
+  this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
+    theoreticalChunk.length).width;
+  this._recomputeLeftmostLabelWidth(true);
+  this._recomputeNormativeState();
+  this.updateStateVisualStyleChange(this._currentState);
+};
+
+ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
+  var region = {
+    left: 0,
+    width: this._currentState.positive.viewportWidth
+  };
+  var useChunk = this._provider.computeTheoreticalChunk(region, this._dataSource.getLength());
+
+  assert(useChunk.start === 0);
+  if (!force && useChunk.length === this._currentState.positive.leftmostYLabelsPointCount) {
+    return;
+  }
+
+  var leftmostChunk = this._dataSource.getChunk(LEFTMOST_CHUNK_INDEX);
+  if (leftmostChunk === null || useChunk.length > leftmostChunk.length) {
+    this._currentState.positive.leftmostChunkLength = -1;
+    this._currentState.positive.leftmostYLabelsWidth = -1;
+    this._currentState.positive.leftmostYLabelsPointCount = -1;
+    return;
+  }
+
+  var maxPoint = 0;
+  for (var i = 0, len = useChunk.length; i < len; ++i) {
+    maxPoint = Math.max(maxPoint, leftmostChunk.getDataPoint(i).primary);
+  }
+  
+  var usableHeight = this._currentState.positive.barShowingHeight - this._topMargin -
+    this._bottomMargin;
+  if (usableHeight < 0) {
+    usableHeight = 0;
+  }
+  var labels = this._labelGenerator.createLabels(maxValue, usableHeight);
+  this._currentState.positive.leftmostYLabelsWidth = labels;
+  this._currentState.positive.leftmostYLabelsPointCount = useChunk.length;
+};
+
+ContentView.prototype._recomputeNormativeState = function() {
+  this._currentState.normative.recompute(this._provider, this._currentState.positive);
 };
 
 exports.ContentView = ContentView;
