@@ -31,8 +31,11 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   this._currentState.positive.viewportHeight = height;
   this._currentState.positive.barShowingHeight = barShowingHeight;
   this._recomputeLeftmostLabelWidth(false);
+
+  var oldNormative = new NormativeState(this._currentState.normative);
   this._recomputeNormativeState();
-  this._handleNormativeChange();
+  this._handleNormativeChange(oldNormative);
+
   this.updateState(this._currentState);
 };
 
@@ -56,11 +59,27 @@ ContentView.prototype._deregisterDataSourceEvents = function() {
 };
 
 ContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
-  // TODO: this.
+  if (chunkIndex === LEFTMOST_CHUNK_INDEX) {
+    this._recomputeLeftmostLabelWidth();
+    this._currentState.normative.needsLeftmostChunk = false;
+    this._currentState.normative.loadingLeftmostChunk = false;
+  } else {
+    this._currentState.normative.needsVisibleChunk = false;
+    this._currentState.normative.loadingVisibleChunk = false;
+    var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+    this._currentState.positive.visibleChunkStart = chunk.getStartIndex();
+    this._currentState.positive.visibleChunkLength = chunk.getLength();
+  }
+  this.updateState(this._currentState);
 };
 
 ContentView.prototype._handleDataSourceError = function(chunkIndex) {
-  // TODO: this.
+  if (chunkIndex === LEFTMOST_CHUNK_INDEX) {
+    this._currentState.normative.loadingLeftmostChunk = false;
+  } else {
+    this._currentState.normative.loadingVisibleChunk = false;
+  }
+  this.updateState(this._currentState);
 };
 
 ContentView.prototype._handleDataSourceDelete = function(oldIndex, inChunk0, inChunk1) {
@@ -96,7 +115,7 @@ ContentView.prototype._handleProviderChange = function() {
   this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
     theoreticalChunk.length).width;
   this._recomputeLeftmostLabelWidth(true);
-  this._recomputeNormativeState();
+  this._updateNormativeState();
   this.updateStateVisualStyleChange(this._currentState);
 };
 
@@ -106,19 +125,21 @@ ContentView.prototype._registerButtonEvents = function() {
     var loader = loaders[i];
     loader.on('retry', function() {
       if (this._currentState.normative.needsVisibleChunk) {
+        var oldState = new NormativeState(this._currentState.normative);
         this._currentState.normative.loadingVisibleChunk = true;
-        this._handleNormativeChange();
+        this._handleNormativeChange(oldState);
       }
     }.bind(this));
   }
   this._splashScreen.on('retry', function() {
+    var oldState = new NormativeState(this._currentState.normative);
     if (this._currentState.normative.needsVisibleChunk) {
       this._currentState.normative.loadingVisibleChunk = true;
     }
     if (this._currentState.normative.needsLeftmostChunk) {
       this._currentState.normative.loadingLeftmostChunk = true;
     }
-    this._handleNormativeChange();
+    this._handleNormativeChange(oldState);
   }.bind(this));
 };
 
@@ -157,35 +178,37 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
   this._currentState.positive.leftmostYLabelsPointCount = useChunk.length;
 };
 
-ContentView.prototype._recomputeNormativeState = function() {
+ContentView.prototype._updateNormativeState = function() {
+  var oldState = new NormativeState(this._currentState.normative);
   this._currentState.normative.recompute(this._provider, this._currentState.positive);
+  this._handleNormativeChange(oldState);
 };
 
 ContentView.prototype._handleNormativeChange = function(oldState) {
-  if (this._normativeState.loadingLeftmostChunk !== oldState.loadingLeftmostChunk) {
-    if (this._normativeState.loadingLeftmostChunk) {
-      this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0,
-        this._normativeState.leftmostChunkLength);
+  var newState = this._currentState.normative;
+  if (newState.loadingLeftmostChunk !== oldState.loadingLeftmostChunk) {
+    if (newState.loadingLeftmostChunk) {
+      this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0, newState.leftmostChunkLength);
     } else {
       this._dataSource.cancel(LEFTMOST_CHUNK_INDEX);
     }
-  } else if (this._normativeState.loadingLeftmostChunk &&
-             this._normativeState.leftmostChunkLength !== oldState.leftmostChunkLength) {
-    this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0, this._normativeState.leftmostChunkLength);
+  } else if (newState.loadingLeftmostChunk &&
+             newState.leftmostChunkLength !== oldState.leftmostChunkLength) {
+    this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0, newState.leftmostChunkLength);
   }
 
-  if (this._normativeState.loadingVisibleChunk !== oldState.loadingVisibleChunk) {
-    if (this._normativeState.loadingVisibleChunk) {
-      this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
-        this._normativeState.visibleChunkLength);
+  if (newState.loadingVisibleChunk !== oldState.loadingVisibleChunk) {
+    if (newState.loadingVisibleChunk) {
+      this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, newState.visibleChunkStart,
+        newState.visibleChunkLength);
     } else {
       this._dataSource.cancel(VISIBLE_CHUNK_INDEX);
     }
-  } else if (this._normativeState.loadingVisibleChunk &&
-             (this._normativeState.visibleChunkLength !== oldState.visibleChunkLength ||
-              this._normativeState.visibleChunkStart !== oldState.visibleChunkStart)) {
-    this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
-      this._normativeState.visibleChunkLength);
+  } else if (newState.loadingVisibleChunk &&
+             (newState.visibleChunkLength !== oldState.visibleChunkLength ||
+              newState.visibleChunkStart !== oldState.visibleChunkStart)) {
+    this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, newState.visibleChunkStart,
+      newState.visibleChunkLength);
   }
 };
 
