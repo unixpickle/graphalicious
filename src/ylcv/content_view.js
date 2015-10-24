@@ -8,14 +8,9 @@ function ContentView(attrs) {
   this._currentState = new State(new PositiveState({}), new NormativeState({}));
   StateView.call(this, this._currentState, attrs);
 
-  this._provider = attrs.provider;
-  this._dataSource = attrs.dataSource;
-  this._labelGenerator = attrs.labelGenerator;
-  this._topMargin = attrs.topMargin;
-  this._bottomMargin = attrs.bottomMargin;
-
   this._registerDataSourceEvents();
   this._registerProviderEvents();
+  this._registerButtonEvents();
 }
 
 ContentView.prototype = Object.create(StateView.prototype);
@@ -37,6 +32,7 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   this._currentState.positive.barShowingHeight = barShowingHeight;
   this._recomputeLeftmostLabelWidth(false);
   this._recomputeNormativeState();
+  this._handleNormativeChange();
   this.updateState(this._currentState);
 };
 
@@ -104,6 +100,28 @@ ContentView.prototype._handleProviderChange = function() {
   this.updateStateVisualStyleChange(this._currentState);
 };
 
+ContentView.prototype._registerButtonEvents = function() {
+  var loaders = [this._loader1, this._loader2];
+  for (var i = 0; i < 2; ++i) {
+    var loader = loaders[i];
+    loader.on('retry', function() {
+      if (this._currentState.normative.needsVisibleChunk) {
+        this._currentState.normative.loadingVisibleChunk = true;
+        this._handleNormativeChange();
+      }
+    }.bind(this));
+  }
+  this._splashScreen.on('retry', function() {
+    if (this._currentState.normative.needsVisibleChunk) {
+      this._currentState.normative.loadingVisibleChunk = true;
+    }
+    if (this._currentState.normative.needsLeftmostChunk) {
+      this._currentState.normative.loadingLeftmostChunk = true;
+    }
+    this._handleNormativeChange();
+  }.bind(this));
+};
+
 ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
   var region = {
     left: 0,
@@ -128,7 +146,7 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
   for (var i = 0, len = useChunk.length; i < len; ++i) {
     maxPoint = Math.max(maxPoint, leftmostChunk.getDataPoint(i).primary);
   }
-  
+
   var usableHeight = this._currentState.positive.barShowingHeight - this._topMargin -
     this._bottomMargin;
   if (usableHeight < 0) {
@@ -141,6 +159,34 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
 
 ContentView.prototype._recomputeNormativeState = function() {
   this._currentState.normative.recompute(this._provider, this._currentState.positive);
+};
+
+ContentView.prototype._handleNormativeChange = function(oldState) {
+  if (this._normativeState.loadingLeftmostChunk !== oldState.loadingLeftmostChunk) {
+    if (this._normativeState.loadingLeftmostChunk) {
+      this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0,
+        this._normativeState.leftmostChunkLength);
+    } else {
+      this._dataSource.cancel(LEFTMOST_CHUNK_INDEX);
+    }
+  } else if (this._normativeState.loadingLeftmostChunk &&
+             this._normativeState.leftmostChunkLength !== oldState.leftmostChunkLength) {
+    this._dataSource.fetchChunk(LEFTMOST_CHUNK_INDEX, 0, this._normativeState.leftmostChunkLength);
+  }
+
+  if (this._normativeState.loadingVisibleChunk !== oldState.loadingVisibleChunk) {
+    if (this._normativeState.loadingVisibleChunk) {
+      this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
+        this._normativeState.visibleChunkLength);
+    } else {
+      this._dataSource.cancel(VISIBLE_CHUNK_INDEX);
+    }
+  } else if (this._normativeState.loadingVisibleChunk &&
+             (this._normativeState.visibleChunkLength !== oldState.visibleChunkLength ||
+              this._normativeState.visibleChunkStart !== oldState.visibleChunkStart)) {
+    this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, this._normativeState.visibleChunkStart,
+      this._normativeState.visibleChunkLength);
+  }
 };
 
 exports.ContentView = ContentView;
