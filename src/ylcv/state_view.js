@@ -29,6 +29,7 @@ function StateView(state, attrs) {
   this._element = document.createElement('div');
   this._element.position = 'absolute';
   this._canvas = document.createElement('canvas');
+  this._context = this._canvas.getContext('2d');
   this._element.appendChild(this._splashScreen.element());
   this._splashScreen.setAnimate(false);
 
@@ -276,7 +277,7 @@ StateView.prototype._updateStateShowingContent = function(oldState) {
 };
 
 StateView.prototype._updateStateYLabels = function() {
-  if (!this._chunkView) {
+  if (this._state.chunkView === null) {
     return;
   }
 
@@ -285,11 +286,11 @@ StateView.prototype._updateStateYLabels = function() {
   var predictedViewportX = this._state.viewportX;
 
   var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
-  var subregionLeft = startLeft - this._chunkView.getPostAnimationLeftOffset();
+  var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
   var endLeft = subregionLeft + this._state.positive.viewportWidth;
 
-  var firstPoint = this._chunkView.postAnimationFirstVisibleDataPoint(subregionLeft);
-  var lastPoint = this._chunkView.postANimationLastVisibleDataPoint(endLeft);
+  var firstPoint = this._state.chunkView.postAnimationFirstVisibleDataPoint(subregionLeft);
+  var lastPoint = this._state.chunkView.postAnimationLastVisibleDataPoint(endLeft);
 
   var maxValue = 0;
   var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
@@ -330,6 +331,7 @@ StateView.prototype._handleStateChange = function(oldState) {
   if (this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
       this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
     redraw = true;
+    this._updateCanvasSize();
   }
 
   if (!this._state.viewFrozen) {
@@ -447,8 +449,62 @@ StateView.prototype._draw = function() {
 };
 
 StateView.prototype._drawCanvas = function() {
-  // TODO: draw the ChunkView (possibly stretched) and the ziggity zaggity (edge of content) here.
-  // TODO: also draw the y-axis labels and the horizontal lines.
+  assert(this._state.chunkView !== null);
+  assert(this._state.yLabels !== null);
+
+  var yLabelWidth;
+  if (this._state.animating) {
+    yLabelWidth = (1-this._state.animationProgress)*this._state.startYLabels.width() +
+      this._state.animationProgress*this._state.yLabels.width();
+  } else {
+    yLabelWidth = this._state.yLabels.width();
+  }
+
+  var chunkRegionOrNull = this._drawChunkView(yLabelWidth);
+
+  // TODO: draw the ziggity zaggity (edge of content).
+  // TODO: draw the y-axis labels.
+};
+
+StateView.prototype._drawChunkView = function(yLabelWidth) {
+  var chunkView;
+  var maxValue;
+  if (this._state.animating) {
+    maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
+      this._state.animationProgress*this._state.yLabels.maxValue();
+    chunkView = this._state.animatingChunkView;
+  } else {
+    maxValue = this._state.yLabels.maxValue();
+    chunkView = this._state.chunkView;
+  }
+
+  var height = this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin);
+  var y = this._topMargin;
+
+  if (this._shouldStretchContent()) {
+    var width = this._state.positive.viewportWidth - yLabelWidth;
+    return chunkView.drawStretched(yLabelWidth, y, width, height, maxValue, this._context);
+  } else {
+    var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelsWidth -
+      this._state.positive.viewportX;
+    var chunkEndInCanvas = chunkLeftInCanvas + this._state.chunkView.getInherentWidth();
+    if (chunkLeftInCanvas > this._state.viewportWidth || chunkEndInCanvas < yLabelWidth) {
+      return null;
+    }
+
+    var regionLeft = Math.max(yLabelWidth, chunkLeftInCanvas) - chunkLeftInCanvas;
+    var regionEnd = Math.min(this._state.viewportWidth, chunkEndInCanvas) - chunkLeftInCanvas;
+    var regionWidth = regionEnd - regionLeft;
+    var canvasX = regionLeft + chunkLeftInCanvas;
+    chunkView.draw(regionLeft, regionWidth, canvasX, y, height, maxValue, this._context);
+
+    return {left: canvasX, width: regionWidth};
+  }
+};
+
+StateView.prototype._shouldStretchContent = function() {
+  return this._state.liveContentWidth + this._state.liveLeftmostLabelWidth <
+    this._state.positive.viewportWidth;
 };
 
 StateView.prototype._updatePixelRatio = function() {
@@ -457,13 +513,20 @@ StateView.prototype._updatePixelRatio = function() {
     return;
   }
   this._pixelRatio = newRatio;
-  this._canvas.width = this._state.positive.viewportWidth * newRatio;
-  this._canvas.height = this._state.positive.viewportHeight * newRatio;
+  this._updateCanvasSize();
 
   this._finishSplashScreenDelay();
   if (this._state.showingContent) {
     this._drawCanvas();
   }
+};
+
+StateView.prototype._updateCanvasSize = function() {
+  this._canvas.width = this._state.positive.viewportWidth * this._pixelRatio;
+  this._canvas.height = this._state.positive.viewportHeight * this._pixelRatio;
+  this._context = this._canvas.getContext('2d');
+
+  // TODO: scale this._context to fit the viewport.
 };
 
 StateView.prototype._startSplashScreenDelay = function() {

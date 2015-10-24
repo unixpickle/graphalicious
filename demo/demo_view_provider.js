@@ -63,6 +63,7 @@
   }
 
   DemoChunkView.prototype.getInherentWidth = function() {
+    var pointCount = this._left + this._right + this._points.length;
     return this._margin*2 + pointCount*this._barWidth + (pointCount-1)*this._spacing;
   };
 

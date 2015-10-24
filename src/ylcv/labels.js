@@ -45,7 +45,7 @@ Labels.measureLabel = function(text, font) {
 };
 
 Labels.prototype.width = function() {
-  return this.width;
+  return this._width;
 };
 
 Labels.prototype.equals = function(labels) {
@@ -60,6 +60,10 @@ Labels.prototype.equals = function(labels) {
     }
   }
   return true;
+};
+
+Labels.prototype.maxValue = function() {
+  return this.values[this.values.length-1];
 };
 
 Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {

@@ -11,6 +11,8 @@ function ContentView(attrs) {
   this._registerDataSourceEvents();
   this._registerProviderEvents();
   this._registerButtonEvents();
+
+  this._initializeState();
 }
 
 ContentView.prototype = Object.create(StateView.prototype);
@@ -33,6 +35,11 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   this._recomputeLeftmostLabelWidth(false);
   this._updateNormativeState();
   this.updateState(this._currentState);
+};
+
+ContentView.prototype._initializeState = function() {
+  this._recomputeContentWidth();
+  this.updateStateVisualStyleChange(this._currentState);
 };
 
 ContentView.prototype._registerDataSourceEvents = function() {
@@ -105,12 +112,7 @@ ContentView.prototype._deregisterProviderEvents = function() {
 };
 
 ContentView.prototype._handleProviderChange = function() {
-  var theoreticalChunk = {
-    startIndex: 0,
-    length: this._dataSource.getLength()
-  };
-  this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
-    theoreticalChunk.length).width;
+  this._recomputeContentWidth();
   this._recomputeLeftmostLabelWidth(true);
   this._updateNormativeState();
   this.updateStateVisualStyleChange(this._currentState);
@@ -138,6 +140,15 @@ ContentView.prototype._registerButtonEvents = function() {
     }
     this._handleNormativeChange(oldState);
   }.bind(this));
+};
+
+ContentView.prototype._recomputeContentWidth = function() {
+  var theoreticalChunk = {
+    startIndex: 0,
+    length: this._dataSource.getLength()
+  };
+  this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
+    theoreticalChunk.length).width;
 };
 
 ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
