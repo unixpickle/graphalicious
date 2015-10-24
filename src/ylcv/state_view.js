@@ -32,6 +32,10 @@ function StateView(state, attrs) {
   this._element.appendChild(this._splashScreen.element());
   this._splashScreen.setAnimate(false);
 
+  this._splashScreen.showError();
+  this._loader1.showError();
+  this._loader2.showError();
+
   this._pixelRatio = 0;
   this._crystalCallback = this._updatePixelRatio.bind(this);
 
@@ -305,19 +309,6 @@ StateView.prototype._updateStateYLabels = function() {
 
 // _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
 StateView.prototype._handleStateChange = function(oldState) {
-  if (this._state.normative.loadingVisibleChunk) {
-    this._loader1.showLoading();
-    this._loader2.showLoading();
-  } else {
-    this._loader1.showError();
-    this._loader2.showError();
-  }
-  if (this._state.normative.loadingVisibleChunk || this._state.normative.loadingLeftmostChunk) {
-    this._splashScreen.showLoading();
-  } else {
-    this._splashScreen.showError();
-  }
-
   var redraw = false;
   var widthChanged = false;
 
@@ -342,6 +333,7 @@ StateView.prototype._handleStateChange = function(oldState) {
   }
 
   if (!this._state.viewFrozen) {
+    this._handleNormativeChanges(oldState);
     if (this._state.positive.viewportX !== oldState.positive.viewportX ||
         oldState.chunkView !== this._state.chunkView ||
         oldState.yLabels !== this._state.yLabels) {
@@ -359,6 +351,8 @@ StateView.prototype._handleStateChange = function(oldState) {
     // TODO: this could be "optimized" to check if the width *actually* changed, but it'd be
     // premature for now.
     widthChanged = true;
+
+    this._handleNormativeChanges(oldState);
   }
 
   if (widthChanged) {
@@ -409,6 +403,30 @@ StateView.prototype._handleShowingContentChange = function() {
     }
     this._element.appendChild(this._splashScreen.element());
     this._splashScreen.setAnimate(this._state.animate);
+  }
+};
+
+StateView.prototype._handleNormativeChanges = function(oldState) {
+  if (this._state.normative.loadingVisibleChunk !== oldState.normative.loadingVisibleChunk ||
+      oldState.viewFrozen) {
+    if (this._state.normative.loadingVisibleChunk) {
+      this._loader1.showLoading();
+      this._loader2.showLoading();
+    } else {
+      this._loader1.showError();
+      this._loader2.showError();
+    }
+  }
+
+  var newLoading = this._state.normative.loadingVisibleChunk ||
+    this._state.normative.loadingLeftmostChunk;
+  var oldLoading = oldState.normative.loadingVisibleChunk || oldState.normative.loadingVisibleChunk;
+  if (oldLoading !== newLoading || oldState.viewFrozen) {
+    if (newLoading) {
+      this._splashScreen.showLoading();
+    } else {
+      this._splashScreen.showError();
+    }
   }
 };
 
