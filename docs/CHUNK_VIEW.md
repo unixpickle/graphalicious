@@ -6,9 +6,11 @@ A *ChunkView* draws the contents of a chunk into a canvas. The visual representa
 
 # Overview & Terminology
 
-A *ChunkView* has an **inherent width** but no inherent height. A *ChunkView* can be drawn at any height. It is possible for a *ChunkView* to be horizontally **stretched**, in which case it is drawn at a width greater than its inherent width.
+A *ChunkView* has an **inherent width** but no inherent height. A *ChunkView* can be drawn at any height. The *ChunkView*'s inherent width acts as a lower bound for its actual width; a *ChunkView* will never be asked to squeeze itself to a width less than its inherent width.
 
-A *ChunkView* whose chunk contains every data point in the data set is called a **complete ChunkView**. Naturally, any *ChunkView* can be thought of as part of a wider (or equally wide) complete *ChunkView*. A *ChunkView*'s hypothetical distance from the leftmost and rightmost sides of its containing complete *ChunkView* are called its **left offset** and **right offset**, respectively. It follows that the formula *left offset + right offset + inherent width* gives the inherent width of any *ChunkView*'s complete *ChunkView*. It also follows that the left offset and right offset of any complete *ChunkView* are both 0.
+A *ChunkView* whose chunk contains every data point in the data set is called a **complete ChunkView**. Naturally, any *ChunkView* can be thought of as part of a wider (or equally wide) complete *ChunkView*. A *ChunkView*'s distance from the leftmost and rightmost sides of its containing complete *ChunkView* are called its **left offset** and **right offset**, respectively. It follows that the formula *left offset + right offset + inherent width* gives the inherent width of any *ChunkView*'s complete *ChunkView*. It also follows that the left offset and right offset of any complete *ChunkView* are both 0.
+
+A *ChunkView* can be **stretched** to a width greater than its inherent width. When this happens, the *ChunkView* is given a rectangle within a canvas called the **stretch viewport**. While being stretched, a *ChunkView* should draw itself as if its complete *ChunkView* were being stretched to fill the stretch viewport. If the stretched *ChunkView* is not complete, it probably won't utilize the entire stretch viewport but intsead only to a portion of it. This portion is known as the **utilized stretch viewport**, the horizontal range of pixels in which the stretched *ChunkView* draws itself.
 
 Animations are an important part of a *ChunkView*'s job. Any change to a *ChunkView*'s underlying chunk may trigger an animation. During an animation, a *ChunkView* repeatedly emits that its state has changed. For example, suppose a new data point is added to the *ChunkView*'s underlying chunk and the corresponding animation involves gradually widening the *ChunkView*. In this case, the *ChunkView* would change its inherent width in increments and emit these changes accordingly.
 
@@ -28,6 +30,13 @@ The *PointerPosition* type expresses the coordinates of a pointer (e.g. the mous
  * *number* y - the y-axis coordinate, relative to the top of the *ChunkView*. This is between 0 and the current height of the *ChunkView*.
  * *number* width - the width to which the *ChunkView* is being stretched. If the *ChunkView* is not being stretched, this is the *ChunkView*'s inherent width.
  * *number* height - the current height of the *ChunkView*.
+
+# The UtilizedStretchViewport type
+
+The *UtilizedStretchViewport* type represents a horizontal range of pixels in a 2D drawing context. It has the following fields:
+
+ * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels.
+ * *number* width - the width of the range, in pixels.
 
 # Methods
 
@@ -73,8 +82,8 @@ You must manually notify a *ChunkView* of any pertinent pointer events. These ev
 
 Drawing can be performed with these methods:
 
- * *void* draw(regionLeft, regionWidth, x, y, height, ctx) - draw a subregion of the *ContentView* within the given context at the x and y values, stretched to a certain height.
- * *void* drawStretched(x, y, width, height, ctx) - draw the entire *ContentView*, stretched to a given width and height, at the given coordinates inside the given context.
+ * *void* draw(regionLeft, regionWidth, x, y, height, maxValue, ctx) - draw a subregion of the *ChunkView* within the given context at the x and y values, stretched to a certain height. The maxValue argument is used to scale the content within the sub-region to the height. In essence, every point should "fit" in the given height if its value is under maxValue.
+ * [UtilizedStretchViewport](#the-utilizedstretchviewport-type) drawStretched(x, y, width, height, maxValue, ctx) - draw the entire *ChunkView* to be stretched so that it's complete *ChunkView* would fill a given stretch viewport. This returns the utilized stretch viewport information.
 
 # Events
 
