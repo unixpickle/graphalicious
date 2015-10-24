@@ -4,25 +4,25 @@ function ViewState(positive, normative, attrs) {
   this.positive = new PositiveState(positive);
   this.normative = new NormativeState(normative);
 
-  this.viewFrozen = attrs.viewFrozen || false;
+  this.viewFrozen = defaultValue(attrs.viewFrozen, false);
 
-  this.yLabels = attrs.yLabels || null;
+  this.yLabels = defaultValue(attrs.yLabels, null);
 
-  this.chunkView = attrs.chunkView || null;
-  this.chunkViewStartIndex = attrs.chunkViewStartIndex || -1;
-  this.chunkViewLength = attrs.chunkViewLength || -1;
+  this.chunkView = defaultValue(attrs.chunkView, null);
+  this.chunkViewStartIndex = defaultValue(attrs.chunkViewStartIndex, -1);
+  this.chunkViewLength = defaultValue(attrs.chunkViewLength, -1);
 
-  this.showingContent = attrs.showingContent || false;
-  this.animate = attrs.animate || false;
+  this.showingContent = defaultValue(attrs.showingContent, false);
+  this.animate = defaultValue(attrs.animate, false);
 
-  this.animating = attrs.animating || false;
-  this.animationChunkView = attrs.animationChunkView || null;
-  this.animationProgress = attrs.animationProgress || -1;
-  this.startLeftmostLabelWidth = attrs.startLeftmostLabelWidth || -1;
-  this.startYLabels = attrs.startYLabels || null;
+  this.animating = defaultValue(attrs.animating, false);
+  this.animationChunkView = defaultValue(attrs.animationChunkView, null);
+  this.animationProgress = defaultValue(attrs.animationProgress, -1);
+  this.startLeftmostLabelWidth = defaultValue(attrs.startLeftmostLabelWidth, -1);
+  this.startYLabels = defaultValue(attrs.startYLabels, null);
 
-  this.liveLeftmostLabelWidth = attrs.liveLeftmostLabelWidth || -1;
-  this.liveContentWidth = attrs.liveContentWidth || -1;
+  this.liveLeftmostLabelWidth = defaultValue(attrs.liveLeftmostLabelWidth, -1);
+  this.liveContentWidth = defaultValue(attrs.liveContentWidth, -1);
 }
 
 // copy generates a quasi-deep copy of this state.
@@ -44,33 +44,33 @@ State.prototype.copy = function() {
 
 // PositiveState stores information about the current visual state of a ContentView.
 function PositiveState(attrs) {
-  this.dataSourceLength = attrs.dataSourceLength || 0;
+  this.dataSourceLength = defaultValue(attrs.dataSourceLength, 0);
 
-  this.visibleChunkStart = attrs.visibleChunkStart || -1;
-  this.visibleChunkLength = attrs.visibleChunkLength || -1;
+  this.visibleChunkStart = defaultValue(attrs.visibleChunkStart, -1);
+  this.visibleChunkLength = defaultValue(attrs.visibleChunkLength, -1);
 
-  this.leftmostChunkLength = attrs.leftmostChunkLength || -1;
-  this.leftmostYLabelsWidth = attrs.leftmostYLabelsWidth || -1;
-  this.leftmostYLabelsPointCount = attrs.leftmostYLabelsPointCount || -1;
+  this.leftmostChunkLength = defaultValue(attrs.leftmostChunkLength, -1);
+  this.leftmostYLabelsWidth = defaultValue(attrs.leftmostYLabelsWidth, -1);
+  this.leftmostYLabelsPointCount = defaultValue(attrs.leftmostYLabelsPointCount, -1);
 
-  this.contentWidth = attrs.contentWidth || 0;
-  this.viewportX = attrs.viewportX || 0;
-  this.viewportWidth = attrs.viewportWidth || 0;
-  this.viewportHeight = attrs.viewportHeight || 0;
-  this.barShowingHeight = attrs.barShowingHeight || 0;
+  this.contentWidth = defaultValue(attrs.contentWidth, 0);
+  this.viewportX = defaultValue(attrs.viewportX, 0);
+  this.viewportWidth = defaultValue(attrs.viewportWidth, 0);
+  this.viewportHeight = defaultValue(attrs.viewportHeight, 0);
+  this.barShowingHeight = defaultValue(attrs.barShowingHeight, 0);
 }
 
 // NormativeState stores information about what will or ought to change about the current visual
 // state of a content view.
 function NormativeState(attrs) {
-  this.needsLeftmostChunk = attrs.needsLeftmostChunk || false;
-  this.loadingLeftmostChunk = attrs.loadingLeftmostChunk || false;
-  this.leftmostChunkLength = attrs.leftmostChunkLength || 0;
+  this.needsLeftmostChunk = defaultValue(attrs.needsLeftmostChunk, false);
+  this.loadingLeftmostChunk = defaultValue(attrs.loadingLeftmostChunk, false);
+  this.leftmostChunkLength = defaultValue(attrs.leftmostChunkLength, 0);
 
-  this.needsVisibleChunk = attrs.needsVisibleChunk || false;
-  this.loadingVisibleChunk = attrs.loadingVisibleChunk || false;
-  this.visibleChunkStart = attrs.visibleChunkStart || 0;
-  this.visibleChunkLength = attrs.visibleChunkLength || 0;
+  this.needsVisibleChunk = defaultValue(attrs.needsVisibleChunk, false);
+  this.loadingVisibleChunk = defaultValue(attrs.loadingVisibleChunk, false);
+  this.visibleChunkStart = defaultValue(attrs.visibleChunkStart, 0);
+  this.visibleChunkLength = defaultValue(attrs.visibleChunkLength, 0);
 }
 
 NormativeState.LEFTMOST_START_BUFFER = 1000;
@@ -151,3 +151,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   this.visibleChunkStart = needChunk.startIndex;
   this.visibleChunkLength = needChunk.length;
 };
+
+function defaultValue(value, d) {
+  return ('undefined' === typeof value ? d : value);
+}
