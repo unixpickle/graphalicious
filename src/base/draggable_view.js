@@ -36,7 +36,7 @@ DraggableView.prototype._registerMouseEvents = function() {
   var eventCallback = null;
 
   mouseMove = function(e) {
-    eventCallback(e.clientX);
+    eventCallback(e.clientX - this.element().getBoundingClientRect().left);
 
     // NOTE: this fixes a problem where the cursor becomes an ibeam.
     e.preventDefault();
@@ -55,7 +55,8 @@ DraggableView.prototype._registerMouseEvents = function() {
       return;
     }
 
-    eventCallback = this._generateDragFunction(e.clientX, e.clientY);
+    var offset = this.element().getBoundingClientRect();
+    eventCallback = this._generateDragFunction(e.clientX-offset.left, e.clientY-offset.top);
     if (eventCallback === null) {
       return;
     }
@@ -78,7 +79,9 @@ DraggableView.prototype._registerTouchEvents = function() {
   e.addEventListener('touchstart', function(e) {
     if (eventCallback === null) {
       var touch = e.changedTouches[0];
-      eventCallback = this._generateDragFunction(touch.clientX, touch.clientY);
+      var offset = this.element().getBoundingClientRect();
+      eventCallback = this._generateDragFunction(touch.clientX-offset.left,
+        touch.clientY-offset.top);
       if (eventCallback !== null) {
         e.preventDefault();
       }
@@ -87,7 +90,8 @@ DraggableView.prototype._registerTouchEvents = function() {
 
   e.addEventListener('touchmove', function(e) {
     if (eventCallback !== null) {
-      eventCallback(e.changedTouches[0].clientX);
+      var offset = this.element().getBoundingClientRect();
+      eventCallback(e.changedTouches[0].clientX - offset.left);
     }
   }.bind(this));
 
