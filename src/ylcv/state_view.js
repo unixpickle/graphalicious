@@ -236,7 +236,7 @@ StateView.prototype._updateStateChunkView = function() {
     var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
     this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
     this._state.chunkViewStartIndex = chunk.getStartIndex();
-    this._state.chunkViewLength = chunk.getlength();
+    this._state.chunkViewLength = chunk.getLength();
   }
 };
 

@@ -41,7 +41,7 @@ Labels.widthContext = document.createElement('canvas').getContext('2d');
 
 Labels.measureLabel = function(text, font) {
   Labels.widthContext.font = font;
-  return Labels.widthContext.measureText(text);
+  return Labels.widthContext.measureText(text).width;
 };
 
 Labels.prototype.width = function() {

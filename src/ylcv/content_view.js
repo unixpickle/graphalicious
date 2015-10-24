@@ -66,6 +66,7 @@ ContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
     this._currentState.positive.visibleChunkStart = chunk.getStartIndex();
     this._currentState.positive.visibleChunkLength = chunk.getLength();
   }
+
   this.updateState(this._currentState);
 };
 
@@ -170,7 +171,7 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
     usableHeight = 0;
   }
   var labels = this._labelGenerator.createLabels(maxPoint, usableHeight);
-  this._currentState.positive.leftmostYLabelsWidth = labels;
+  this._currentState.positive.leftmostYLabelsWidth = labels.width();
   this._currentState.positive.leftmostYLabelsPointCount = useChunk.length;
 };
 
