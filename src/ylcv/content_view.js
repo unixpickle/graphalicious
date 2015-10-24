@@ -31,11 +31,7 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   this._currentState.positive.viewportHeight = height;
   this._currentState.positive.barShowingHeight = barShowingHeight;
   this._recomputeLeftmostLabelWidth(false);
-
-  var oldNormative = new NormativeState(this._currentState.normative);
-  this._recomputeNormativeState();
-  this._handleNormativeChange(oldNormative);
-
+  this._updateNormativeState();
   this.updateState(this._currentState);
 };
 
@@ -150,7 +146,7 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
   };
   var useChunk = this._provider.computeTheoreticalChunk(region, this._dataSource.getLength());
 
-  assert(useChunk.start === 0);
+  assert(useChunk.startIndex === 0);
   if (!force && useChunk.length === this._currentState.positive.leftmostYLabelsPointCount) {
     return;
   }
@@ -173,17 +169,21 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
   if (usableHeight < 0) {
     usableHeight = 0;
   }
-  var labels = this._labelGenerator.createLabels(maxValue, usableHeight);
+  var labels = this._labelGenerator.createLabels(maxPoint, usableHeight);
   this._currentState.positive.leftmostYLabelsWidth = labels;
   this._currentState.positive.leftmostYLabelsPointCount = useChunk.length;
 };
 
+// _updateNormativeState recomputes the current normative state and then starts/cancels operations
+// on the DataSource accordingly.
 ContentView.prototype._updateNormativeState = function() {
   var oldState = new NormativeState(this._currentState.normative);
   this._currentState.normative.recompute(this._provider, this._currentState.positive);
   this._handleNormativeChange(oldState);
 };
 
+// _handleNormativeChange starts/cancels operations on the DataSource according to changes in the
+// normative state.
 ContentView.prototype._handleNormativeChange = function(oldState) {
   var newState = this._currentState.normative;
   if (newState.loadingLeftmostChunk !== oldState.loadingLeftmostChunk) {

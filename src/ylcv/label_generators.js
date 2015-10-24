@@ -103,5 +103,5 @@ IntegerLabelGenerator.prototype.createLabels = function(maxValue, height) {
 };
 
 exports.Labels = Labels;
-exports.DurationLabelGenerator;
-exports.IntegerLabelGenerator;
+exports.DurationLabelGenerator = DurationLabelGenerator;
+exports.IntegerLabelGenerator = IntegerLabelGenerator;

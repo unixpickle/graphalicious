@@ -23,7 +23,7 @@ LabelSettings.prototype.equals = function(s) {
 // Labels represents a group of vertically-stacked labels, each backed by a numerical value.
 function Labels(text, values, settings) {
   if (!Array.isArray(text) || !Array.isArray(values) || text.length !== values.length ||
-      this.text.length < 2) {
+      text.length < 2) {
     throw new Error('invalid arguments');
   }
   this.text = text;
@@ -32,7 +32,7 @@ function Labels(text, values, settings) {
 
   this._width = 0;
   for (var i = 0, len = text.length; i < len; ++i) {
-    this._width = Math.max(this._width, measureLabel(text[i], this.settings.font));
+    this._width = Math.max(this._width, Labels.measureLabel(text[i], this.settings.font));
   }
   this._width += this.settings.margin();
 }
