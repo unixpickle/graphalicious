@@ -3,8 +3,9 @@
   var assert = window.graphalicious.base.assert;
   var EventEmitter = window.graphalicious.base.EventEmitter;
 
-  function DemoViewProvider() {
+  function DemoViewProvider(colorScheme) {
     EventEmitter.call(this);
+    this._colorScheme = colorScheme;
     this.spacing = 10;
     this.margin = 10;
     this.barWidth = 30;
@@ -45,10 +46,14 @@
   };
 
   DemoViewProvider.prototype.createChunkView = function(chunk, dataSource) {
-    return new DemoChunkView(chunk, dataSource, this.spacing, this.margin, this.barWidth);
+    return new DemoChunkView(this._colorScheme, chunk, dataSource, this.spacing, this.margin,
+      this.barWidth);
   };
 
-  function DemoChunkView(chunk, dataSource, spacing, margin, barWidth) {
+  function DemoChunkView(colorScheme, chunk, dataSource, spacing, margin, barWidth) {
+    EventEmitter.call(this);
+
+    this._colorScheme = colorScheme;
     this._points = [];
     this._chunk = chunk;
     this._right = dataSource.getLength() - (chunk.getStartIndex() + chunk.getLength());
@@ -60,7 +65,11 @@
     for (var i = 0, len = chunk.getLength(); i < len; ++i) {
       this._points.push(chunk.getDataPoint(i));
     }
+
+    this._colorScheme.on('change', this.emit.bind('redraw'));
   }
+
+  DemoChunkView.prototype = Object.create(EventEmitter.prototype);
 
   DemoChunkView.prototype.getInherentWidth = function() {
     var barsWidth = this._barWidth*this._points.length + this._spacing*(this._points.length-1);
@@ -181,6 +190,7 @@
     ctx.beginPath();
     ctx.rect(x, y, regionWidth, height);
     ctx.clip();
+    ctx.fillStyle = this._colorScheme.getPrimary();
 
     var startIndex = this.firstVisibleDataPoint(regionLeft);
     var endIndex = this.lastVisibleDataPoint(regionLeft + regionWidth);
