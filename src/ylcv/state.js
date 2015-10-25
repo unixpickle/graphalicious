@@ -121,8 +121,8 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   var minChunk = provider.computeTheoreticalChunk(minRegion, positiveState.dataSourceLength);
 
   var visibleChunkEnd = positiveState.visibleChunkStart + positiveState.visibleChunkLength;
-  if (positiveState.visibleChunkStart <= minChunk.start &&
-      visibleChunkEnd >= minChunk.start+minChunk.length) {
+  if (positiveState.visibleChunkStart <= minChunk.startIndex &&
+      visibleChunkEnd >= minChunk.startIndex+minChunk.length) {
     this.needsVisibleChunk = false;
     this.loadingVisibleChunk = false;
     return;
@@ -130,8 +130,8 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
 
   if (this.needsVisibleChunk) {
     var gettingChunkEnd = this.visibleChunkStart + this.visibleChunkLength;
-    if (this.visibleChunkStart <= minChunk.start &&
-        gettingChunkEnd >= minChunk.start+minChunk.length) {
+    if (this.visibleChunkStart <= minChunk.startIndex &&
+        gettingChunkEnd >= minChunk.startIndex+minChunk.length) {
       return;
     }
   }
