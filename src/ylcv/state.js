@@ -109,7 +109,6 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   var viewportX;
   if (positiveState.visibleChunkLength < 0) {
-    console.log(positiveState);
     viewportX = positiveState.contentWidth + positiveState.leftmostYLabelsWidth -
       positiveState.viewportWidth;
   } else {
