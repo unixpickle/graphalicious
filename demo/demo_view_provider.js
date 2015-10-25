@@ -204,7 +204,7 @@
 
   DemoChunkView.prototype._drawBars = function(start, end, x, y, height, maxVal, barWidth,
                                                barSpace, ctx) {
-    for (var i = start; i < end; ++i) {
+    for (var i = start; i <= end; ++i) {
       var value = this._points[i];
       var barX = x + (i-start)*(barWidth+barSpace);
       var barHeight = height * (value.primary / maxVal);
