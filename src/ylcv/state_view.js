@@ -10,6 +10,11 @@ var MIN_SPLASH_SCREEN_TIME = 300;
 
 var DEFAULT_KEEP_RIGHT = true;
 
+var JAGGED_EDGE_SIZE = 5;
+var JAGGED_LINE_WIDTH = 2;
+var JAGGED_COLOR = '#999';
+var LINE_COLOR = '#999';
+
 // StateView is responsible for drawing a state and rendering animations.
 // The StateView is not responsible for updating the state, just for handling state changes.
 function StateView(state, attrs) {
@@ -485,6 +490,9 @@ StateView.prototype._drawCanvas = function() {
   // TODO: draw the y-axis labels.
 
   this._drawYAxisLabels();
+  if (chunkRegionOrNull !== null) {
+    this._drawEdges(chunkRegionOrNull, yLabelWidth);
+  }
 };
 
 StateView.prototype._drawChunkView = function(yLabelWidth) {
@@ -534,7 +542,28 @@ StateView.prototype._drawYAxisLabels = function() {
   var maxValue;
   maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
     this._state.animationProgress*this._state.yLabels.maxValue();
-  // TODO: draw here.
+  // TODO: draw animating labels here.
+};
+
+StateView.prototype._drawEdges = function(contentRect, yLabelsWidth) {
+  for (var i = 0; i < 2; ++i) {
+    var x = (i === 0 ? contentRect.left : contentRect.left+contentRect.width+JAGGED_EDGE_SIZE);
+    if (x <= yLabelsWidth+2 || x >= this._state.positive.viewportWidth-2) {
+      continue;
+    }
+    var startY = -(i === 0 ? 2 : 1)*JAGGED_EDGE_SIZE;
+
+    this._context.beginPath();
+    this._context.lineWidth = JAGGED_LINE_WIDTH;
+    this._context.strokeStyle = this._state.yLabels.settings.color;
+    this._context.moveTo(x, 0);
+    for (var y = startY; y < this._state.positive.viewportHeight; y += 2*JAGGED_EDGE_SIZE) {
+      this._context.lineTo(x-JAGGED_EDGE_SIZE, y+JAGGED_EDGE_SIZE);
+      this._context.lineTo(x, y+2*JAGGED_EDGE_SIZE);
+    }
+    this._context.stroke();
+    this._context.closePath();
+  }
 };
 
 StateView.prototype._shouldStretchContent = function() {
