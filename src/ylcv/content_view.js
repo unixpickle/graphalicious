@@ -28,6 +28,12 @@ ContentView.prototype.dispose = function() {
 };
 
 ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowingHeight) {
+  if (this._currentState.positive.viewportWidth !== viewportWidth) {
+    this.element().style.width = viewportWidth + 'px';
+  }
+  if (this._currentState.positive.viewportHeight !== height) {
+    this.element().style.height = height + 'px';
+  }
   this._currentState.positive.viewportX = viewportX;
   this._currentState.positive.viewportWidth = viewportWidth;
   this._currentState.positive.viewportHeight = height;

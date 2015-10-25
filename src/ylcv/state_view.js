@@ -27,7 +27,7 @@ function StateView(state, attrs) {
   this._bottomMargin = attrs.bottomMargin;
 
   this._element = document.createElement('div');
-  this._element.position = 'absolute';
+  this._element.style.position = 'absolute';
   this._canvas = document.createElement('canvas');
   this._context = this._canvas.getContext('2d');
   this._element.appendChild(this._splashScreen.element());
