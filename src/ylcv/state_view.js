@@ -238,7 +238,22 @@ StateView.prototype._updateStateChunkView = function() {
     this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
     this._state.chunkViewStartIndex = chunk.getStartIndex();
     this._state.chunkViewLength = chunk.getLength();
+    this._registerChunkViewEvents();
   }
+};
+
+StateView.prototype._registerChunkViewEvents = function() {
+  this._state.chunkView.on('redraw', this._drawCanvas.bind(this));
+  this._state.chunkView.on('animationEnd', function() {
+    var state = new ViewState(newState.positive, newState.normative, this._state);
+    state.animating = false;
+    this._updateState(state);
+  }.bind(this));
+  this._state.chunkView.on('animationFrame', function(progress) {
+    var state = new ViewState(newState.positive, newState.normative, this._state);
+    state.animationProgress = progress;
+    this._updateState(state);
+  }.bind(this));
 };
 
 StateView.prototype._updateStateLiveMeasurements = function() {
