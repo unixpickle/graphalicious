@@ -87,6 +87,13 @@ StateView.prototype.dispose = function() {
   this.setAnimate(false);
 };
 
+// shouldUpdateRequestViewportX returns true if the content is currently showing.
+// This is made to be used by the ContentView, which uses it to know whether to record the viewportX
+// as the requestedViewportX.
+StateView.prototype.shouldUpdateRequestedViewportX = function() {
+  return this._state.showingContent;
+};
+
 // updateState indicates that the state changed for some reason other than a deletion, addition, or
 // modification of a data point or from invalidation of the data set.
 StateView.prototype.updateState = function(newState) {
@@ -380,7 +387,21 @@ StateView.prototype._handleStateChange = function(oldState) {
   }
 
   if (widthChanged) {
-    this.emit('widthChange', this._keepRightOnWidthChange);
+    if (this._state.showingContent && !oldState.showingContent &&
+        this._state.positive.requestedViewportX >= 0) {
+      this.emit('widthChange', this._state.positive.requestedViewportX);
+    } else {
+      var newViewportX = oldState.positive.viewportX;
+      if (this._keepRightOnWidthChange) {
+        var oldWidth = 0;
+        if (oldState.showingContent) {
+          oldWidth = oldState.liveContentWidth + oldState.liveLeftmostLabelWidth;
+        }
+        var newWidth = this.totalWidth();
+        newViewportX += newWidth - oldWidth;
+      }
+      this.emit('widthChange', newViewportX);
+    }
     // TODO: see if widthChange triggered a redraw. If it did, don't do it again here.
     this._draw();
   } else if (redraw) {

@@ -27,4 +27,4 @@ A *ContentView* must implement the following methods:
 
 A *ContentView* may emit the following event:
 
- * widthChange(keepRightOffset) - the total width of the *ContentView* has changed. If the *ContentView* is being displayed in a *View*, this will automatically trigger a `draw`. The `keepRightOffset` argument is a boolean. If it is true, then the *View* should update the scroll position so that the rightmost edge of the *ContentView* stays the same distance from the rightmost edge of the viewport if possible.
+ * widthChange(suggestedViewportX) - the total width of the *ContentView* has changed. If the *ContentView* is being displayed in a *View*, this will automatically trigger a `draw`. The `suggestedViewportX` argument is a number which indicates to the *ContentView* how the scroll position should be changed by the width change. The value may be out of valid bounds and should be bounded by the *View*.

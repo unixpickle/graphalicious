@@ -58,6 +58,7 @@ function PositiveState(attrs) {
   this.viewportWidth = defaultValue(attrs.viewportWidth, 0);
   this.viewportHeight = defaultValue(attrs.viewportHeight, 0);
   this.barShowingHeight = defaultValue(attrs.barShowingHeight, 0);
+  this.requestedViewportX = defaultValue(attrs.requestedViewportX, -1);
 }
 
 // NormativeState stores information about what will or ought to change about the current visual
@@ -107,13 +108,13 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
 };
 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
-  var viewportX;
-  if (positiveState.visibleChunkLength < 0) {
-    viewportX = positiveState.contentWidth + positiveState.leftmostYLabelsWidth -
-      positiveState.viewportWidth;
-  } else {
-    viewportX = positiveState.viewportX;
+  var upperBound = positiveState.contentWidth + positiveState.leftmostYLabelsWidth -
+    positiveState.viewportWidth;
+  var viewportX = Math.max(0, upperBound);
+  if (positiveState.requestedViewportX >= 0) {
+    viewportX = Math.max(0, Math.min(upperBound, positiveState.requestedViewportX));
   }
+
   var minRegion = {
     left: viewportX - positiveState.leftmostYLabelsWidth - NormativeState.VISIBLE_MIN_BUFFER,
     width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth

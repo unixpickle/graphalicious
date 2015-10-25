@@ -12,9 +12,8 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Preserve scroll offset after splash screen
- * Load chunk at preserved scroll offset while splash screen is visible
  * Force splash screen to show spinner while splash timeout is running
+ * Investigate bug where y-axis labels don't change when scrolling away from the chunk.
  * Implement real draw routines in StateView
    * Regular drawing and mid-animation drawing
  * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)

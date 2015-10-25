@@ -34,6 +34,9 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
   if (this._currentState.positive.viewportHeight !== height) {
     this.element().style.height = height + 'px';
   }
+  if (this.shouldUpdateRequestedViewportX()) {
+    this._currentState.positive.requestedViewportX = viewportX;
+  }
   this._currentState.positive.viewportX = viewportX;
   this._currentState.positive.viewportWidth = viewportWidth;
   this._currentState.positive.viewportHeight = height;

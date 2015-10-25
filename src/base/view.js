@@ -45,7 +45,7 @@ View.prototype.layout = function(width, height) {
   if (width != this._width) {
     this._width = width;
     if (this._content !== null) {
-      this._updateScrollBar(true);
+      this._updateScrollBarRight();
     }
   }
   this._height = height;
@@ -73,7 +73,7 @@ View.prototype.setContent = function(content) {
   this._content = content;
 
   if (this._content === null) {
-    this._updateScrollBar(false);
+    this._updateScrollBar(0);
     return;
   }
 
@@ -82,7 +82,7 @@ View.prototype.setContent = function(content) {
   this._content.on('redraw', this._boundDrawContent);
   this._element.appendChild(this._content.element());
 
-  this._updateScrollBar(false);
+  this._updateScrollBar(this._content.totalWidth());
   this._drawContent();
 };
 
@@ -97,8 +97,8 @@ View.prototype.setAnimate = function(flag) {
   }
 };
 
-View.prototype._contentWidthChange = function(keepRightOffset) {
-  this._updateScrollBar(keepRightOffset);
+View.prototype._contentWidthChange = function(suggestedWidth) {
+  this._updateScrollBar(suggestedWidth);
   this._drawContent();
 };
 
@@ -121,19 +121,15 @@ View.prototype._drawContent = function(barVisibility) {
   this._content.draw(viewportX, this._width, height, barShowingHeight);
 };
 
-View.prototype._updateScrollBar = function(keepRightOffset) {
+View.prototype._updateScrollBar = function(suggestedOffset) {
+  assert('number' === typeof suggestedOffset)
+
+  var maxValue = this._content === null ? 0 : this._content.totalWidth() - this._width;
+  var useScrollX = Math.max(0, Math.min(maxValue, suggestedOffset));
+
   if (this._needsToScroll() === this._scrolls) {
     if (this._scrolls) {
-      if (keepRightOffset) {
-        var scrollRight = this._scrollBar.getTotalPixels() - this._scrollBar.getVisiblePixels() -
-          this._scrollBar.getScrolledPixels();
-        var scrolled = Math.max(0, this._content.totalWidth() - this._width - scrollRight);
-        this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
-      } else {
-        var maxScrolled = this._content.totalWidth() - this._width;
-        var scrolled = Math.min(maxScrolled, this._scrollBar.getScrolledPixels());
-        this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
-      }
+      this._scrollBar.setInfo(this._content.totalWidth(), this._width, useScrollX);
     }
     return;
   }
@@ -141,9 +137,7 @@ View.prototype._updateScrollBar = function(keepRightOffset) {
   this._scrolls = !this._scrolls;
 
   if (this._scrolls) {
-    // TODO: the content may have a preferred initial scroll offset.
-    var scrolled = this._content.totalWidth() - this._width;
-    this._scrollBar.setInfo(this._content.totalWidth(), this._width, scrolled);
+    this._scrollBar.setInfo(this._content.totalWidth(), this._width, useScrollX);
   }
 
   if (!this._animate) {
@@ -163,6 +157,18 @@ View.prototype._updateScrollBar = function(keepRightOffset) {
 
   this._scrollBarAnimationStart = startTime;
   this._scrollBarAnimation = window.requestAnimationFrame(this._animationFrame.bind(this));
+};
+
+View.prototype._updateScrollBarRight = function() {
+  if (this._content === null) {
+    this._updateScrollBar(0);
+  } else {
+    var scrollablePixels = this._scrollBar.getTotalPixels() - this._scrollBar.getVisiblePixels();
+    var rightOffset = scrollablePixels - this._scrollBar.getScrolledPixels();
+    var newScrollablePixels = this._content.totalWidth() - this._width;
+    var newScrollOffset = newScrollablePixels - rightOffset;
+    this._updateScrollBar(newScrollOffset);
+  }
 };
 
 View.prototype._scrollBarVisibility = function(now) {
