@@ -1,4 +1,4 @@
-var DEFAULT_MIN_SPACING = 20;
+var DEFAULT_MIN_SPACING = 30;
 var DEFAULT_TOP_MARGIN = 10;
 
 // DurationLabelGenerator creates Labels for duration values like "1:50.50".

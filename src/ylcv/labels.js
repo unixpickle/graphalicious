@@ -9,7 +9,7 @@ function LabelSettings(attrs) {
 
 LabelSettings.DEFAULT_MARGIN = 10;
 LabelSettings.DEFAULT_COLOR = '#999';
-LabelSettings.DEFAULT_FONT = '10px sans-serif';
+LabelSettings.DEFAULT_FONT = '16px sans-serif';
 
 LabelSettings.prototype.margin = function() {
   return this.leftMargin + this.rightMargin;
@@ -68,7 +68,7 @@ Labels.prototype.maxValue = function() {
 
 Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {
   ctx.textBaseline = 'middle';
-  ctx.textAlign = 'end';
+  ctx.textAlign = 'center';
   ctx.font = this.settings.font;
   ctx.fillStyle = this.settings.color;
 
@@ -79,7 +79,7 @@ Labels.prototype.draw = function(ctx, leftX, topY, bottomY) {
   var spacing = (bottomY - topY) / (count - 1);
   for (var i = 0; i < count; ++i) {
     var y = bottomY - spacing*i;
-    ctx.fillText(this.text[i], y, leftX+this._width-this.settings.rightMargin);
+    ctx.fillText(this.text[i], leftX+(this.width()/2), y);
   }
 
   ctx.globalAlpha = oldAlpha;

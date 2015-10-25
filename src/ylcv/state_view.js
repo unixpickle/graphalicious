@@ -483,6 +483,8 @@ StateView.prototype._drawCanvas = function() {
 
   // TODO: draw the ziggity zaggity (edge of content).
   // TODO: draw the y-axis labels.
+
+  this._drawYAxisLabels();
 };
 
 StateView.prototype._drawChunkView = function(yLabelWidth) {
@@ -521,6 +523,18 @@ StateView.prototype._drawChunkView = function(yLabelWidth) {
 
     return {left: canvasX, width: regionWidth};
   }
+};
+
+StateView.prototype._drawYAxisLabels = function() {
+  if (!this._state.animating) {
+    this._state.yLabels.draw(this._context, 0, this._topMargin,
+      this._state.positive.viewportHeight-this._bottomMargin);
+    return;
+  }
+  var maxValue;
+  maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
+    this._state.animationProgress*this._state.yLabels.maxValue();
+  // TODO: draw here.
 };
 
 StateView.prototype._shouldStretchContent = function() {

@@ -59,12 +59,12 @@
 
   DemoDataSource.prototype.cancel = function(index) {
     if (this.isLoadingChunk(index)) {
-      clearTimeout(this._timeouts[idx]);
+      clearTimeout(this._timeouts[index]);
     }
   };
 
   DemoDataSource.prototype.isLoadingChunk = function(index) {
-    return this._timeouts[idx] !== null;
+    return this._timeouts[index] !== null;
   };
 
   DemoDataSource.prototype.delete = function(index) {
