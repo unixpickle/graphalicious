@@ -108,11 +108,11 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   var minRegion = {
-    left: positiveState.viewportX - positiveState.leftmostYLabels -
+    left: positiveState.viewportX - positiveState.leftmostYLabelsWidth -
       NormativeState.VISIBLE_MIN_BUFFER,
     width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth
   };
-  var minChunk = provider.computeTheoreticalChunk(minRegion);
+  var minChunk = provider.computeTheoreticalChunk(minRegion, positiveState.dataSourceLength);
 
   var visibleChunkEnd = positiveState.visibleChunkStart + positiveState.visibleChunkLength;
   if (positiveState.visibleChunkStart <= minChunk.start &&

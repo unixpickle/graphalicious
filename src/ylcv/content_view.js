@@ -39,6 +39,7 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
 
 ContentView.prototype._initializeState = function() {
   this._recomputeContentWidth();
+  this._currentState.positive.dataSourceLength = this._dataSource.getLength();
   this.updateStateVisualStyleChange(this._currentState);
 };
 

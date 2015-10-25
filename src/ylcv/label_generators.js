@@ -22,7 +22,7 @@ DurationLabelGenerator.prototype.createLabels = function(maxValue, height, setti
   var error = Infinity;
   for (var i = 0, len = this.divisions.length; i < len; ++i) {
     // Avoid using divisions when larger divisions still give good granularity.
-    if (i < len-1 && minDivision < this.divisions[i+1]) {
+    if (i < len-1 && minDivision > this.divisions[i+1]) {
       continue;
     }
 

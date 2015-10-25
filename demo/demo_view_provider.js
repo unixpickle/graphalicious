@@ -63,8 +63,10 @@
   }
 
   DemoChunkView.prototype.getInherentWidth = function() {
-    var pointCount = this._left + this._right + this._points.length;
-    return this._margin*2 + pointCount*this._barWidth + (pointCount-1)*this._spacing;
+    var barsWidth = this._barWidth*this._points.length + this._spacing*(this._points.length-1);
+    barsWidth += (this._left === 0 ? this._margin : this._spacing);
+    barsWidth += (this._right === 0 ? this._margin : this._spacing);
+    return barsWidth;
   };
 
   DemoChunkView.prototype.getLeftOffset = function() {
@@ -73,7 +75,7 @@
     } else if (this._right === 0 && this._points.length === 0) {
       return this.getInherentWidth();
     }
-    return this._margin + this._left*(this._barWidth+this._spacing);
+    return this._margin + this._left*this._barWidth + (this._left-1)*this._spacing;
   };
 
   DemoChunkView.prototype.getRightOffset = function() {
@@ -82,7 +84,7 @@
     } else if (this._left === 0 && this._points.length === 0) {
       return this.getInherentWidth();
     }
-    return this._margin + this._right*(this._barWidth+this._spacing);
+    return this._margin + this._right*this._barWidth + (this._right-1)*this._spacing;
   };
 
   DemoChunkView.prototype.firstVisibleDataPoint = function(leftOffset) {
@@ -174,12 +176,40 @@
   DemoChunkView.prototype.pointerLeave = function() {
   };
 
-  DemoChunkView.prototype.draw = function(regionLeft, regionWidth, x, y, height, ctx) {
+  DemoChunkView.prototype.draw = function(regionLeft, regionWidth, x, y, height, maxValue, ctx) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, y, regionWidth, height);
+    ctx.clip();
+
+    var startIndex = this.firstVisibleDataPoint(regionLeft);
+    var endIndex = this.lastVisibleDataPoint(regionLeft + regionWidth);
+
+    var startLeft = (this._spacing + this._barWidth) * startIndex;
+    if (this._start === 0) {
+      startLeft += this._margin;
+    } else {
+      startLeft += this._spacing;
+    }
+
+    this._drawBars(startIndex, endIndex, x-(regionLeft-startLeft), y, height, maxValue,
+      this._barWidth, this._spacing, ctx);
+
+    ctx.restore();
+  };
+
+  DemoChunkView.prototype.drawStretched = function(x, y, width, height, maxValue, ctx) {
     // TODO: this.
   };
 
-  DemoChunkView.prototype.drawStretched = function(x, y, width, height, ctx) {
-    // TODO: this.
+  DemoChunkView.prototype._drawBars = function(start, end, x, y, height, maxVal, barWidth,
+                                               barSpace, ctx) {
+    for (var i = start; i < end; ++i) {
+      var value = this._points[i];
+      var barX = x + (i-start)*(barWidth+barSpace);
+      var barHeight = height * (value.primary / maxVal);
+      ctx.fillRect(barX, y+height-barHeight, barWidth, barHeight);
+    }
   };
 
   window.DemoViewProvider = DemoViewProvider;

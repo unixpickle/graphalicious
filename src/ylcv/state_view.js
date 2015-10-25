@@ -281,9 +281,12 @@ StateView.prototype._updateStateYLabels = function() {
     return;
   }
 
+  var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+  assert(chunk !== null);
+
   // TODO: here, predict what the viewportX will be at the end of the animation using
   // this._keepRightOnWidthChange and the chunkView's animation info.
-  var predictedViewportX = this._state.viewportX;
+  var predictedViewportX = this._state.positive.viewportX;
 
   var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
   var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
@@ -293,7 +296,6 @@ StateView.prototype._updateStateYLabels = function() {
   var lastPoint = this._state.chunkView.postAnimationLastVisibleDataPoint(endLeft);
 
   var maxValue = 0;
-  var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
   for (var i = firstPoint; i <= lastPoint; ++i) {
     maxValue = Math.max(maxValue, chunk.getDataPoint(i).primary);
   }
@@ -452,6 +454,8 @@ StateView.prototype._drawCanvas = function() {
   assert(this._state.chunkView !== null);
   assert(this._state.yLabels !== null);
 
+  this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
+
   var yLabelWidth;
   if (this._state.animating) {
     yLabelWidth = (1-this._state.animationProgress)*this._state.startYLabels.width() +
@@ -485,15 +489,17 @@ StateView.prototype._drawChunkView = function(yLabelWidth) {
     var width = this._state.positive.viewportWidth - yLabelWidth;
     return chunkView.drawStretched(yLabelWidth, y, width, height, maxValue, this._context);
   } else {
-    var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelsWidth -
+    var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
       this._state.positive.viewportX;
     var chunkEndInCanvas = chunkLeftInCanvas + this._state.chunkView.getInherentWidth();
-    if (chunkLeftInCanvas > this._state.viewportWidth || chunkEndInCanvas < yLabelWidth) {
+
+    if (chunkLeftInCanvas > this._state.positive.viewportWidth || chunkEndInCanvas < yLabelWidth) {
       return null;
     }
 
     var regionLeft = Math.max(yLabelWidth, chunkLeftInCanvas) - chunkLeftInCanvas;
-    var regionEnd = Math.min(this._state.viewportWidth, chunkEndInCanvas) - chunkLeftInCanvas;
+    var regionEnd = Math.min(this._state.positive.viewportWidth, chunkEndInCanvas) -
+      chunkLeftInCanvas;
     var regionWidth = regionEnd - regionLeft;
     var canvasX = regionLeft + chunkLeftInCanvas;
     chunkView.draw(regionLeft, regionWidth, canvasX, y, height, maxValue, this._context);
@@ -524,9 +530,10 @@ StateView.prototype._updatePixelRatio = function() {
 StateView.prototype._updateCanvasSize = function() {
   this._canvas.width = this._state.positive.viewportWidth * this._pixelRatio;
   this._canvas.height = this._state.positive.viewportHeight * this._pixelRatio;
+  this._canvas.style.width = this._state.positive.viewportWidth.toFixed(1) + 'px';
+  this._canvas.style.height = this._state.positive.viewportHeight.toFixed(1) + 'px';
   this._context = this._canvas.getContext('2d');
-
-  // TODO: scale this._context to fit the viewport.
+  this._context.scale(this._pixelRatio, this._pixelRatio);
 };
 
 StateView.prototype._startSplashScreenDelay = function() {

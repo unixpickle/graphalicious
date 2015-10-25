@@ -41,7 +41,6 @@
   };
 
   DemoDataSource.prototype.fetchChunk = function(idx, start, len) {
-    this._chunks[idx] = null;
     this._loading[idx] = true;
     setTimeout(function() {
       if (!this._loading[idx]) {
