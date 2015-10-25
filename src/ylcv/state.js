@@ -107,9 +107,16 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
 };
 
 NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
+  var viewportX;
+  if (positiveState.visibleChunkLength < 0) {
+    console.log(positiveState);
+    viewportX = positiveState.contentWidth + positiveState.leftmostYLabelsWidth -
+      positiveState.viewportWidth;
+  } else {
+    viewportX = positiveState.viewportX;
+  }
   var minRegion = {
-    left: positiveState.viewportX - positiveState.leftmostYLabelsWidth -
-      NormativeState.VISIBLE_MIN_BUFFER,
+    left: viewportX - positiveState.leftmostYLabelsWidth - NormativeState.VISIBLE_MIN_BUFFER,
     width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth
   };
   var minChunk = provider.computeTheoreticalChunk(minRegion, positiveState.dataSourceLength);
@@ -131,8 +138,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   }
 
   var needRegion = {
-    left: positiveState.viewportX - positiveState.leftmostYLabelsWidth -
-      NormativeState.VISIBLE_START_BUFFER,
+    left: viewportX - positiveState.leftmostYLabelsWidth - NormativeState.VISIBLE_START_BUFFER,
     width: NormativeState.VISIBLE_START_BUFFER*2 + positiveState.viewportWidth
   };
 

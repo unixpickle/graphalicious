@@ -6,9 +6,9 @@
     EventEmitter.call(this);
     this._dataPoints = dataPoints;
     this._chunks = [null, null];
-    this._loading = [false, false];
+    this._timeouts = [null, null];
 
-    this.loadTimeout = 10;
+    this.loadTimeout = 1000;
     this.loadSuccess = true;
   }
 
@@ -41,12 +41,11 @@
   };
 
   DemoDataSource.prototype.fetchChunk = function(idx, start, len) {
-    this._loading[idx] = true;
-    setTimeout(function() {
-      if (!this._loading[idx]) {
-        return;
-      }
-      this._loading[idx] = false;
+    if (this._timeouts[idx] !== null) {
+      clearTimeout(this._timeouts[idx]);
+    }
+    this._timeouts[idx] = setTimeout(function() {
+      this._timeouts[idx] = null;
 
       if (!this.loadSuccess) {
         this.emit('error', idx);
@@ -56,6 +55,16 @@
       this._chunks[idx] = new StaticChunk(this._dataPoints, start, len);
       this.emit('load', idx);
     }.bind(this), this.loadTimeout);
+  };
+
+  DemoDataSource.prototype.cancel = function(index) {
+    if (this.isLoadingChunk(index)) {
+      clearTimeout(this._timeouts[idx]);
+    }
+  };
+
+  DemoDataSource.prototype.isLoadingChunk = function(index) {
+    return this._timeouts[idx] !== null;
   };
 
   DemoDataSource.prototype.delete = function(index) {
