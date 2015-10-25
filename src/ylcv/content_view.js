@@ -73,6 +73,8 @@ ContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
     this._recomputeLeftmostLabelWidth();
     this._currentState.normative.needsLeftmostChunk = false;
     this._currentState.normative.loadingLeftmostChunk = false;
+    var chunk = this._dataSource.getChunk(LEFTMOST_CHUNK_INDEX);
+    this._currentState.positive.leftmostChunkLength = chunk.getLength();
   } else {
     this._currentState.normative.needsVisibleChunk = false;
     this._currentState.normative.loadingVisibleChunk = false;

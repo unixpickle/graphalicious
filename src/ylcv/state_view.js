@@ -286,7 +286,7 @@ StateView.prototype._updateStateShowingContent = function(oldState) {
 
   if (shouldHideContent && !oldShouldHideContent) {
     assert(this._splashScreenDelay === null);
-    this._startLoadingTimeout();
+    this._startSplashScreenDelay();
   } else if (!shouldHideContent && oldShouldHideContent) {
     if (this._splashScreenDelay !== null) {
       clearTimeout(this._splashScreenDelay);
