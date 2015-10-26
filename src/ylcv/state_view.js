@@ -319,6 +319,17 @@ StateView.prototype._updateStateYLabels = function() {
   var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
   var endLeft = subregionLeft + this._state.positive.viewportWidth;
 
+  // NOTE: we don't want the y-axis labels to change once the content starts to leave the bounds of
+  // the viewport (i.e. the user scrolled past the loaded chunk).
+  if (subregionLeft < 0) {
+    endLeft -= subregionLeft;
+    subregionLeft = 0;
+  } else if (endLeft > this._state.chunkView.getInherentWidth()) {
+    var diff = endLeft - this._state.chunkView.getInherentWidth();
+    endLeft -= diff;
+    subregionLeft -= diff;
+  }
+
   var firstPoint = this._state.chunkView.postAnimationFirstVisibleDataPoint(subregionLeft);
   var lastPoint = this._state.chunkView.postAnimationLastVisibleDataPoint(endLeft);
 

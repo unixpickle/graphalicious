@@ -12,7 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Investigate bug where y-axis labels don't change when scrolling away from the chunk.
  * Implement real draw routines in StateView
    * Regular drawing and mid-animation drawing
  * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
