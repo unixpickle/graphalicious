@@ -508,18 +508,27 @@ StateView.prototype._drawCanvas = function() {
     yLabelWidth = this._state.yLabels.width();
   }
 
-  var chunkRegionOrNull = this._drawChunkView(yLabelWidth);
+  this._context.save();
+  this._context.beginPath();
+  this._context.rect(yLabelWidth, 0, this._state.positive.viewportWidth-yLabelWidth,
+    this._state.positive.viewportHeight);
+  this._context.clip();
+  this._context.closePath();
 
-  // TODO: draw the ziggity zaggity (edge of content).
-  // TODO: draw the y-axis labels.
-
-  this._drawYAxisLabels();
+  var chunkRegionOrNull = this._drawChunkView();
   if (chunkRegionOrNull !== null) {
     this._drawEdges(chunkRegionOrNull, yLabelWidth);
+    // TODO: draw horizontal y-axis lines here.
+  }
+
+  this._context.restore();
+
+  if (chunkRegionOrNull !== null) {
+    this._drawYAxisLabels(chunkRegionOrNull, yLabelWidth);
   }
 };
 
-StateView.prototype._drawChunkView = function(yLabelWidth) {
+StateView.prototype._drawChunkView = function() {
   var chunkView;
   var maxValue;
   if (this._state.animating) {
@@ -535,18 +544,18 @@ StateView.prototype._drawChunkView = function(yLabelWidth) {
   var y = this._topMargin;
 
   if (this._shouldStretchContent()) {
-    var width = this._state.positive.viewportWidth - yLabelWidth;
-    return chunkView.drawStretched(yLabelWidth, y, width, height, maxValue, this._context);
+    var width = this._state.positive.viewportWidth;
+    return chunkView.drawStretched(0, y, width, height, maxValue, this._context);
   } else {
     var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
       this._state.positive.viewportX;
     var chunkEndInCanvas = chunkLeftInCanvas + this._state.chunkView.getInherentWidth();
 
-    if (chunkLeftInCanvas > this._state.positive.viewportWidth || chunkEndInCanvas < yLabelWidth) {
+    if (chunkLeftInCanvas > this._state.positive.viewportWidth || chunkEndInCanvas < 0) {
       return null;
     }
 
-    var regionLeft = Math.max(yLabelWidth, chunkLeftInCanvas) - chunkLeftInCanvas;
+    var regionLeft = Math.max(0, chunkLeftInCanvas) - chunkLeftInCanvas;
     var regionEnd = Math.min(this._state.positive.viewportWidth, chunkEndInCanvas) -
       chunkLeftInCanvas;
     var regionWidth = regionEnd - regionLeft;
@@ -557,12 +566,21 @@ StateView.prototype._drawChunkView = function(yLabelWidth) {
   }
 };
 
-StateView.prototype._drawYAxisLabels = function() {
+StateView.prototype._drawYAxisLabels = function(contentRect, yLabelWidth) {
+  var labelOffset = 0;
+  if (contentRect.left+contentRect.width < yLabelWidth-(JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH)) {
+    labelOffset = yLabelWidth - (JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH) -
+      (contentRect.left + contentRect.width);
+  } else if (contentRect.left > this._state.positive.viewportWidth-yLabelWidth) {
+    labelOffset = contentRect.left - (this._state.positive.viewportWidth - yLabelWidth);
+  }
+
   if (!this._state.animating) {
-    this._state.yLabels.draw(this._context, 0, this._topMargin,
+    this._state.yLabels.draw(this._context, -labelOffset, this._topMargin,
       this._state.positive.viewportHeight-this._bottomMargin);
     return;
   }
+
   var maxValue;
   maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
     this._state.animationProgress*this._state.yLabels.maxValue();
@@ -572,7 +590,7 @@ StateView.prototype._drawYAxisLabels = function() {
 StateView.prototype._drawEdges = function(contentRect, yLabelsWidth) {
   for (var i = 0; i < 2; ++i) {
     var x = (i === 0 ? contentRect.left : contentRect.left+contentRect.width+JAGGED_EDGE_SIZE);
-    if (x <= yLabelsWidth+2 || x >= this._state.positive.viewportWidth-2) {
+    if (x <= 0 || x >= this._state.positive.viewportWidth-2) {
       continue;
     }
     var startY = -(i === 0 ? 2 : 1)*JAGGED_EDGE_SIZE;
