@@ -74,7 +74,7 @@ function NormativeState(attrs) {
   this.visibleChunkLength = defaultValue(attrs.visibleChunkLength, 0);
 }
 
-NormativeState.LEFTMOST_START_BUFFER = 100;
+NormativeState.LEFTMOST_START_BUFFER = 2000;
 NormativeState.LEFTMOST_MIN_BUFFER = 0;
 NormativeState.VISIBLE_START_BUFFER = 2000;
 NormativeState.VISIBLE_MIN_BUFFER = 1000;
