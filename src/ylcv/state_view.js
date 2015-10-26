@@ -38,9 +38,9 @@ function StateView(state, attrs) {
   this._element.appendChild(this._splashScreen.element());
   this._splashScreen.setAnimate(false);
 
-  this._splashScreen.showError();
-  this._loader1.showError();
-  this._loader2.showError();
+  this._splashScreen.showLoading();
+  this._loader1.showLoading();
+  this._loader2.showLoading();
 
   this._pixelRatio = 0;
   this._crystalCallback = this._updatePixelRatio.bind(this);
@@ -463,14 +463,17 @@ StateView.prototype._handleNormativeChanges = function(oldState) {
     }
   }
 
-  var newLoading = this._state.normative.loadingVisibleChunk ||
-    this._state.normative.loadingLeftmostChunk;
-  var oldLoading = oldState.normative.loadingVisibleChunk || oldState.normative.loadingVisibleChunk;
-  if (oldLoading !== newLoading || oldState.viewFrozen) {
-    if (newLoading) {
-      this._splashScreen.showLoading();
-    } else {
+  var newError = (this._state.normative.loadingVisibleChunk !==
+    this._state.normative.needsVisibleChunk) || (this._state.normative.loadingLeftmostChunk !==
+    this._state.normative.needsLeftmostChunk);
+  var oldError = (oldState.normative.loadingVisibleChunk !==
+    oldState.normative.needsVisibleChunk) || (oldState.normative.loadingLeftmostChunk !==
+    oldState.normative.needsLeftmostChunk);
+  if (newError !== oldError || oldState.viewFrozen) {
+    if (newError) {
       this._splashScreen.showError();
+    } else {
+      this._splashScreen.showLoading();
     }
   }
 };
