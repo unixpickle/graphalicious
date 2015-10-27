@@ -209,7 +209,10 @@
   };
 
   DemoChunkView.prototype.drawStretched = function(x, y, width, height, maxValue, ctx) {
-    // TODO: this.
+    var inherentWidth = this.getInherentWidth();
+    var left = x+width-(this.getRightOffset()+inherentWidth);
+    this.draw(0, inherentWidth, left, y, height, maxValue, ctx);
+    return {left: left, width: inherentWidth};
   };
 
   DemoChunkView.prototype._drawBars = function(start, end, x, y, height, maxVal, barWidth,

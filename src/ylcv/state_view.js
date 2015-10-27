@@ -555,8 +555,9 @@ StateView.prototype._drawChunkView = function() {
   var y = this._topMargin;
 
   if (this._shouldStretchContent()) {
-    var width = this._state.positive.viewportWidth;
-    return chunkView.drawStretched(0, y, width, height, maxValue, this._context);
+    var width = this._state.positive.viewportWidth - this._state.liveLeftmostLabelWidth;
+    return chunkView.drawStretched(this._state.liveLeftmostLabelWidth, y, width, height, maxValue,
+      this._context);
   } else {
     var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
       this._state.positive.viewportX;
@@ -599,6 +600,16 @@ StateView.prototype._drawYAxisLabels = function(contentRect, yLabelWidth) {
 };
 
 StateView.prototype._drawEdges = function(contentRect, yLabelsWidth) {
+  var chunkView;
+  if (this._state.animating) {
+    chunkView = this._state.animatingChunkView;
+  } else {
+    chunkView = this._state.chunkView;
+  }
+  if (chunkView.getLeftOffset() === 0 && chunkView.getRightOffset() === 0) {
+    return;
+  }
+
   for (var i = 0; i < 2; ++i) {
     var x = (i === 0 ? contentRect.left : contentRect.left+contentRect.width+JAGGED_EDGE_SIZE);
     if (x <= 0 || x >= this._state.positive.viewportWidth-2) {
