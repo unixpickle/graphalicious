@@ -12,7 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Prevent small rightmost/leftmost gap between content and edge.
  * Implement real draw routines in StateView
    * Regular drawing and mid-animation drawing
    * Horizontal lines for y-axis labels

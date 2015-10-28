@@ -78,6 +78,18 @@ NormativeState.LEFTMOST_START_BUFFER = 2000;
 NormativeState.LEFTMOST_MIN_BUFFER = 0;
 NormativeState.VISIBLE_START_BUFFER = 2000;
 NormativeState.VISIBLE_MIN_BUFFER = 1000;
+NormativeState.SMALL_GAP_WIDTH = 100;
+
+NormativeState._removeSmallEdgeGaps = function(region, positiveState) {
+  if (region.left > 0 && region.left < NormativeState.SMALL_GAP_WIDTH) {
+    region.width += region.left;
+    region.left = 0;
+  }
+  var rightGap = positiveState.contentWidth - (region.left + region.width);
+  if (rightGap > 0 && rightGap < NormativeState.SMALL_GAP_WIDTH) {
+    region.width += rightGap;
+  }
+};
 
 // recompute uses a ViewProvider and a PositiveState to update this normative state's fields based
 // on what data should be loaded.
@@ -102,6 +114,8 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
       left: 0,
       width: positiveState.viewportWidth + NormativeState.LEFTMOST_START_BUFFER
     };
+
+    NormativeState._removeSmallEdgeGaps(theoreticalChunk, positiveState);
     this.leftmostChunkLength = provider.computeTheoreticalChunk(theoreticalChunk,
       positiveState.dataSourceLength).length;
   }
@@ -150,6 +164,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
     needRegion.left = 0;
   }
 
+  NormativeState._removeSmallEdgeGaps(needRegion, positiveState);
   var needChunk = provider.computeTheoreticalChunk(needRegion, positiveState.dataSourceLength);
 
   this.needsVisibleChunk = true;
