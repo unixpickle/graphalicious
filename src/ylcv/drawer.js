@@ -1,3 +1,8 @@
+var JAGGED_EDGE_SIZE = 5;
+var JAGGED_LINE_WIDTH = 2;
+var JAGGED_COLOR = '#d5d5d5';
+var LINE_COLOR = '#d5d5d5';
+
 // Drawer presents a particular ViewState in a 2D drawing context.
 // It is also responsible for laying out the view's inline loaders.
 function Drawer(topMargin, bottomMargin, canvas, context, state) {
@@ -28,8 +33,8 @@ Drawer.prototype.draw = function() {
   var chunkRegionOrNull = this._drawChunkView();
   if (chunkRegionOrNull !== null) {
     this._drawEdges(chunkRegionOrNull);
-    // TODO: draw horizontal y-axis lines here.
   }
+  // TODO: draw horizontal y-axis lines here.
   this._context.restore();
 
   if (chunkRegionOrNull !== null) {
@@ -50,8 +55,19 @@ Drawer.prototype._drawChunkView = function() {
       this._state.positive.viewportX;
     var chunkEndInCanvas = chunkLeftInCanvas + this._chunkView.getInherentWidth();
 
-    if (chunkLeftInCanvas > this._state.positive.viewportWidth || chunkEndInCanvas < 0) {
-      return null;
+    // NOTE: if the chunk if off-screen, we emulate a piece of off-screen content so that the
+    // edge and line drawing routines know what to do.
+    var edgeSize = JAGGED_EDGE_SIZE + JAGGED_LINE_WIDTH;
+    if (chunkLeftInCanvas > this._state.positive.viewportWidth) {
+      if (chunkLeftInCanvas > this._state.positive.viewportWidth+edgeSize) {
+        return null;
+      }
+      return {left: chunkLeftInCanvas, width: JAGGED_EDGE_SIZE*2};
+    } else if (chunkEndInCanvas < 0) {
+      if (chunkEndInCanvas < -edgeSize) {
+        return null;
+      }
+      return {left: chunkEndInCanvas-JAGGED_EDGE_SIZE*2, width: JAGGED_EDGE_SIZE*2};
     }
 
     var regionLeft = Math.max(0, chunkLeftInCanvas) - chunkLeftInCanvas;
@@ -86,28 +102,43 @@ Drawer.prototype._drawYAxisLabels = function(contentRect) {
 };
 
 Drawer.prototype._drawEdges = function(contentRect) {
-  // TODO: specifically ignore the right/left edge without needing to ignore both.
-  if (this._chunkView.getLeftOffset() === 0 && this._chunkView.getRightOffset() === 0) {
-    return;
+  var leftX = -JAGGED_LINE_WIDTH;
+  if (this._chunkView.getLeftOffset() > 0) {
+    leftX = contentRect.left;
   }
 
-  for (var i = 0; i < 2; ++i) {
-    var x = (i === 0 ? contentRect.left : contentRect.left+contentRect.width+JAGGED_EDGE_SIZE);
-    if (x <= 0 || x >= this._state.positive.viewportWidth-2) {
-      continue;
+  var rightX = this._state.positive.viewportWidth + JAGGED_LINE_WIDTH;
+  if (this._chunkView.getRightOffset() > 0) {
+    var suggestedValue = contentRect.left+contentRect.width;
+    if (suggestedValue < this._state.positive.viewportWidth-JAGGED_LINE_WIDTH) {
+      rightX = suggestedValue;
     }
-    var startY = -(i === 0 ? 2 : 1)*JAGGED_EDGE_SIZE;
+  }
 
-    this._context.beginPath();
-    this._context.lineWidth = JAGGED_LINE_WIDTH;
-    this._context.strokeStyle = JAGGED_COLOR;
-    this._context.moveTo(x, 0);
-    for (var y = startY; y < this._state.positive.viewportHeight; y += 2*JAGGED_EDGE_SIZE) {
+  this._context.lineWidth = JAGGED_LINE_WIDTH;
+  this._context.strokeStyle = JAGGED_COLOR;
+  this._context.beginPath();
+  this._drawEdge(leftX, true);
+  this._drawEdge(rightX, false);
+  this._context.closePath();
+  this._context.stroke();
+};
+
+Drawer.prototype._drawEdge = function(x, leftSide) {
+  var topY = -JAGGED_EDGE_SIZE;
+  var bottomY = this._state.positive.viewportHeight + JAGGED_LINE_WIDTH;
+  if (leftSide) {
+    this._context.moveTo(x, topY);
+    for (var y = topY; y <= bottomY; y += 2*JAGGED_EDGE_SIZE) {
       this._context.lineTo(x-JAGGED_EDGE_SIZE, y+JAGGED_EDGE_SIZE);
       this._context.lineTo(x, y+2*JAGGED_EDGE_SIZE);
     }
-    this._context.stroke();
-    this._context.closePath();
+  } else {
+    this._context.lineTo(x, bottomY);
+    for (var y = bottomY; y >= topY; y -= 2*JAGGED_EDGE_SIZE) {
+      this._context.lineTo(x+JAGGED_EDGE_SIZE, y-JAGGED_EDGE_SIZE);
+      this._context.lineTo(x, y-2*JAGGED_EDGE_SIZE);
+    }
   }
 };
 

@@ -10,11 +10,6 @@ var MIN_SPLASH_SCREEN_TIME = 300;
 
 var DEFAULT_KEEP_RIGHT = true;
 
-var JAGGED_EDGE_SIZE = 5;
-var JAGGED_LINE_WIDTH = 2;
-var JAGGED_COLOR = '#d5d5d5';
-var LINE_COLOR = '#d5d5d5';
-
 // StateView is responsible for drawing a state and rendering animations.
 // The StateView is not responsible for updating the state, just for handling state changes.
 function StateView(state, attrs) {
