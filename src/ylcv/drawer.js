@@ -6,62 +6,49 @@ function Drawer(topMargin, bottomMargin, canvas, context, state) {
   this._canvas = canvas;
   this._context = context;
   this._state = state;
+
+  if (this._state.animating) {
+    this._yLabelWidth = (1-this._state.animationProgress)*this._state.startYLabels.width() +
+      this._state.animationProgress*this._state.yLabels.width();
+    this._maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
+      this._state.animationProgress*this._state.yLabels.maxValue();
+    this._chunkView = this._state.animatingChunkView;
+  } else {
+    this._yLabelWidth = this._state.yLabels.width();
+    this._maxValue = this._state.yLabels.maxValue();
+    this._chunkView = this._state.chunkView;
+  }
 }
 
 Drawer.prototype.draw = function() {
   this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
-  var yLabelWidth;
-  if (this._state.animating) {
-    yLabelWidth = (1-this._state.animationProgress)*this._state.startYLabels.width() +
-      this._state.animationProgress*this._state.yLabels.width();
-  } else {
-    yLabelWidth = this._state.yLabels.width();
-  }
-
   this._context.save();
-  this._context.beginPath();
-  this._context.rect(yLabelWidth, 0, this._state.positive.viewportWidth-yLabelWidth,
-    this._state.positive.viewportHeight);
-  this._context.clip();
-  this._context.closePath();
-
+  this._clipAwayYLabels();
   var chunkRegionOrNull = this._drawChunkView();
   if (chunkRegionOrNull !== null) {
-    this._drawEdges(chunkRegionOrNull, yLabelWidth);
+    this._drawEdges(chunkRegionOrNull);
     // TODO: draw horizontal y-axis lines here.
   }
-
   this._context.restore();
 
   if (chunkRegionOrNull !== null) {
-    this._drawYAxisLabels(chunkRegionOrNull, yLabelWidth);
+    this._drawYAxisLabels(chunkRegionOrNull);
   }
 };
 
 Drawer.prototype._drawChunkView = function() {
-  var chunkView;
-  var maxValue;
-  if (this._state.animating) {
-    maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
-      this._state.animationProgress*this._state.yLabels.maxValue();
-    chunkView = this._state.animatingChunkView;
-  } else {
-    maxValue = this._state.yLabels.maxValue();
-    chunkView = this._state.chunkView;
-  }
-
   var height = this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin);
   var y = this._topMargin;
 
   if (this._shouldStretchContent()) {
     var width = this._state.positive.viewportWidth - this._state.liveLeftmostLabelWidth;
-    return chunkView.drawStretched(this._state.liveLeftmostLabelWidth, y, width, height, maxValue,
-      this._context);
+    return this._chunkView.drawStretched(this._state.liveLeftmostLabelWidth, y, width, height,
+      this._maxValue, this._context);
   } else {
-    var chunkLeftInCanvas = chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
+    var chunkLeftInCanvas = this._chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
       this._state.positive.viewportX;
-    var chunkEndInCanvas = chunkLeftInCanvas + this._state.chunkView.getInherentWidth();
+    var chunkEndInCanvas = chunkLeftInCanvas + this._chunkView.getInherentWidth();
 
     if (chunkLeftInCanvas > this._state.positive.viewportWidth || chunkEndInCanvas < 0) {
       return null;
@@ -72,19 +59,21 @@ Drawer.prototype._drawChunkView = function() {
       chunkLeftInCanvas;
     var regionWidth = regionEnd - regionLeft;
     var canvasX = regionLeft + chunkLeftInCanvas;
-    chunkView.draw(regionLeft, regionWidth, canvasX, y, height, maxValue, this._context);
+    this._chunkView.draw(regionLeft, regionWidth, canvasX, y, height, this._maxValue,
+      this._context);
 
     return {left: canvasX, width: regionWidth};
   }
 };
 
-Drawer.prototype._drawYAxisLabels = function(contentRect, yLabelWidth) {
+Drawer.prototype._drawYAxisLabels = function(contentRect) {
+  // As the content moves off-screen, the y-axis labels move off-screen with them.
   var labelOffset = 0;
-  if (contentRect.left+contentRect.width < yLabelWidth-(JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH)) {
-    labelOffset = yLabelWidth - (JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH) -
+  if (contentRect.left+contentRect.width < this._yLabelWidth-(JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH)) {
+    labelOffset = this._yLabelWidth - (JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH) -
       (contentRect.left + contentRect.width);
-  } else if (contentRect.left > this._state.positive.viewportWidth-yLabelWidth) {
-    labelOffset = contentRect.left - (this._state.positive.viewportWidth - yLabelWidth);
+  } else if (contentRect.left > this._state.positive.viewportWidth-this._yLabelWidth) {
+    labelOffset = contentRect.left - (this._state.positive.viewportWidth - this._yLabelWidth);
   }
 
   if (!this._state.animating) {
@@ -93,20 +82,12 @@ Drawer.prototype._drawYAxisLabels = function(contentRect, yLabelWidth) {
     return;
   }
 
-  var maxValue;
-  maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
-    this._state.animationProgress*this._state.yLabels.maxValue();
   // TODO: draw animating labels here.
 };
 
-Drawer.prototype._drawEdges = function(contentRect, yLabelsWidth) {
-  var chunkView;
-  if (this._state.animating) {
-    chunkView = this._state.animatingChunkView;
-  } else {
-    chunkView = this._state.chunkView;
-  }
-  if (chunkView.getLeftOffset() === 0 && chunkView.getRightOffset() === 0) {
+Drawer.prototype._drawEdges = function(contentRect) {
+  // TODO: specifically ignore the right/left edge without needing to ignore both.
+  if (this._chunkView.getLeftOffset() === 0 && this._chunkView.getRightOffset() === 0) {
     return;
   }
 
@@ -128,6 +109,14 @@ Drawer.prototype._drawEdges = function(contentRect, yLabelsWidth) {
     this._context.stroke();
     this._context.closePath();
   }
+};
+
+Drawer.prototype._clipAwayYLabels = function() {
+  this._context.beginPath();
+  this._context.rect(this._yLabelWidth, 0, this._state.positive.viewportWidth-this._yLabelWidth,
+    this._state.positive.viewportHeight);
+  this._context.clip();
+  this._context.closePath();
 };
 
 Drawer.prototype._shouldStretchContent = function() {
