@@ -8,7 +8,7 @@
     this._chunks = [null, null];
     this._timeouts = [null, null];
 
-    this.loadTimeout = 5000;
+    this.loadTimeout = 3000;
     this.loadSuccess = true;
   }
 
