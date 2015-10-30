@@ -1,7 +1,9 @@
 var JAGGED_EDGE_SIZE = 5;
 var JAGGED_LINE_WIDTH = 2;
-var JAGGED_COLOR = '#d5d5d5';
-var LINE_COLOR = '#d5d5d5';
+var JAGGED_COLOR = '#f0f0f0';
+
+var HORIZONTAL_LINE_COLOR = '#f0f0f0';
+var HORIZONTAL_LINE_WIDTH = 2;
 
 // Drawer presents a particular ViewState in a 2D drawing context.
 // It is also responsible for laying out the view's inline loaders.
@@ -32,9 +34,8 @@ Drawer.prototype.draw = function() {
   this._clipAwayYLabels();
   var chunkRegionOrNull = this._drawChunkView();
   if (chunkRegionOrNull !== null) {
-    this._drawEdges(chunkRegionOrNull);
+    this._drawEdgesAndLines(chunkRegionOrNull);
   }
-  // TODO: draw horizontal y-axis lines here.
   this._context.restore();
 
   if (chunkRegionOrNull !== null) {
@@ -55,8 +56,8 @@ Drawer.prototype._drawChunkView = function() {
       this._state.positive.viewportX;
     var chunkEndInCanvas = chunkLeftInCanvas + this._chunkView.getInherentWidth();
 
-    // NOTE: if the chunk if off-screen, we emulate a piece of off-screen content so that the
-    // edge and line drawing routines know what to do.
+    // NOTE: if the chunk is off-screen, we emulate a piece of off-screen content so that the edge
+    // and line drawing routines know what to do.
     var edgeSize = JAGGED_EDGE_SIZE + JAGGED_LINE_WIDTH;
     if (chunkLeftInCanvas > this._state.positive.viewportWidth) {
       if (chunkLeftInCanvas > this._state.positive.viewportWidth+edgeSize) {
@@ -101,7 +102,7 @@ Drawer.prototype._drawYAxisLabels = function(contentRect) {
   // TODO: draw animating labels here.
 };
 
-Drawer.prototype._drawEdges = function(contentRect) {
+Drawer.prototype._drawEdgesAndLines = function(contentRect) {
   var leftX = -JAGGED_LINE_WIDTH;
   if (this._chunkView.getLeftOffset() > 0) {
     leftX = contentRect.left;
@@ -115,6 +116,8 @@ Drawer.prototype._drawEdges = function(contentRect) {
     }
   }
 
+  this._context.save();
+
   this._context.lineWidth = JAGGED_LINE_WIDTH;
   this._context.strokeStyle = JAGGED_COLOR;
   this._context.beginPath();
@@ -122,11 +125,24 @@ Drawer.prototype._drawEdges = function(contentRect) {
   this._drawEdge(rightX, false);
   this._context.closePath();
   this._context.stroke();
+  this._context.clip();
+
+  if (this._state.animating) {
+    this._drawHorizontalLines(this._state.startYLabels, 1-this._animationProgress);
+    this._drawHorizontalLines(this._state.yLabels, this._animationProgress);
+  } else {
+    this._drawHorizontalLines(this._state.yLabels, 1);
+  }
+
+  this._context.restore();
 };
 
 Drawer.prototype._drawEdge = function(x, leftSide) {
   var topY = -JAGGED_EDGE_SIZE;
   var bottomY = this._state.positive.viewportHeight + JAGGED_LINE_WIDTH;
+
+  assert(topY <= bottomY);
+
   if (leftSide) {
     this._context.moveTo(x, topY);
     for (var y = topY; y <= bottomY; y += 2*JAGGED_EDGE_SIZE) {
@@ -140,6 +156,34 @@ Drawer.prototype._drawEdge = function(x, leftSide) {
       this._context.lineTo(x, y-2*JAGGED_EDGE_SIZE);
     }
   }
+};
+
+Drawer.prototype._drawHorizontalLines = function(labels, opacity) {
+  var count = labels.values.length;
+  var maxHeight = this._state.positive.viewportHeight - (this._bottomMargin + this._topMargin);
+  var height = maxHeight * (labels.maxValue() / this._maxValue);
+
+  var oldAlpha = this._context.globalAlpha;
+  this._context.globalAlpha = opacity;
+  var oldComp = this._context.globalCompositeOperation;
+  this._context.globalCompositeOperation = 'destination-over';
+  
+  this._context.strokeStyle = HORIZONTAL_LINE_COLOR;
+  this._context.lineThickness = HORIZONTAL_LINE_WIDTH;
+
+  this._context.beginPath();
+  var bottomY = this._state.positive.viewportHeight - this._bottomMargin;
+  var divisionHeight = height / (count - 1);
+  for (var i = 0; i < count; ++i) {
+    var y = Math.round(bottomY - i*divisionHeight);
+    this._context.moveTo(0, y);
+    this._context.lineTo(this._state.positive.viewportWidth, y);
+  }
+  this._context.stroke();
+  this._context.closePath();
+
+  this._context.globalAlpha = oldAlpha;
+  this._context.globalCompositeOperation = oldComp;
 };
 
 Drawer.prototype._clipAwayYLabels = function() {
