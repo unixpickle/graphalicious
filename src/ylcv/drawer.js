@@ -93,13 +93,22 @@ Drawer.prototype._drawYAxisLabels = function(contentRect) {
     labelOffset = contentRect.left - (this._state.positive.viewportWidth - this._yLabelWidth);
   }
 
-  if (!this._state.animating) {
-    this._state.yLabels.draw(this._context, -labelOffset, this._topMargin,
-      this._state.positive.viewportHeight-this._bottomMargin);
-    return;
-  }
+  var maxHeight = this._state.positive.viewportHeight - (this._bottomMargin + this._topMargin);
+  var bottom = this._state.positive.viewportHeight - this._bottomMargin;
 
-  // TODO: draw animating labels here.
+  if (this._state.animating) {
+    this._context.globalAlpha = this._state.animationProgress;
+    var newLabelsHeight = maxHeight * (this._state.yLabels.maxValue() / this._maxValue);
+    this._state.yLabels.draw(this._context, -labelOffset, bottom-newLabelsHeight, bottom);
+
+    this._context.globalAlpha = 1-this._state.animationProgress;
+    var oldLabelsHeight = maxHeight * (this._state.startYLabels.maxValue() / this._maxValue);
+    this._state.startYLabels.draw(this._context, -labelOffset, bottom-oldLabelsHeight, bottom);
+
+    this._context.globalAlpha = 1;
+  } else {
+    this._state.yLabels.draw(this._context, -labelOffset, bottom-maxHeight, bottom);
+  }
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
@@ -167,7 +176,7 @@ Drawer.prototype._drawHorizontalLines = function(labels, opacity) {
   this._context.globalAlpha = opacity;
   var oldComp = this._context.globalCompositeOperation;
   this._context.globalCompositeOperation = 'destination-over';
-  
+
   this._context.strokeStyle = HORIZONTAL_LINE_COLOR;
   this._context.lineThickness = HORIZONTAL_LINE_WIDTH;
 

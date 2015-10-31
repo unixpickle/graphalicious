@@ -12,7 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Implement mid-animation y-axis label drawing
  * Implement ContentView._handleDataSource... methods
  * Create demo system for manipulating graph
    * Modifying, inserting, and deleting data points
