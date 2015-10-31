@@ -113,8 +113,8 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex) {
   }
 
   var inVisibleChunk = state.positive.visibleChunkLength < this._state.positive.visibleChunkLength;
-  var beforeVisibleChunk = state.positive.visibleChunkIndex <
-    this._state.positive.visibleChunkIndex;
+  var beforeVisibleChunk = state.positive.visibleChunkStart <
+    this._state.positive.visibleChunkStart;
 
   if (inVisibleChunk) {
     this._keepRightOnWidthChange = (oldIndex < middleVisiblePointIndex(state));
@@ -129,7 +129,7 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex) {
     state.chunkView.deletionAfter(oldIndex);
   }
 
-  assert(state.positive.visibleChunkIndex === state.chunkViewStartIndex);
+  assert(state.positive.visibleChunkStart === state.chunkViewStartIndex);
   assert(state.positive.visibleChunkLength === state.chunkViewLength);
 
   this._updateState(state);
@@ -145,8 +145,8 @@ StateView.prototype.updateStateInsert = function(newState, index) {
   }
 
   var inVisibleChunk = state.positive.visibleChunkLength > this._state.positive.visibleChunkLength;
-  var beforeVisibleChunk = state.positive.visibleChunkIndex >
-    this._state.positive.visibleChunkIndex;
+  var beforeVisibleChunk = state.positive.visibleChunkStart >
+    this._state.positive.visibleChunkStart;
 
   if (inVisibleChunk) {
     this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
@@ -155,13 +155,13 @@ StateView.prototype.updateStateInsert = function(newState, index) {
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
     state.chunkView.insertionBefore();
-    --state.chunkViewStartIndex;
+    ++state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
     state.chunkView.insertionAfter();
   }
 
-  assert(state.positive.visibleChunkIndex === state.chunkViewStartIndex);
+  assert(state.positive.visibleChunkStart === state.chunkViewStartIndex);
   assert(state.positive.visibleChunkLength === state.chunkViewLength);
 
   this._updateState(state);
@@ -186,7 +186,7 @@ StateView.prototype.updateStateModify = function(newState, index) {
 // updateStateInvalidate indicates that the state changed specifically due to a data invalidation.
 StateView.prototype.updateStateInvalidate = function(newState) {
   var state = new ViewState(newState.positive, newState.normative, this._state);
-  assert(state.positive.visibleChunkIndex < 0 && state.positive.leftmostChunkLength < 0);
+  assert(state.positive.visibleChunkStart < 0 && state.positive.leftmostChunkLength < 0);
   this._updateState(state);
 };
 

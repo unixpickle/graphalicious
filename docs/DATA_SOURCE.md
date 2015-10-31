@@ -46,7 +46,7 @@ A *DataSource* may emit the following events. Some of these events indicate remo
 
  * load(chunkIndex) - a chunk has finished loading.
  * error(chunkIndex) - a chunk could not be loaded.
- * delete(oldIndex, inChunk0, inChunk1) - a data point was deleted. This provides the index where the data point used to be, as well as two booleans indicating whether it was in chunk0 and chunk1 respectively.
+ * delete(oldIndex) - a data point was deleted. This provides the index where the data point used to be.
  * insert(index) - a data point was added at the given index.
  * modify(index) - a data point was modified at a given index.
  * invalidate() - all the data has changed and should be reloaded completely.

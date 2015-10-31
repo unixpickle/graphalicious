@@ -54,7 +54,7 @@ ContentView.prototype._initializeState = function() {
 
 ContentView.prototype._registerDataSourceEvents = function() {
   this._boundDataSourceEvents = {};
-  var eventNames = ['Load', 'Error', 'Delete', 'Add', 'Modify', 'Invalidate'];
+  var eventNames = ['Load', 'Error', 'Delete', 'Insert', 'Modify', 'Invalidate'];
   for (var i = 0, len = eventNames.length; i < len; ++i) {
     var eventName = eventNames[i];
     var handler = this['_handleDataSource' + eventName].bind(this);
@@ -73,7 +73,7 @@ ContentView.prototype._deregisterDataSourceEvents = function() {
 
 ContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
   if (chunkIndex === LEFTMOST_CHUNK_INDEX) {
-    this._recomputeLeftmostLabelWidth();
+    this._recomputeLeftmostLabelWidth(true);
     this._currentState.normative.needsLeftmostChunk = false;
     this._currentState.normative.loadingLeftmostChunk = false;
     var chunk = this._dataSource.getChunk(LEFTMOST_CHUNK_INDEX);
@@ -98,16 +98,44 @@ ContentView.prototype._handleDataSourceError = function(chunkIndex) {
   this.updateState(this._currentState);
 };
 
-ContentView.prototype._handleDataSourceDelete = function(oldIndex, inChunk0, inChunk1) {
-  // TODO: this.
+ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
+  this._recomputeContentWidth();
+  if (oldIndex < this.currentState.positive.leftmostChunkLength) {
+    --this._currentState.positive.leftmostChunkLength;
+    this._recomputeLeftmostLabelWidth(true);
+  }
+  if (oldIndex < this._currentState.visibleChunkStart) {
+    --this._currentState.visibleChunkStart;
+  } else if (oldIndex < this._currentState.visibleChunkStart +
+             this._currentState.visibleChunkLength) {
+    --this._currentState.visibleChunkLength;
+  }
+  this._updateNormativeState();
+  this.updateStateDelete(this._currentState, oldIndex);
 };
 
-ContentView.prototype._handleDataSourceAdd = function() {
-  // TODO: this.
+ContentView.prototype._handleDataSourceInsert = function(index) {
+  this._recomputeContentWidth();
+  if (index <= this._currentState.positive.leftmostChunkLength) {
+    ++this._currentState.positive.leftmostChunkLength;
+    this._recomputeLeftmostLabelWidth(true);
+  }
+  if (index < this._currentState.visibleChunkStart) {
+    ++this._currentState.visibleChunkStart;
+  } else if (index < this._currentState.visibleChunkStart + this._currentState.visibleChunkLength) {
+    ++this._currentState.visibleChunkLength;
+  }
+  this._updateNormativeState();
+  this.updateStateInsert(this._currentState, index);
 };
 
 ContentView.prototype._handleDataSourceModify = function(index) {
-  // TODO: this.
+  this._recomputeContentWidth();
+  if (index < this._currentState.positive.leftmostChunkLength) {
+    this._recomputeLeftmostLabelWidth(true);
+  }
+  this._updateNormativeState();
+  this.updateStateModify(this._currentState, index);
 };
 
 ContentView.prototype._handleDataSourceInvalidate = function() {
