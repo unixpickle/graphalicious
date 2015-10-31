@@ -40,7 +40,15 @@ function StateView(state, attrs) {
   this._pixelRatio = 0;
   this._crystalCallback = this._updatePixelRatio.bind(this);
 
+  // this._keepRightOnWidthChange signals _handleStateChange() as to where the view should be
+  // scrolled if the content width changes.
+  // This is useful for animations, wherein different scrolling behavior is expected for different
+  // scenarios.
   this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
+
+  // this._preserveNextKeepRight will be set to true when the next state update should respect the
+  // current this._keepRightOnWidthChange value even if no animation is running.
+  this._preserveNextKeepRight = false;
 
   // this._splashScreenDelay will be set to a timeout ID if the SplashScreen should be displayed
   // after a very short interval.
@@ -116,6 +124,8 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex) {
   var beforeVisibleChunk = state.positive.visibleChunkStart <
     this._state.positive.visibleChunkStart;
 
+  this._preserveNextKeepRight = true;
+
   if (inVisibleChunk) {
     this._keepRightOnWidthChange = (oldIndex < middleVisiblePointIndex(state));
     state.animating = state.chunkView.deletionInside(oldIndex);
@@ -147,6 +157,8 @@ StateView.prototype.updateStateInsert = function(newState, index) {
   var inVisibleChunk = state.positive.visibleChunkLength > this._state.positive.visibleChunkLength;
   var beforeVisibleChunk = state.positive.visibleChunkStart >
     this._state.positive.visibleChunkStart;
+
+  this._preserveNextKeepRight = true;
 
   if (inVisibleChunk) {
     this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
@@ -195,6 +207,7 @@ StateView.prototype._updateState = function(newViewState) {
   this._state = newViewState;
 
   this._updateStateAnimation(oldState);
+  this._updateStateKeepRight(oldState);
   this._updateStateChunkView();
   this._updateStateLiveMeasurements();
   this._updateStateShowingContent(oldState);
@@ -223,10 +236,20 @@ StateView.prototype._updateStateAnimation = function(oldState) {
       !this._state.showingContent || !this._state.animate ||
       this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
       this._state.positive.barShowingHeight !== oldState.positive.barShowingHeight) {
-    this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
     this._state.animationChunkView.finishAnimation();
     this._state.animating = false;
   }
+};
+
+StateView.prototype._updateStateKeepRight = function(oldState) {
+  // NOTE: after an animation stops, we want to preserve the old keepRight value so that the final
+  // width change is handled correctly.
+  if (!oldState.animating && !this._state.animating) {
+    if (!this._preserveNextKeepRight) {
+      this._keepRightOnWidthChange = DEFAULT_KEEP_RIGHT;
+    }
+  }
+  this._preserveNextKeepRight = false;
 };
 
 StateView.prototype._updateStateChunkView = function() {

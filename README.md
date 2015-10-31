@@ -12,7 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * In StateView, figure out how to reset keepRightOnWidthChange at the appropriate times when an animation is not taking place.
  * Create demo system for manipulating graph
    * Modifying, inserting, and deleting data points
    * Changing the load time / triggering errors
