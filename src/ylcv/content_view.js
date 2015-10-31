@@ -111,7 +111,13 @@ ContentView.prototype._handleDataSourceModify = function(index) {
 };
 
 ContentView.prototype._handleDataSourceInvalidate = function() {
-  // TODO: this.
+  this._currentState.positive.leftmostChunkLength = -1;
+  this._currentState.positive.visibleChunkLength = -1;
+  this._currentState.positive.visibleChunkStart = -1;
+  this._recomputeContentWidth();
+  this._recomputeLeftmostLabelWidth(true);
+  this._updateNormativeState();
+  this.updateStateInvalidate(this._currentState);
 };
 
 ContentView.prototype._registerProviderEvents = function() {
