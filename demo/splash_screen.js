@@ -34,7 +34,14 @@
     this._updateColorScheme();
     colorScheme.on('change', this._updateColorScheme.bind(this));
 
-    this._spinner.addEventListener('click', this.emit.bind(this, 'retry'));
+    // NOTE: this is necessary so that we catch the click event before the parent view does.
+    this._retryButton.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }.bind(this));
+    this._retryButton.addEventListener('click', function(e) {
+      this.emit('retry');
+    }.bind(this));
   }
 
   SplashScreen.prototype = Object.create(EventEmitter.prototype);

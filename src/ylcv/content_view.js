@@ -173,6 +173,7 @@ ContentView.prototype._registerButtonEvents = function() {
         var oldState = new NormativeState(this._currentState.normative);
         this._currentState.normative.loadingVisibleChunk = true;
         this._handleNormativeChange(oldState);
+        this.updateState(this._currentState);
       }
     }.bind(this));
   }
@@ -185,6 +186,7 @@ ContentView.prototype._registerButtonEvents = function() {
       this._currentState.normative.loadingLeftmostChunk = true;
     }
     this._handleNormativeChange(oldState);
+    this.updateState(this._currentState);
   }.bind(this));
 };
 
