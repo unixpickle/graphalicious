@@ -107,8 +107,10 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
     this.needsLeftmostChunk = false;
     this.loadingLeftmostChunk = false;
   } else if (!this.needsLeftmostChunk || this.leftmostChunkLength < minLength) {
-    this.loadingLeftmostChunk = true;
-    this.needsLeftmostChunk = true;
+    if (!this.needsLeftmostChunk) {
+      this.loadingLeftmostChunk = true;
+      this.needsLeftmostChunk = true;
+    }
 
     var theoreticalChunk = {
       left: 0,
@@ -167,8 +169,10 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   NormativeState._removeSmallEdgeGaps(needRegion, positiveState);
   var needChunk = provider.computeTheoreticalChunk(needRegion, positiveState.dataSourceLength);
 
-  this.needsVisibleChunk = true;
-  this.loadingVisibleChunk = true;
+  if (!this.needsVisibleChunk) {
+    this.needsVisibleChunk = true;
+    this.loadingVisibleChunk = true;
+  }
   this.visibleChunkStart = needChunk.startIndex;
   this.visibleChunkLength = needChunk.length;
 };
