@@ -8,8 +8,13 @@
     this._chunks = [null, null];
     this._timeouts = [null, null];
 
-    this.loadTimeout = 3000;
-    this.loadSuccess = true;
+    this.loadTimeout = function() {
+      return 3000;
+    };
+
+    this.loadSuccess = function() {
+      return true;
+    };
   }
 
   DemoDataSource.random = function(count, maxValue, haveSecondary) {
@@ -47,14 +52,14 @@
     this._timeouts[idx] = setTimeout(function() {
       this._timeouts[idx] = null;
 
-      if (!this.loadSuccess) {
+      if (!this.loadSuccess()) {
         this.emit('error', idx);
         return;
       }
 
       this._chunks[idx] = new StaticChunk(this._dataPoints, start, len);
       this.emit('load', idx);
-    }.bind(this), this.loadTimeout);
+    }.bind(this), this.loadTimeout());
   };
 
   DemoDataSource.prototype.cancel = function(index) {
