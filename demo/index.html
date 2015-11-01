@@ -4,79 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Graphalicious Demo</title>
-    <style type="text/css">
-    body, html {
-      margin: 0;
-      background-color: #65bcd4;
-    }
-
-    #header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 40px;
-      width: 100%;
-      background-color: white;
-    }
-
-    #footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      height: 300px;
-      width: 100%;
-      background-color: #f0f0f0;
-    }
-
-    .hoverable-button {
-      color: #65bcd4;
-      cursor: pointer;
-    }
-
-    .hoverable-button:hover {
-      color: #5196aa;
-    }
-    </style>
+    <link rel="stylesheet" type="text/css" href="general.css">
+    <link rel="stylesheet" type="text/css" href="controls.css">
     <script src="crystal.js"></script>
     <script src="../build.js"></script>
     <script src="demo_data_source.js"></script>
     <script src="splash_screen.js"></script>
-    <script>
-    var view;
-    function loadHandler() {
-      var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
-      view = new window.graphalicious.base.View(colorScheme);
-      document.getElementById('footer').appendChild(view.element());
-      view.element().style.position = 'absolute';
-      view.element().style.left = '100px';
-
-      var config = {
-        splashScreen: new window.SplashScreen(colorScheme),
-        dataSource: window.DemoDataSource.random(1000, 3000, false),
-        provider: new window.graphalicious.providers.BarViewProvider(colorScheme),
-        loader1: new window.SplashScreen(colorScheme),
-        loader2: new window.SplashScreen(colorScheme),
-        topMargin: 20,
-        bottomMargin: 20,
-        labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})
-      };
-      var content = new window.graphalicious.ylcv.ContentView(config);
-      content.element().style.backgroundColor = 'white';
-      view.setContent(content);
-      layoutView();
-      view.setAnimate(true);
-
-      window.addEventListener('resize', layoutView);
-    }
-    function layoutView() {
-      var width = window.innerWidth - 300;
-      var height = document.getElementById('footer').offsetHeight;
-      view.layout(width, height);
-    }
-    </script>
+    <script src="controls.js"></script>
+    <script src="main.js"></script>
   </head>
   <body onload="loadHandler()">
     <div id="header"></div>
     <div id="footer"></div>
+    <div id="controls">
+      <div id="controls-tabs">
+        <button class="controls-tab controls-tab-current">DATA</button>
+        <button class="controls-tab">PROVIDER</button>
+      </div>
+      <div class="controls-page controls-page-current">
+        This is the data page.
+      </div>
+      <div class="controls-page">
+        This is the provider page.
+      </div>
+    </div>
   </body>
 </html>

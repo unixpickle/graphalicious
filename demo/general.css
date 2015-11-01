@@ -1,0 +1,31 @@
+body, html {
+  margin: 0;
+  background-color: #65bcd4;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 40px;
+  width: 100%;
+  background-color: white;
+}
+
+#footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 300px;
+  width: 100%;
+  background-color: #f0f0f0;
+}
+
+.hoverable-button {
+  color: #65bcd4;
+  cursor: pointer;
+}
+
+.hoverable-button:hover {
+  color: #5196aa;
+}
