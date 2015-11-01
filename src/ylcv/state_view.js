@@ -523,13 +523,35 @@ StateView.prototype._draw = function() {
   assert(this._state.yLabels !== null);
 
   var d = new Drawer(this._topMargin, this._bottomMargin, this._canvas, this._context, this._state);
-  d.draw();
-  // TODO: position the inline loaders using info from the Drawer.
+  var loaderInfo = d.draw();
+  this._positionLoaders(loaderInfo);
+};
+
+StateView.prototype._positionLoaders = function(loaderInfo) {
+  for (var i = 0; i < 2; ++i) {
+    var loader = [this._loader1, this._loader2][i];
+    var info = loaderInfo[i];
+    if (!info) {
+      loader.setAnimate(false);
+      var el = loader.element();
+      if (el.parentNode !== null) {
+        this._element.removeChild(el);
+      }
+    } else {
+      loader.setAnimate(this._state.animate);
+      var el = loader.element();
+      if (el.parentNode === null) {
+        this._element.appendChild(el);
+      }
+      el.style.left = info.left.toFixed(2) + 'px';
+      loader.layout(info.width, this._state.positive.viewportHeight);
+    }
+  }
 };
 
 StateView.prototype._drawCanvas = function() {
   new Drawer(this._topMargin, this._bottomMargin, this._canvas, this._context, this._state).draw();
-}
+};
 
 StateView.prototype._updatePixelRatio = function() {
   var newRatio = Math.ceil(window.crystal.getRatio());

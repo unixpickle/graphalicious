@@ -14,6 +14,8 @@ function Drawer(topMargin, bottomMargin, canvas, context, state) {
   this._context = context;
   this._state = state;
 
+  this._chunkRegion = null;
+
   if (this._state.animating) {
     this._yLabelWidth = (1-this._state.animationProgress)*this._state.startYLabels.width() +
       this._state.animationProgress*this._state.yLabels.width();
@@ -30,17 +32,32 @@ function Drawer(topMargin, bottomMargin, canvas, context, state) {
 Drawer.prototype.draw = function() {
   this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
+  var loaderFrames = [{left: 0, width: this._state.positive.viewportWidth}];
+
   this._context.save();
   this._clipAwayYLabels();
   var chunkRegionOrNull = this._drawChunkView();
   if (chunkRegionOrNull !== null) {
-    this._drawEdgesAndLines(chunkRegionOrNull);
+    loaderFrames = this._drawEdgesAndLines(chunkRegionOrNull);
   }
   this._context.restore();
 
   if (chunkRegionOrNull !== null) {
-    this._drawYAxisLabels(chunkRegionOrNull);
+    var yWidth = this._drawYAxisLabels(chunkRegionOrNull);
+    for (var i = 0; i < loaderFrames.length; ++i) {
+      var frame = loaderFrames[i];
+      if (frame.left < yWidth) {
+        frame.width -= (yWidth - frame.left);
+        frame.left = yWidth;
+        if (frame.width < 0) {
+          loaderFrames.splice(i, 1);
+          --i;
+        }
+      }
+    }
   }
+
+  return loaderFrames;
 };
 
 Drawer.prototype._drawChunkView = function() {
@@ -83,34 +100,6 @@ Drawer.prototype._drawChunkView = function() {
   }
 };
 
-Drawer.prototype._drawYAxisLabels = function(contentRect) {
-  // As the content moves off-screen, the y-axis labels move off-screen with them.
-  var labelOffset = 0;
-  if (contentRect.left+contentRect.width < this._yLabelWidth-(JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH)) {
-    labelOffset = this._yLabelWidth - (JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH) -
-      (contentRect.left + contentRect.width);
-  } else if (contentRect.left > this._state.positive.viewportWidth-this._yLabelWidth) {
-    labelOffset = contentRect.left - (this._state.positive.viewportWidth - this._yLabelWidth);
-  }
-
-  var maxHeight = this._state.positive.viewportHeight - (this._bottomMargin + this._topMargin);
-  var bottom = this._state.positive.viewportHeight - this._bottomMargin;
-
-  if (this._state.animating) {
-    this._context.globalAlpha = this._state.animationProgress;
-    var newLabelsHeight = maxHeight * (this._state.yLabels.maxValue() / this._maxValue);
-    this._state.yLabels.draw(this._context, -labelOffset, bottom-newLabelsHeight, bottom);
-
-    this._context.globalAlpha = 1-this._state.animationProgress;
-    var oldLabelsHeight = maxHeight * (this._state.startYLabels.maxValue() / this._maxValue);
-    this._state.startYLabels.draw(this._context, -labelOffset, bottom-oldLabelsHeight, bottom);
-
-    this._context.globalAlpha = 1;
-  } else {
-    this._state.yLabels.draw(this._context, -labelOffset, bottom-maxHeight, bottom);
-  }
-};
-
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
   var leftX = -JAGGED_LINE_WIDTH;
   if (this._chunkView.getLeftOffset() > 0) {
@@ -144,6 +133,17 @@ Drawer.prototype._drawEdgesAndLines = function(contentRect) {
   }
 
   this._context.restore();
+
+  var loaders = [];
+  if (leftX - JAGGED_EDGE_SIZE > 0) {
+    var width = Math.min(leftX-JAGGED_EDGE_SIZE, this._state.positive.viewportWidth);
+    loaders.push({left: 0, width: width});
+  }
+  if (rightX + JAGGED_EDGE_SIZE < this._state.positive.viewportWidth) {
+    var left = Math.max(rightX + JAGGED_EDGE_SIZE, 0);
+    loaders.push({left: left, width: this._state.positive.viewportWidth - left});
+  }
+  return loaders;
 };
 
 Drawer.prototype._drawEdge = function(x, leftSide) {
@@ -193,6 +193,36 @@ Drawer.prototype._drawHorizontalLines = function(labels, opacity) {
 
   this._context.globalAlpha = oldAlpha;
   this._context.globalCompositeOperation = oldComp;
+};
+
+Drawer.prototype._drawYAxisLabels = function(contentRect) {
+  // As the content moves off-screen, the y-axis labels move off-screen with them.
+  var labelOffset = 0;
+  if (contentRect.left+contentRect.width < this._yLabelWidth-(JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH)) {
+    labelOffset = this._yLabelWidth - (JAGGED_EDGE_SIZE+JAGGED_LINE_WIDTH) -
+      (contentRect.left + contentRect.width);
+  } else if (contentRect.left > this._state.positive.viewportWidth-this._yLabelWidth) {
+    labelOffset = contentRect.left - (this._state.positive.viewportWidth - this._yLabelWidth);
+  }
+
+  var maxHeight = this._state.positive.viewportHeight - (this._bottomMargin + this._topMargin);
+  var bottom = this._state.positive.viewportHeight - this._bottomMargin;
+
+  if (this._state.animating) {
+    this._context.globalAlpha = this._state.animationProgress;
+    var newLabelsHeight = maxHeight * (this._state.yLabels.maxValue() / this._maxValue);
+    this._state.yLabels.draw(this._context, -labelOffset, bottom-newLabelsHeight, bottom);
+
+    this._context.globalAlpha = 1-this._state.animationProgress;
+    var oldLabelsHeight = maxHeight * (this._state.startYLabels.maxValue() / this._maxValue);
+    this._state.startYLabels.draw(this._context, -labelOffset, bottom-oldLabelsHeight, bottom);
+
+    this._context.globalAlpha = 1;
+  } else {
+    this._state.yLabels.draw(this._context, -labelOffset, bottom-maxHeight, bottom);
+  }
+
+  return this._yLabelWidth - labelOffset;
 };
 
 Drawer.prototype._clipAwayYLabels = function() {

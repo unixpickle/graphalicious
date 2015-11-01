@@ -22,6 +22,8 @@
     layoutAndCenter(this._spinner, SPINNER_SIZE);
 
     this._element = document.createElement('div');
+    this._element.style.position = 'absolute';
+    this._element.style.top = '0';
     this._element.appendChild(this._spinner);
 
     this._animate = false;
@@ -42,8 +44,28 @@
   };
 
   SplashScreen.prototype.layout = function(width, height) {
-    this._element.width = width.toFixed(1) + 'px';
-    this._element.height = height.toFixed(1) + 'px';
+    this._element.style.width = width.toFixed(1) + 'px';
+    this._element.style.height = height.toFixed(1) + 'px';
+
+    var maxSizeRatio = Math.sqrt(2);
+
+    if (width < maxSizeRatio*RETRY_SIZE) {
+      var w = (width / maxSizeRatio);
+      this._retryButton.style.left = (width/2 - w/2).toFixed(1) + 'px';
+      this._retryButton.style.width = w.toFixed(1) + 'px';
+    } else {
+      this._retryButton.style.left = (width/2 - RETRY_SIZE/2).toFixed(1) + 'px';
+      this._retryButton.style.width = RETRY_SIZE;
+    }
+
+    if (width < maxSizeRatio*SPINNER_SIZE) {
+      var w = (width / maxSizeRatio);
+      this._spinner.style.left = (width/2 - w/2).toFixed(1) + 'px';
+      this._spinner.style.width = (width / maxSizeRatio).toFixed(1) + 'px';
+    } else {
+      this._spinner.style.left = (width/2 - SPINNER_SIZE/2).toFixed(1) + 'px';
+      this._spinner.style.width = SPINNER_SIZE;
+    }
   };
 
   SplashScreen.prototype.setAnimate = function(animate) {
@@ -120,7 +142,6 @@
     element.style.height = size + 'px';
     element.style.position = 'absolute';
     element.style.top = 'calc(50% - ' + (size/2) + 'px)';
-    element.style.left = 'calc(50% - ' + (size/2) + 'px)';
   }
 
   var SPINNER_SVG = '<svg viewBox="0 0 1 1" version="1.1">' +
