@@ -40,7 +40,6 @@
     <script src="crystal.js"></script>
     <script src="../build.js"></script>
     <script src="demo_data_source.js"></script>
-    <script src="demo_view_provider.js"></script>
     <script src="splash_screen.js"></script>
     <script>
     var view;
@@ -54,7 +53,7 @@
       var config = {
         splashScreen: new window.SplashScreen(colorScheme),
         dataSource: window.DemoDataSource.random(1000, 3000, false),
-        provider: new window.DemoViewProvider(colorScheme),
+        provider: new window.graphalicious.providers.BarViewProvider(colorScheme),
         loader1: new window.SplashScreen(colorScheme),
         loader2: new window.SplashScreen(colorScheme),
         topMargin: 20,
