@@ -28,8 +28,8 @@ function View(colorScheme) {
   DraggableView.call(this);
 }
 
-View.BAR_HEIGHT = 5;
-View.BAR_SPACING = 5;
+View.BAR_HEIGHT = 10;
+View.BAR_SPACING = 0;
 View.BAR_ANIMATION_DURATION = 400;
 
 View.prototype = Object.create(DraggableView.prototype);
@@ -224,7 +224,7 @@ View.prototype._generateDragFunction = function(startX, startY) {
   // NOTE: dragging should not work in the space between the content and the scrollbar.
   var barVisibility = this._scrollBarVisibility();
   var contentHeight = this._height - barVisibility*(View.BAR_HEIGHT+View.BAR_SPACING);
-  if (startY > this.element().getBoundingClientRect().top + contentHeight) {
+  if (startY > contentHeight) {
     return null;
   }
 

@@ -28,7 +28,9 @@ function StateView(state, attrs) {
 
   this._element = document.createElement('div');
   this._element.style.position = 'absolute';
+  this._element.style.overflow = 'hidden';
   this._canvas = document.createElement('canvas');
+  this._canvas.style.display = 'block';
   this._context = this._canvas.getContext('2d');
   this._element.appendChild(this._splashScreen.element());
   this._splashScreen.setAnimate(false);
