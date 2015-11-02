@@ -31,7 +31,7 @@ function ScrollBar(colorScheme) {
   DraggableView.call(this);
 }
 
-ScrollBar.THUMB_MIN_WIDTH = 20;
+ScrollBar.THUMB_MIN_WIDTH = 40;
 ScrollBar.TRACK_COLOR = '#ccc';
 
 ScrollBar.prototype = Object.create(DraggableView.prototype);
