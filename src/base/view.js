@@ -220,6 +220,10 @@ View.prototype._addScrollValue = function(delta) {
   this._handleScrolled();
 };
 
+View.prototype._shouldDragEase = function() {
+  return true;
+};
+
 View.prototype._generateDragFunction = function(startX, startY) {
   // NOTE: dragging should not work in the space between the content and the scrollbar.
   var barVisibility = this._scrollBarVisibility();
