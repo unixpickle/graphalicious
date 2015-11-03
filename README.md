@@ -12,6 +12,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
+ * Prevent selection of canvas in graph.
  * Create demo system for manipulating graph
    * Modifying, inserting, and deleting data points
    * Changing the load time / triggering errors
