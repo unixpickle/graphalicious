@@ -28,6 +28,8 @@ function loadHandler() {
   layoutView();
   view.setAnimate(true);
 
+  new window.DataList(dataSource);
+
   window.addEventListener('resize', layoutView);
 }
 

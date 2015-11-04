@@ -121,6 +121,10 @@
     this.emit('modify', index);
   };
 
+  DemoDataSource.prototype.getDataPoint = function(index) {
+    return this._dataPoints[index];
+  };
+
   function StaticChunk(points, start, len) {
     this._points = points;
     this._start = start;

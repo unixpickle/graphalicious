@@ -21,6 +21,37 @@ body, html {
   background-color: #f0f0f0;
 }
 
+#data-list {
+  position: absolute;
+  height: 100%;
+  width: 97px;
+  background-color: white;
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.data-list-row {
+  font-family: sans-serif;
+  padding: 0 10px;
+  height: 30px;
+  line-height: 30px;
+}
+
+.data-list-row:hover {
+  background-color: #f0f0f0;
+}
+
+.data-list-row-primary {
+  float: left;
+  color: #777;
+}
+
+.data-list-row-index {
+  float: right;
+  color: #aaa;
+}
+
 .hoverable-button {
   color: #65bcd4;
   cursor: pointer;
