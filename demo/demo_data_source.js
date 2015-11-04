@@ -95,18 +95,13 @@
   };
 
   DemoDataSource.prototype.insert = function(index, point) {
-    var inChunk = [];
     for (var i = 0; i < 2; ++i) {
-      inChunk[i] = false;
-
       var chunk = this._chunks[i];
       if (chunk === null) {
         continue;
       }
-
       if (index >= chunk._start && index < chunk._start+chunk._len) {
         ++chunk._len;
-        inChunk[i] = true;
       } else if (index < chunk._start) {
         ++chunk._start;
       }

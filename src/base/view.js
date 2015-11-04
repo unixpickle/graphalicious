@@ -97,8 +97,8 @@ View.prototype.setAnimate = function(flag) {
   }
 };
 
-View.prototype._contentWidthChange = function(suggestedWidth) {
-  this._updateScrollBar(suggestedWidth);
+View.prototype._contentWidthChange = function(suggestedScrollX) {
+  this._updateScrollBar(suggestedScrollX);
   this._drawContent();
 };
 
@@ -122,7 +122,7 @@ View.prototype._drawContent = function(barVisibility) {
 };
 
 View.prototype._updateScrollBar = function(suggestedOffset) {
-  assert('number' === typeof suggestedOffset)
+  assert('number' === typeof suggestedOffset);
 
   var maxValue = this._content === null ? 0 : this._content.totalWidth() - this._width;
   var useScrollX = Math.max(0, Math.min(maxValue, suggestedOffset));

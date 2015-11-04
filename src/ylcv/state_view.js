@@ -418,23 +418,7 @@ StateView.prototype._handleStateChange = function(oldState) {
   }
 
   if (widthChanged) {
-    if (this._state.showingContent && !oldState.showingContent &&
-        this._state.positive.requestedViewportX >= 0) {
-      this.emit('widthChange', this._state.positive.requestedViewportX);
-    } else {
-      var newViewportX = oldState.positive.viewportX;
-      if (this._keepRightOnWidthChange) {
-        var oldWidth = 0;
-        if (oldState.showingContent) {
-          oldWidth = oldState.liveContentWidth + oldState.liveLeftmostLabelWidth;
-        }
-        var newWidth = this.totalWidth();
-        newViewportX += newWidth - oldWidth;
-      }
-      this.emit('widthChange', newViewportX);
-    }
-    // TODO: see if widthChange triggered a redraw. If it did, don't do it again here.
-    this._draw();
+    this._handleWidthChange(oldState);
   } else if (redraw) {
     this._draw();
   };
@@ -507,6 +491,27 @@ StateView.prototype._handleNormativeChanges = function(oldState) {
       this._splashScreen.showLoading();
     }
   }
+};
+
+StateView.prototype._handleWidthChange = function(oldState) {
+  // NOTE: if we were just showing the SplashScreen, we do not want to change the scroll offset.
+  if (this._state.showingContent && !oldState.showingContent &&
+      this._state.positive.requestedViewportX >= 0) {
+    this.emit('widthChange', this._state.positive.requestedViewportX);
+  } else {
+    var newViewportX = oldState.positive.viewportX;
+    if (this._keepRightOnWidthChange) {
+      var oldWidth = 0;
+      if (oldState.showingContent) {
+        oldWidth = oldState.liveContentWidth + oldState.liveLeftmostLabelWidth;
+      }
+      var newWidth = this.totalWidth();
+      newViewportX += newWidth - oldWidth;
+    }
+    this.emit('widthChange', newViewportX);
+  }
+  // TODO: see if widthChange triggered a redraw. If it did, don't do it again here for efficiency.
+  this._draw();
 };
 
 // _draw instructs the StateView to draw itself given the current state.
