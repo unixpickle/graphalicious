@@ -47,7 +47,7 @@ ContentView.prototype.draw = function(viewportX, viewportWidth, height, barShowi
 };
 
 ContentView.prototype._initializeState = function() {
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   this._currentState.positive.dataSourceLength = this._dataSource.getLength();
   this.updateStateVisualStyleChange(this._currentState);
 };
@@ -99,7 +99,7 @@ ContentView.prototype._handleDataSourceError = function(chunkIndex) {
 };
 
 ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   if (oldIndex < this.currentState.positive.leftmostChunkLength) {
     --this._currentState.positive.leftmostChunkLength;
     this._recomputeLeftmostLabelWidth(true);
@@ -115,7 +115,7 @@ ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
 };
 
 ContentView.prototype._handleDataSourceInsert = function(index) {
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   if (index <= this._currentState.positive.leftmostChunkLength) {
     ++this._currentState.positive.leftmostChunkLength;
     this._recomputeLeftmostLabelWidth(true);
@@ -130,7 +130,7 @@ ContentView.prototype._handleDataSourceInsert = function(index) {
 };
 
 ContentView.prototype._handleDataSourceModify = function(index) {
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   if (index < this._currentState.positive.leftmostChunkLength) {
     this._recomputeLeftmostLabelWidth(true);
   }
@@ -142,7 +142,7 @@ ContentView.prototype._handleDataSourceInvalidate = function() {
   this._currentState.positive.leftmostChunkLength = -1;
   this._currentState.positive.visibleChunkLength = -1;
   this._currentState.positive.visibleChunkStart = -1;
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   this._recomputeLeftmostLabelWidth(true);
   this._updateNormativeState();
   this.updateStateInvalidate(this._currentState);
@@ -158,7 +158,7 @@ ContentView.prototype._deregisterProviderEvents = function() {
 };
 
 ContentView.prototype._handleProviderChange = function() {
-  this._recomputeContentWidth();
+  this._recomputeContentWidthAndLength();
   this._recomputeLeftmostLabelWidth(true);
   this._updateNormativeState();
   this.updateStateVisualStyleChange(this._currentState);
@@ -190,10 +190,11 @@ ContentView.prototype._registerButtonEvents = function() {
   }.bind(this));
 };
 
-ContentView.prototype._recomputeContentWidth = function() {
+ContentView.prototype._recomputeContentWidthAndLength = function() {
+  this._currentState.positive.dataSourceLength = this._dataSource.getLength();
   var theoreticalChunk = {
     startIndex: 0,
-    length: this._dataSource.getLength()
+    length: this._currentState.positive.dataSourceLength
   };
   this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
     theoreticalChunk.length).width;
