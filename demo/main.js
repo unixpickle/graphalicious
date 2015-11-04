@@ -1,7 +1,5 @@
 var view;
 function loadHandler() {
-  var controls = new window.Controls();
-
   var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
   view = new window.graphalicious.base.View(colorScheme);
   document.getElementById('footer').appendChild(view.element());
@@ -9,8 +7,7 @@ function loadHandler() {
   view.element().style.left = '100px';
 
   var dataSource = window.DemoDataSource.random(1000, 3000, false);
-  dataSource.loadTimeout = controls.loadTimeout.bind(controls);
-  dataSource.loadSuccess = controls.loadSuccess.bind(controls);
+  new Controls(dataSource);
 
   var config = {
     splashScreen: new window.SplashScreen(colorScheme),

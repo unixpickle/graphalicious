@@ -1,6 +1,10 @@
 (function() {
 
-  function Controls() {
+  function Controls(dataSource) {
+    this._dataSource = dataSource;
+    this._dataSource.loadTimeout = this.loadTimeout.bind(this);
+    this._dataSource.loadSuccess = this.loadSuccess.bind(this);
+
     this._element = document.getElementById('controls');
     this._buttons = document.getElementsByClassName('controls-tab');
     this._pages = document.getElementsByClassName('controls-page');
@@ -8,7 +12,12 @@
     this._timeoutInput = document.getElementById('controls-data-timeout');
     this._successField = document.getElementById('controls-data-succeed');
 
+    this._insertButton = document.getElementById('insert-button');
+    this._insertValue = document.getElementById('insert-value');
+    this._insertIndex = document.getElementById('insert-index');
+
     this._registerTabEvents();
+    this._registerActionEvents();
   }
 
   Controls.prototype.loadTimeout = function() {
@@ -35,6 +44,18 @@
         this._pages[i].className = 'controls-page';
       }
     }
+  };
+
+  Controls.prototype._registerActionEvents = function() {
+    this._insertButton.addEventListener('click', function() {
+      var val = parseInt(this._insertValue.value);
+      var idx = parseInt(this._insertIndex.value);
+      if (isNaN(val) || isNaN(idx)) {
+        alert('invalid values');
+        return;
+      }
+      this._dataSource.insert(idx, {primary: val, secondary: -1});
+    }.bind(this));
   };
 
   window.Controls = Controls;
