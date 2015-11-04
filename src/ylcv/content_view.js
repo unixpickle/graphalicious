@@ -101,7 +101,7 @@ ContentView.prototype._handleDataSourceError = function(chunkIndex) {
 
 ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
   this._recomputeContentWidthAndLength();
-  if (oldIndex < this.currentState.positive.leftmostChunkLength) {
+  if (oldIndex < this._currentState.positive.leftmostChunkLength) {
     --this._currentState.positive.leftmostChunkLength;
     this._recomputeLeftmostLabelWidth(true);
   }
