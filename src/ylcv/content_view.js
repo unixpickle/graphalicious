@@ -85,7 +85,7 @@ ContentView.prototype._handleDataSourceLoad = function(chunkIndex) {
     this._currentState.positive.visibleChunkStart = chunk.getStartIndex();
     this._currentState.positive.visibleChunkLength = chunk.getLength();
   }
-
+  this._assertStateChunkConsistency();
   this.updateState(this._currentState);
 };
 
@@ -95,6 +95,7 @@ ContentView.prototype._handleDataSourceError = function(chunkIndex) {
   } else {
     this._currentState.normative.loadingVisibleChunk = false;
   }
+  this._assertStateChunkConsistency();
   this.updateState(this._currentState);
 };
 
@@ -110,6 +111,7 @@ ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
              this._currentState.positive.visibleChunkLength) {
     --this._currentState.positive.visibleChunkLength;
   }
+  this._assertStateChunkConsistency();
   this._updateNormativeState();
   this.updateStateDelete(this._currentState, oldIndex);
 };
@@ -126,6 +128,7 @@ ContentView.prototype._handleDataSourceInsert = function(index) {
              this._currentState.positive.visibleChunkLength) {
     ++this._currentState.positive.visibleChunkLength;
   }
+  this._assertStateChunkConsistency();
   this._updateNormativeState();
   this.updateStateInsert(this._currentState, index);
 };
@@ -135,6 +138,7 @@ ContentView.prototype._handleDataSourceModify = function(index) {
   if (index < this._currentState.positive.leftmostChunkLength) {
     this._recomputeLeftmostLabelWidth(true);
   }
+  this._assertStateChunkConsistency();
   this._updateNormativeState();
   this.updateStateModify(this._currentState, index);
 };
@@ -145,6 +149,7 @@ ContentView.prototype._handleDataSourceInvalidate = function() {
   this._currentState.positive.visibleChunkStart = -1;
   this._recomputeContentWidthAndLength();
   this._recomputeLeftmostLabelWidth(true);
+  this._assertStateChunkConsistency();
   this._updateNormativeState();
   this.updateStateInvalidate(this._currentState);
 };
@@ -271,6 +276,25 @@ ContentView.prototype._handleNormativeChange = function(oldState) {
               newState.visibleChunkStart !== oldState.visibleChunkStart)) {
     this._dataSource.fetchChunk(VISIBLE_CHUNK_INDEX, newState.visibleChunkStart,
       newState.visibleChunkLength);
+  }
+};
+
+ContentView.prototype._assertStateChunkConsistency = function() {
+  var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
+  if (chunk === null) {
+    assert(this._currentState.positive.visibleChunkStart === -1);
+    assert(this._currentState.positive.visibleChunkLength === -1);
+  } else {
+    assert(this._currentState.positive.visibleChunkStart === chunk.getStartIndex());
+    assert(this._currentState.positive.visibleChunkLength === chunk.getLength());
+  }
+
+  chunk = this._dataSource.getChunk(LEFTMOST_CHUNK_INDEX);
+  if (chunk === null) {
+    assert(this._currentState.positive.leftmostChunkLength === -1);
+  } else {
+    assert(this._currentState.positive.leftmostChunkLength === chunk.getLength());
+    assert(0 === chunk.getStartIndex());
   }
 };
 
