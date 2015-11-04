@@ -19,6 +19,8 @@
     this._deleteButton = document.getElementById('delete-button');
     this._deleteIndex = document.getElementById('delete-index');
 
+    this._invalidateButton = document.getElementById('invalidate-button');
+
     this._registerTabEvents();
     this._registerActionEvents();
   }
@@ -66,6 +68,10 @@
         alert('invalid index');
       }
       this._dataSource.delete(idx);
+    }.bind(this));
+
+    this._invalidateButton.addEventListener('click', function() {
+      this._dataSource.invalidate();
     }.bind(this));
   };
 

@@ -110,6 +110,12 @@
     this._dataPoints.splice(index, 0, point);
     this.emit('insert', index);
   };
+  
+  DemoDataSource.prototype.invalidate = function() {
+    // TODO: set some kind of 'invalid' flag on the chunks
+    this._chunks = [null, null];
+    this.emit('invalidate');
+  };
 
   DemoDataSource.prototype.modify = function(index, newPoint) {
     this._dataPoints[index] = newPoint;
