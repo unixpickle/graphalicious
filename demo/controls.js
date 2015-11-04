@@ -16,6 +16,9 @@
     this._insertValue = document.getElementById('insert-value');
     this._insertIndex = document.getElementById('insert-index');
 
+    this._deleteButton = document.getElementById('delete-button');
+    this._deleteIndex = document.getElementById('delete-index');
+
     this._registerTabEvents();
     this._registerActionEvents();
   }
@@ -51,10 +54,18 @@
       var val = parseInt(this._insertValue.value);
       var idx = parseInt(this._insertIndex.value);
       if (isNaN(val) || isNaN(idx)) {
-        alert('invalid values');
+        alert('invalid value or index');
         return;
       }
       this._dataSource.insert(idx, {primary: val, secondary: -1});
+    }.bind(this));
+
+    this._deleteButton.addEventListener('click', function() {
+      var idx = parseInt(this._deleteIndex.value);
+      if (isNaN(idx)) {
+        alert('invalid index');
+      }
+      this._dataSource.delete(idx);
     }.bind(this));
   };
 

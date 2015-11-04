@@ -62,6 +62,6 @@
   margin-left: 12px;
 }
 
-#insert-index, #insert-value {
+#insert-index, #insert-value, #delete-index {
   width: 60px;
 }
