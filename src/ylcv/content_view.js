@@ -122,7 +122,7 @@ ContentView.prototype._handleDataSourceInsert = function(index) {
   }
   if (index < this._currentState.positive.visibleChunkStart) {
     ++this._currentState.positive.visibleChunkStart;
-  } else if (index < this._currentState.positive.visibleChunkStart +
+  } else if (index <= this._currentState.positive.visibleChunkStart +
              this._currentState.positive.visibleChunkLength) {
     ++this._currentState.positive.visibleChunkLength;
   }

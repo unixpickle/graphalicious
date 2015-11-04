@@ -163,7 +163,12 @@ StateView.prototype.updateStateInsert = function(newState, index) {
   this._preserveNextKeepRight = true;
 
   if (inVisibleChunk) {
-    this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
+    if (index === this._state.positive.dataSourceLength && isScrolledToEnd(this._state)) {
+      // NOTE: this is the special case where we keep right to show the last data point.
+      this._keepRightOnWidthChange = true;
+    } else {
+      this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
+    }
     state.animating = state.chunkView.insertionInside(index);
     ++state.chunkViewLength;
   } else if (beforeVisibleChunk) {
@@ -625,5 +630,16 @@ StateView.prototype._finishSplashScreenDelay = function() {
 function middleVisiblePointIndex(state) {
   var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
     state.positive.viewportWidth/2 - state.chunkView.getLeftOffset();
-  return state.chunkView.firstVisibleDataPoint(middleLeft);
+  return state.chunkView.firstVisibleDataPoint(middleLeft) + state.positive.visibleChunkStart;
+}
+
+// isScrolledToEnd returns true if the last data point is at least partly visible.
+function isScrolledToEnd(state) {
+  if (state.chunkView.getRightOffset() > 0) {
+    return false;
+  }
+  var endLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
+    state.positive.viewportWidth - state.chunkView.getLeftOffset();
+  var index = state.chunkView.lastVisibleDataPoint(endLeft) + state.positive.visibleChunkStart;
+  return (index === state.positive.dataSourceLength-1);
 }

@@ -100,7 +100,7 @@
       if (chunk === null) {
         continue;
       }
-      if (index >= chunk._start && index < chunk._start+chunk._len) {
+      if (index >= chunk._start && index <= chunk._start+chunk._len) {
         ++chunk._len;
       } else if (index < chunk._start) {
         ++chunk._start;
