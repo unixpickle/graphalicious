@@ -104,11 +104,11 @@ ContentView.prototype._handleDataSourceDelete = function(oldIndex) {
     --this._currentState.positive.leftmostChunkLength;
     this._recomputeLeftmostLabelWidth(true);
   }
-  if (oldIndex < this._currentState.visibleChunkStart) {
-    --this._currentState.visibleChunkStart;
-  } else if (oldIndex < this._currentState.visibleChunkStart +
-             this._currentState.visibleChunkLength) {
-    --this._currentState.visibleChunkLength;
+  if (oldIndex < this._currentState.positive.visibleChunkStart) {
+    --this._currentState.positive.visibleChunkStart;
+  } else if (oldIndex < this._currentState.positive.visibleChunkStart +
+             this._currentState.positive.visibleChunkLength) {
+    --this._currentState.positive.visibleChunkLength;
   }
   this._updateNormativeState();
   this.updateStateDelete(this._currentState, oldIndex);
@@ -120,10 +120,11 @@ ContentView.prototype._handleDataSourceInsert = function(index) {
     ++this._currentState.positive.leftmostChunkLength;
     this._recomputeLeftmostLabelWidth(true);
   }
-  if (index < this._currentState.visibleChunkStart) {
-    ++this._currentState.visibleChunkStart;
-  } else if (index < this._currentState.visibleChunkStart + this._currentState.visibleChunkLength) {
-    ++this._currentState.visibleChunkLength;
+  if (index < this._currentState.positive.visibleChunkStart) {
+    ++this._currentState.positive.visibleChunkStart;
+  } else if (index < this._currentState.positive.visibleChunkStart +
+             this._currentState.positive.visibleChunkLength) {
+    ++this._currentState.positive.visibleChunkLength;
   }
   this._updateNormativeState();
   this.updateStateInsert(this._currentState, index);
