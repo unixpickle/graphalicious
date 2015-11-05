@@ -66,6 +66,7 @@
       var idx = parseInt(this._deleteIndex.value);
       if (isNaN(idx)) {
         alert('invalid index');
+        return;
       }
       this._dataSource.delete(idx);
     }.bind(this));
