@@ -314,18 +314,38 @@ StateView.prototype._updateStateShowingContent = function(oldState) {
 
   var shouldHideContent = (this._state.chunkView === null ||
     this._state.normative.needsLeftmostChunk);
-  var oldShouldHideContent = (oldState.chunkView === null || oldState.normative.needsLeftmostChunk)
+  var oldShouldHideContent = (oldState.chunkView === null || oldState.normative.needsLeftmostChunk);
 
   if (shouldHideContent && !oldShouldHideContent) {
     assert(this._splashScreenDelay === null);
+    this._state.viewFrozen = true;
     this._startSplashScreenDelay();
   } else if (!shouldHideContent && oldShouldHideContent) {
     if (this._splashScreenDelay !== null) {
+      this._state.viewFrozen = false;
       clearTimeout(this._splashScreenDelay);
       this._splashScreenDelay = null;
     }
     this._state.showingContent = true;
+  } else if (shouldHideContent && oldShouldHideContent && this._state.viewFrozen) {
+    if (!this._canStayFrozen(oldState)) {
+      this._finishSplashScreenDelay(false);
+    }
   }
+};
+
+StateView.prototype._canStayFrozen = function(oldState) {
+  if (this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
+      this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
+    return false;
+  }
+
+  if (this._state.animating !== oldState.animating ||
+      (this._state.animating && this._state.animationProgress !== oldState.animationProgress)) {
+    return false;
+  }
+
+  return true;
 };
 
 StateView.prototype._updateStateYLabels = function() {
@@ -375,11 +395,21 @@ StateView.prototype._updateStateYLabels = function() {
 
 // _handleStateChange performs all the needed visual tasks due to a change in the ViewState.
 StateView.prototype._handleStateChange = function(oldState) {
+  if (oldState.animate !== this._state.animate) {
+    this._handleAnimateChange();
+  }
+
+  if (this._state.viewFrozen) {
+    return;
+  }
+
   var redraw = false;
   var widthChanged = false;
 
-  if (oldState.animate !== this._state.animate) {
-    this._handleAnimateChange();
+  if (this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
+      this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
+    redraw = true;
+    this._updateCanvasSize();
   }
 
   if (this._state.animating !== oldState.animating ||
@@ -393,13 +423,13 @@ StateView.prototype._handleStateChange = function(oldState) {
     redraw = true;
   }
 
-  if (this._state.positive.viewportWidth !== oldState.positive.viewportWidth ||
-      this._state.positive.viewportHeight !== oldState.positive.viewportHeight) {
-    redraw = true;
-    this._updateCanvasSize();
-  }
-
   if (!this._state.viewFrozen) {
+    if (oldState.viewFrozen) {
+      // NOTE: the width might have changed while the view was frozen.
+      // TODO: this could be "optimized" to check if the width *actually* changed, but it'd be
+      // premature for now.
+      widthChanged = true;
+    }
     this._handleNormativeChanges(oldState);
     if (this._state.positive.viewportX !== oldState.positive.viewportX ||
         oldState.chunkView !== this._state.chunkView ||
@@ -413,13 +443,6 @@ StateView.prototype._handleStateChange = function(oldState) {
         widthChanged = true;
       }
     }
-  } else if (oldState.viewFrozen) {
-    // NOTE: the width might have changed while the view was frozen.
-    // TODO: this could be "optimized" to check if the width *actually* changed, but it'd be
-    // premature for now.
-    widthChanged = true;
-
-    this._handleNormativeChanges(oldState);
   }
 
   if (widthChanged) {
@@ -522,8 +545,7 @@ StateView.prototype._handleWidthChange = function(oldState) {
 // _draw instructs the StateView to draw itself given the current state.
 // This will also accounts for the current animation.
 StateView.prototype._draw = function() {
-  // TODO: this might trigger a state change and redraw. Avoid doing a second redraw if possible.
-  this._finishSplashScreenDelay();
+  assert(!this._state.viewFrozen);
 
   if (!this._state.showingContent) {
     this._splashScreen.layout(this._state.positive.viewportWidth,
@@ -573,7 +595,7 @@ StateView.prototype._updatePixelRatio = function() {
   this._pixelRatio = newRatio;
   this._updateCanvasSize();
 
-  this._finishSplashScreenDelay();
+  this._finishSplashScreenDelay(true);
   if (this._state.showingContent) {
     this._drawCanvas();
   }
@@ -589,7 +611,7 @@ StateView.prototype._updateCanvasSize = function() {
 };
 
 StateView.prototype._startSplashScreenDelay = function() {
-  this._splashScreenDelay = setTimeout(this._finishSplashScreenDelay.bind(this),
+  this._splashScreenDelay = setTimeout(this._finishSplashScreenDelay.bind(this, true),
     SPLASH_SCREEN_DELAY);
 };
 
@@ -608,7 +630,7 @@ StateView.prototype._startLoadingTimeout = function() {
   }.bind(this), MIN_SPLASH_SCREEN_TIME);
 };
 
-StateView.prototype._finishSplashScreenDelay = function() {
+StateView.prototype._finishSplashScreenDelay = function(updateState) {
   if (this._splashScreenDelay === null) {
     return;
   }
@@ -622,7 +644,9 @@ StateView.prototype._finishSplashScreenDelay = function() {
   var oldState = this._state.copy();
   this._state.showingContent = false;
   this._state.viewFrozen = false;
-  this._handleStateChange(oldState);
+  if (updateState) {
+    this._handleStateChange(oldState);
+  }
 };
 
 // middleVisiblePointIndex takes a state and returns the index of the point closest to the middle of
