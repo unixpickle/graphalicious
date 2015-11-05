@@ -89,6 +89,5 @@ Drawing can be performed with these methods:
 
 A *ChunkView* may emit the following events:
 
- * redraw() - request a redraw for a *ChunkView*-specific reason. This will most likely be due to a color change or some other theme change. It is not necessary&mdash;and not recommended&mdash;to manually request a redraw from within a chunk mutation handler such as *deletionBefore*.
  * animationFrame(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is.
  * animationEnd() - an animation has ended.

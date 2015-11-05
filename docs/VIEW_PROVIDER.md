@@ -41,3 +41,4 @@ The TheoreticalChunk type has two fields:
 When the data or any visual settings change, a *ChunkView* may emit the following events:
 
  * change() - the visual style changed in some way. *ChunkView*s created before the visual style change will be unaffected by the change.
+ * colorSchemeChange() - the provider's color scheme changed. The change will not affect any metrics, but rather signals that any *ChunkView*s which are in-use should be redrawn. *ChunkView*s do not emit this event directly to avoid permanent references to *ChunkView*s when the color schemes are persistent EventEmitters.

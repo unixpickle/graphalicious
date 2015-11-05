@@ -13,7 +13,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Prevent selection of canvas in graph.
- * Unbind ChunkView events when we're done with it
  * Rethink having showingContent be an actual state field instead of a method
  * Create demo system for manipulating graph
    * Modifying, inserting, and deleting data points

@@ -61,6 +61,8 @@ function StateView(state, attrs) {
   // This makes sure that the SplashScreen never shows for a short enough amount of time that it
   // appears to flicker.
   this._doneLoadingTimeout = null;
+
+  this._registerProviderEvents();
 }
 
 StateView.prototype = Object.create(EventEmitter.prototype);
@@ -280,7 +282,6 @@ StateView.prototype._updateStateChunkView = function() {
 };
 
 StateView.prototype._registerChunkViewEvents = function() {
-  this._state.chunkView.on('redraw', this._drawCanvas.bind(this));
   this._state.chunkView.on('animationEnd', function() {
     var state = new ViewState(newState.positive, newState.normative, this._state);
     state.animating = false;
@@ -647,6 +648,15 @@ StateView.prototype._finishSplashScreenDelay = function(updateState) {
   if (updateState) {
     this._handleStateChange(oldState);
   }
+};
+
+StateView.prototype._registerProviderEvents = function() {
+  this._provider.on('colorSchemeChange', function() {
+    this._finishSplashScreenDelay(true);
+    if (this._state.showingContent) {
+      this._drawCanvas();
+    }
+  }.bind(this));
 };
 
 // middleVisiblePointIndex takes a state and returns the index of the point closest to the middle of

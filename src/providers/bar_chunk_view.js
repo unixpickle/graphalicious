@@ -15,8 +15,6 @@ function BarChunkView(colorScheme, chunk, dataSource, spacing, margin, barWidth)
   for (var i = 0, len = chunk.getLength(); i < len; ++i) {
     this._points.push(chunk.getDataPoint(i));
   }
-
-  this._colorScheme.on('change', this.emit.bind('redraw'));
 }
 
 BarChunkView.prototype = Object.create(EventEmitter.prototype);

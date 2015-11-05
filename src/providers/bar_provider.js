@@ -6,6 +6,8 @@ function BarViewProvider(colorScheme) {
   this.spacing = 10;
   this.margin = 10;
   this.barWidth = 30;
+
+  this._colorScheme.on('change', this.emit.bind('colorSchemeChange'));
 }
 
 BarViewProvider.prototype = Object.create(EventEmitter.prototype);
