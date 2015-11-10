@@ -13,10 +13,9 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Prevent selection of canvas in graph.
+ * Add secondary value options to demo
  * Rethink having showingContent be an actual state field instead of a method
- * Create demo system for manipulating graph
-   * Modifying, inserting, and deleting data points
-   * Changing the load time / triggering errors
+   * On second thought, just rewrite YLCV to not be stateful
  * Create BarGraphViewProvider.
  * Create DotGraphViewProvider.
  * Create SplineGraphViewProvider.
