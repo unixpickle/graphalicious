@@ -197,7 +197,8 @@ StateView.prototype.updateStateModify = function(newState, index) {
     state.animationChunkView.finishAnimation();
   }
 
-  if (index >= state.chunkViewStartIndex && index < state.chunkViewStartIndex+chunkViewLength) {
+  if (index < state.chunkViewStartIndex+state.chunkViewLength &&
+      index >= state.chunkViewStartIndex) {
     state.animating = state.chunkView.modifyInside(index);
   }
 
