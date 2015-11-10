@@ -28,7 +28,7 @@ function View(colorScheme) {
   DraggableView.call(this);
 }
 
-View.BAR_HEIGHT = 10;
+View.BAR_HEIGHT = 12;
 View.BAR_SPACING = 0;
 View.BAR_ANIMATION_DURATION = 400;
 

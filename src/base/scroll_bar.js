@@ -11,7 +11,8 @@ function ScrollBar(colorScheme) {
   this._track.style.bottom = '0';
 
   this._thumb = document.createElement('div');
-  this._thumb.style.height = '100%';
+  this._thumb.style.height = 'calc(100% - 2px)';
+  this._thumb.style.bottom = '1px';
   this._thumb.style.position = 'absolute';
   this._track.appendChild(this._thumb);
 
@@ -32,7 +33,7 @@ function ScrollBar(colorScheme) {
 }
 
 ScrollBar.THUMB_MIN_WIDTH = 40;
-ScrollBar.TRACK_COLOR = '#ccc';
+ScrollBar.TRACK_COLOR = 'transparent';
 
 ScrollBar.prototype = Object.create(DraggableView.prototype);
 
@@ -47,6 +48,8 @@ ScrollBar.prototype.layout = function(width, height) {
 
   this._track.style.height = height.toFixed(2) + 'px';
   this._track.style.width = width;
+
+  this._thumb.style.borderRadius = ((height-2)/2).toFixed(1) + 'px';
 
   this._trackWidth = width;
   this._updateThumb();
