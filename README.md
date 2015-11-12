@@ -13,10 +13,17 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Prevent selection of canvas in graph.
- * Add secondary value options to demo
- * Rethink having showingContent be an actual state field instead of a method
-   * On second thought, just rewrite YLCV to not be stateful
- * Create BarGraphViewProvider.
+ * Clean up and clarify ChunkView docs
+ * Implement BarProvider with actual options
+   * Animations
+   * Color scheme changes
+   * Secondary values
+ * Add secondary value options to demo.
+ * Rewrite YLCV and revise *View* architecture
+   * Document *View* better
+   * Give *ContentView* complete power over scrolling and drawing
+   * Do not attempt to use a finite state machine
+   * Separate base class for handling 300ms delay for splash screen
  * Create DotGraphViewProvider.
  * Create SplineGraphViewProvider.
  * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
