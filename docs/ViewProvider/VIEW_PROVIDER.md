@@ -1,6 +1,6 @@
 # Abstract
 
-So far you have seen that a [DataSource](DATA_SOURCE.md) provides chunks of data, a [ChunkView](CHUNK_VIEW.md) renders those chunks, and a [ContentView](CONTENT_VIEW.md) renders everything shown in a graph. It seems that a *ContentView* should make use of *ChunkView*s for drawing, but there is an essential piece missing from the picture.
+So far you have seen that a [DataSource](../DATA_SOURCE.md) provides chunks of data, a [ChunkView](CHUNK_VIEW.md) renders those chunks, and a [ContentView](../ContentView/CONTENT_VIEW.md) renders everything shown in a graph. It seems that a *ContentView* should make use of *ChunkView*s for drawing, but there is an essential piece missing from the picture.
 
 A *ViewProvider* can create new *ChunkView*s. It can also predict how large *ChunkView*s will be and where they will be situated. Using a *ViewProvider*, a *ContentView* can deteremine how many and which points it ought to fetch in order to get a *ChunkView* with the required parameters.
 
