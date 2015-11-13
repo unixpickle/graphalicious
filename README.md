@@ -18,7 +18,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
    * Animations
    * Color scheme changes
    * Secondary values
- * Add secondary value options to demo.
  * Rewrite YLCV and revise *View* architecture
    * Document *View* better
    * Give *ContentView* complete power over scrolling and drawing

@@ -57,23 +57,23 @@
 
   Controls.prototype._registerActionEvents = function() {
     this._insertButton.addEventListener('click', function() {
-      var val = parseInt(this._insertValue.value);
+      var val = parseDataPoint(this._insertValue.value);
       var idx = parseInt(this._insertIndex.value);
-      if (isNaN(val) || isNaN(idx)) {
+      if (val === null || isNaN(idx)) {
         alert('invalid value or index');
         return;
       }
-      this._dataSource.insert(idx, {primary: val, secondary: -1});
+      this._dataSource.insert(idx, val);
     }.bind(this));
 
     this._updateButton.addEventListener('click', function() {
-      var val = parseInt(this._updateValue.value);
+      var val = parseDataPoint(this._updateValue.value);
       var idx = parseInt(this._updateIndex.value);
-      if (isNaN(val) || isNaN(idx)) {
+      if (val === null || isNaN(idx)) {
         alert('invalid value or index');
         return;
       }
-      this._dataSource.modify(idx, {primary: val, secondary: -1});
+      this._dataSource.modify(idx, val);
     }.bind(this));
 
     this._deleteButton.addEventListener('click', function() {
@@ -89,6 +89,17 @@
       this._dataSource.invalidate();
     }.bind(this));
   };
+
+  function parseDataPoint(str) {
+    var res = /^([0-9\.]*)(\/([0-9]*))?$/.exec(str);
+    if (res === null) {
+      return null;
+    }
+    return {
+      primary: parseInt(res[1]) || 0,
+      secondary: parseInt(res[3]) || -1
+    };
+  }
 
   window.Controls = Controls;
 

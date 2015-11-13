@@ -1,12 +1,14 @@
 var view;
+var LEFT_MARGIN = 130;
+var RIGHT_MARGIN = 200;
 function loadHandler() {
   var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
   view = new window.graphalicious.base.View(colorScheme);
   document.getElementById('footer').appendChild(view.element());
   view.element().style.position = 'absolute';
-  view.element().style.left = '100px';
+  view.element().style.left = LEFT_MARGIN + 'px';
 
-  var dataSource = window.DemoDataSource.random(1000, 3000, false);
+  var dataSource = window.DemoDataSource.random(1000, 3000, true);
   new Controls(dataSource);
 
   var config = {
@@ -31,7 +33,7 @@ function loadHandler() {
 }
 
 function layoutView() {
-  var width = window.innerWidth - 300;
+  var width = window.innerWidth - (LEFT_MARGIN+RIGHT_MARGIN);
   var height = document.getElementById('footer').offsetHeight;
   view.layout(width, height);
 }
