@@ -1,6 +1,6 @@
 # Abstract
 
-A [ContentView](CONTENT_VIEW.md) can display a *SplashScreen* before it has any data to render. A *SplashScreen* should keep the user mildly entertained while conveying the fact that data is on the way. It should also inform the user when the data has failed to load, giving him or her the option to "retry" the load operation.
+A [ContentView](ContentView.md) can display a *SplashScreen* before it has any data to render. A *SplashScreen* should keep the user mildly entertained while conveying the fact that data is on the way. It should also inform the user when the data has failed to load, giving him or her the option to "retry" the load operation.
 
 # Animations & Disposal
 

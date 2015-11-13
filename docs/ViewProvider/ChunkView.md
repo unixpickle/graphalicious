@@ -1,6 +1,6 @@
 # Abstract
 
-Recall from the [DataSource](../DATA_SOURCE.md) documentation that a chunk is a range of solves taken from the data source.
+Recall from the [DataSource](../DataSource.md) documentation that a chunk is a range of solves taken from the data source.
 
 A *ChunkView* draws the contents of a chunk into a canvas. The visual representation of the chunk is determined by the kind of *ChunkView* being used. The *ChunkView* is alse responsible for performing animations when a chunk is mutated.
 

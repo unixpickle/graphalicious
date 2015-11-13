@@ -1,10 +1,10 @@
 # Abstract
 
-An *InlineLoaderView* is an isolated loading animation which a [ContentView](CONTENT_VIEW.md) may use to indicate that more content is being loaded. An *InlineLoaderView* is also responsible for showing a "retry" button in cases where a load operation fails.
+An *InlineLoaderView* is an isolated loading animation which a [ContentView](ContentView.md) may use to indicate that more content is being loaded. An *InlineLoaderView* is also responsible for showing a "retry" button in cases where a load operation fails.
 
 # Animations & Disposal
 
-The `setAnimate()` method of an *InlineLoaderView* works just like the equivalent method on a [SplashScreen](SPLASH_SCREEN.md). Essentially, it is used to prevent rendering of invisible animations and to avoid global references to unused *InlineLoaderView*s.
+The `setAnimate()` method of an *InlineLoaderView* works just like the equivalent method on a [SplashScreen](SplashScreen.md). Essentially, it is used to prevent rendering of invisible animations and to avoid global references to unused *InlineLoaderView*s.
 
 # Methods
 

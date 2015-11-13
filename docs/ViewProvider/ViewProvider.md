@@ -1,6 +1,6 @@
 # Abstract
 
-So far you have seen that a [DataSource](../DATA_SOURCE.md) provides chunks of data, a [ChunkView](CHUNK_VIEW.md) renders those chunks, and a [ContentView](../ContentView/CONTENT_VIEW.md) renders everything shown in a graph. It seems that a *ContentView* should make use of *ChunkView*s for drawing, but there is an essential piece missing from the picture.
+So far you have seen that a [DataSource](../DataSource.md) provides chunks of data, a [ChunkView](ChunkView.md) renders those chunks, and a [ContentView](../ContentView/ContentView.md) renders everything shown in a graph. It seems that a *ContentView* should make use of *ChunkView*s for drawing, but there is an essential piece missing from the picture.
 
 A *ViewProvider* can create new *ChunkView*s. It can also predict how large *ChunkView*s will be and where they will be situated. Using a *ViewProvider*, a *ContentView* can deteremine how many and which points it ought to fetch in order to get a *ChunkView* with the required parameters.
 
@@ -34,7 +34,7 @@ The TheoreticalChunk type has two fields:
 
  * [TheoreticalChunk](#the-theoreticalchunk-type) computeTheoreticalChunk(region, pointCount) - compute the smallest theoretical chunk whose theoretical *ChunkView* would cover the given region. You must pass the number of points in the data source so that margins can be accounted for. The returned theoretical chunk will be bounded so that its indices are not negative and do not exceed the point count.
  * [Region](#the-region-type) computeRegion(theoreticalChunk, pointCount) - compute the region of the theoretical *ChunkView* for a theoretical chunk. You must pass the number of points in the data source so that margins can be accounted for. The indices within the theoretical chunk can be negative or exceed the point count; they will be bounded to valid values during the computation.
- * [ChunkView](CHUNK_VIEW.md) createChunkView(chunk, dataSource) - create a *ChunkView* for the given chunk.
+ * [ChunkView](ChunkView.md) createChunkView(chunk, dataSource) - create a *ChunkView* for the given chunk.
 
 # Events
 

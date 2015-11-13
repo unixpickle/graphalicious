@@ -1,6 +1,6 @@
 # Abstract
 
-*BarProvider* is an implementation of the [ViewProvider](#VIEW_PROVIDER.md) interface. It draws what are traditionally known as "bar graphs". It supports various customizations such as color, bar width, and horizontal spacing.
+*BarProvider* is an implementation of the [ViewProvider](ViewProvider.md) interface. It draws what are traditionally known as "bar graphs". It supports various customizations such as color, bar width, and horizontal spacing.
 
 # Overview & Terminology
 

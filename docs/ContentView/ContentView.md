@@ -1,6 +1,6 @@
 # Abstract
 
-While having a [DataSource](../DATA_SOURCE.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DATA_SOURCE.md).
+While having a [DataSource](../DataSource.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DataSource.md).
 
 # Overview & Terminology
 
