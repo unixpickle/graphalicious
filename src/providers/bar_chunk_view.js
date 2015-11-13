@@ -138,7 +138,6 @@ BarChunkView.prototype.draw = function(regionLeft, regionWidth, x, y, height, ma
   ctx.beginPath();
   ctx.rect(x, y, regionWidth, height);
   ctx.clip();
-  ctx.fillStyle = this._colorScheme.getPrimary();
 
   var startIndex = this.firstVisibleDataPoint(regionLeft);
   var endIndex = this.lastVisibleDataPoint(regionLeft + regionWidth);
@@ -150,8 +149,12 @@ BarChunkView.prototype.draw = function(regionLeft, regionWidth, x, y, height, ma
     startLeft += this._spacing;
   }
 
+  ctx.fillStyle = this._colorScheme.getPrimary();
   this._drawBars(startIndex, endIndex, x-(regionLeft-startLeft), y, height, maxValue,
-    this._barWidth, this._spacing, ctx);
+    this._barWidth, this._spacing, ctx, false);
+  ctx.fillStyle = this._colorScheme.getSecondary();
+  this._drawBars(startIndex, endIndex, x-(regionLeft-startLeft), y, height, maxValue,
+    this._barWidth, this._spacing, ctx, true);
 
   ctx.restore();
 };
@@ -164,11 +167,15 @@ BarChunkView.prototype.drawStretched = function(x, y, width, height, maxValue, c
 };
 
 BarChunkView.prototype._drawBars = function(start, end, x, y, height, maxVal, barWidth,
-                                             barSpace, ctx) {
+                                            barSpace, ctx, secondary) {
   for (var i = start; i <= end; ++i) {
-    var value = this._points[i];
+    var point = this._points[i];
+    var value = secondary ? point.secondary : point.primary;
+    if (value < 0) {
+      continue;
+    }
     var barX = x + (i-start)*(barWidth+barSpace);
-    var barHeight = height * (value.primary / maxVal);
+    var barHeight = height * (value / maxVal);
     ctx.fillRect(barX, y+height-barHeight, barWidth, barHeight);
   }
 };
