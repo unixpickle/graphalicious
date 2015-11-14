@@ -67,31 +67,59 @@ BarChunkView.prototype.getEncompassingWidth = function() {
 };
 
 BarChunkView.prototype.deletion = function(oldIndex, animate) {
+  assert(this._encompassingCount > 0);
+  --this._encompassingCount;
+
   this.finishAnimation();
-  if (animate && this._attrs.getAnimateDeletion() && oldIndex >= this._startIndex
-      oldIndex < this._startIndex + this._dataPoints.length) {
-    this._animationInitialStartIndex = this._startIndex;
-    this._animationInitialCount = this._dataPoints.length;
-    this._animationPointIndex = oldIndex;
-    this._animationDataPoint = this._dataPoints[oldIndex - this._startIndex];
-    this._animationProgress = 0;
-    this._animationStartTime = -1;
-    this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
-    this._animationType = BarChunkView.ANIMATION_DELETE;
+  if (animate && this._attrs.getAnimateDeletions() &&
+      this._chunk.getLength() !== this._dataPoints.length) {
+    this._startAnimation(oldIndex, BarChunkView.ANIMATION_DELETE,
+      this._dataPoints[oldIndex - this._startIndex]);
   }
+
   if (oldIndex < this._startIndex) {
     --this._startIndex;
   } else if (oldIndex < this._startIndex+this._dataPoints.length) {
-    this._dataPoints.splice(oldIndex-this._startIndex, 1, 0);
+    this._dataPoints.splice(oldIndex-this._startIndex, 1);
   }
+
   return this._animationType !== BarChunkView.ANIMATION_NONE;
 };
 
 BarChunkView.prototype.insertion = function(index, animate) {
+  ++this._encompassingCount;
+
+  var point = this._chunk.getDataPoint(index);
+
+  this.finishAnimation();
+  if (animate && this._attrs.getAnimateInsertions() &&
+      this._chunk.getLength() !== this._dataPoints.length) {
+    this._startAnimation(index, BarChunkView.ANIMATION_INSERT, point);
+  }
+
+  if (this._chunk.getLength() > this._dataPoints.length) {
+    this._dataPoints.splice(index-this._startIndex, 0, point);
+  } else if (index < this._startIndex) {
+    ++this._startIndex;
+  }
+
+  return this._animationType !== BarChunkView.ANIMATION_NONE;
 };
 
 BarChunkView.prototype.modification = function(index, animate) {
+  if (index < this._startIndex || index >= this._startIndex+this._dataPoints.length) {
+    return false;
+  }
 
+  var point = this._chunk.getDataPoint(index);
+  this.finishAnimation();
+  if (animate && this._attrs.getAnimateModifications()) {
+    this._startAnimation(index, BarChunkView.ANIMATION_MODIFY, point);
+  }
+
+  this._dataPoints[index-this._startIndex] = point;
+
+  return this._animationType !== BarChunkView.ANIMATION_NONE;
 };
 
 BarChunkView.prototype.finishAnimation = function() {
@@ -122,4 +150,15 @@ BarChunkView.prototype._animate = function(time) {
     this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
     this.emit('animationFrame', elapsed);
   }
+};
+
+BarChunkView.prototype._startAnimation = function(index, type, point) {
+  this._animationInitialStartIndex = this._startIndex;
+  this._animationInitialCount = this._dataPoints.length;
+  this._animationPointIndex = index;
+  this._animationDataPoint = point;
+  this._animationProgress = 0;
+  this._animationStartTime = -1;
+  this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
+  this._animationType = type;
 };
