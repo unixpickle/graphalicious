@@ -147,4 +147,8 @@ BarStyle.prototype.setAttributes = function(attrs) {
   this.emit('metricChange');
 };
 
+BarStyle.prototype.createChunkView = function(chunk, dataSource) {
+  return new BarChunkView(this.copyAttributes(), chunk, dataSource);
+};
+
 exports.BarStyle = BarStyle;
