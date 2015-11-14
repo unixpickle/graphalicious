@@ -8,13 +8,18 @@ function BarStyle(attrs) {
   this._rightMargin = attrs.rightMargin;
   this._barSpacing = attrs.barSpacing;
   this._barWidth = attrs.barWidth;
-  this._stretchMode = attrs.stretchMode;
+  this._stretchMode = attrs.stretchMode || BarStyle.STRETCH_MODE_JUSTIFY_RIGHT;
+  this._xLabelAlignment = attrs.xLabelAlignment || BarStyle.X_LABELS_LEFT;
 
   this._colorScheme.on('change', this.emit.bind('superficialChange'));
 }
 
 BarStyle.STRETCH_MODE_JUSTIFY_RIGHT = 0;
 BarStyle.STRETCH_MODE_JUSTIFY_LEFT = 1;
+
+BarStyle.X_LABELS_LEFT = 0;
+BarStyle.X_LABELS_CENTER = 1;
+BarStyle.X_LABELS_RIGHT = 2;
 
 BarStyle.prototype = Object.create(EventEmitter.prototype);
 
@@ -54,6 +59,32 @@ BarStyle.prototype.computeRegion = function(range, pointCount) {
   return {left: startLeft, width: endLeft-startLeft};
 };
 
+BarStyle.prototype.xLabelPosition = function(pointIndex, pointCount) {
+  var barLeft = this.getLeftSpacing() + (this.getBarWidth()+this.getBarSpacing())*pointIndex;
+  switch (this.getXLabelAlignment()) {
+  case BarStyle.X_LABELS_LEFT:
+    if (pointIndex === 0) {
+      return this.getLeftMargin() / 2;
+    } else {
+      return barLeft - this.getBarSpacing()/2;
+    }
+    break;
+  case BarStyle.X_LABELS_RIGHT:
+    if (pointIndex === pointCount-1) {
+      var fullWidth = this.computeRegion({startIndex: 0, length: pointCount}, pointCount).width;
+      return fullWidth - (this.getRightMargin() / 2);
+    } else {
+      return barLeft + this.getBarWidth() + this.getBarSpacing()/2;
+    }
+    break;
+  case BarStyle.X_LABELS_CENTER:
+    return barLeft + (this.getBarWidth() / 2);
+    break;
+  default:
+    throw new Error('unknown xLabelAlignment: ' + this.getXLabelAlignment());
+  }
+};
+
 BarStyle.prototype.getColorScheme = function() {
   return this._colorScheme;
 };
@@ -78,8 +109,13 @@ BarStyle.prototype.getStretchMode = function() {
   return this._stretchMode;
 };
 
+BarStyle.prototype.getXLabelAlignment = function() {
+  return this._xLabelAlignment;
+};
+
 BarStyle.prototype.setAttributes = function(attrs) {
-  var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode'];
+  var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode', 
+    'xLabelAlignment'];
   for (var i = 0, len = allKeys.length; i < len; ++i) {
     var key = allKeys[i];
     if (attrs.hasOwnProperty(key)) {

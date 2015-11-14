@@ -57,7 +57,7 @@ A set of methods can be used to get the current properties of the morphing parti
  * *int* getEncompassingWidth() - get the width of the morphing complete scene.
  * [Range](VisualStyle.md#the-range-type) computeRange(region, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
  * [Region](#the-region-type) computeRegion(range, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
- * *number* xAxisLabelPosition(pointIndex) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
+ * *number* xLabelPosition(pointIndex, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
 
 The animation behavior of a *ChunkView* can be controlled:
 
