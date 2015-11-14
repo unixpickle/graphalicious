@@ -1,13 +1,10 @@
 //deps includes.js
 
 function BarStyleAttrs(attrs) {
-  this._colorScheme = attrs.colorScheme;
-  this._leftMargin = attrs.leftMargin;
-  this._rightMargin = attrs.rightMargin;
-  this._barSpacing = attrs.barSpacing;
-  this._barWidth = attrs.barWidth;
-  this._stretchMode = attrs.stretchMode || BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT;
-  this._xLabelAlignment = attrs.xLabelAlignment || BarStyleAttrs.X_LABELS_LEFT;
+  for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
+    var key = BarStyleAttrs.ATTRIBUTES[i];
+    this['_' + key] = attrs[key] || BarStyleAttrs.DEFAULTS[key];
+  }
 }
 
 BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 0;
@@ -17,44 +14,35 @@ BarStyleAttrs.X_LABELS_LEFT = 0;
 BarStyleAttrs.X_LABELS_CENTER = 1;
 BarStyleAttrs.X_LABELS_RIGHT = 2;
 
+BarStyleAttrs.ATTRIBUTES = ['colorScheme', 'leftMargin', 'rightMargin', 'barSpacing', 'barWidth',
+  'stretchMode', 'xLabelAlignment', 'animateDeletions', 'animateInsertions',
+  'animateModifications'];
+
+BarStyleAttrs.DEFAULTS = {
+  stretchMode: BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT,
+  xLabelAlignment: BarStyleAttrs.X_LABELS_LEFT,
+  animateDeletions: true,
+  animateInsertions: true,
+  animateModifications: true
+};
+
+// Create getters for all of the attributes in BarStyleAttrs.prototype.
+for (var i = 0, len = BarStyleAttrs.ATTRIBUTES; i < len; ++i) {
+  var key = BarStyleAttrs.ATTRIBUTES[i];
+  function(key) {
+    BarStyleAttrs.prototype['get' + key[0].toUpperCase() + key.substr(1)] = function() {
+      return this['_' + key];
+    };
+  }(key);
+}
+
 BarStyleAttrs.prototype.copyAttributes = function() {
-  return new BarStyleAttrs({
-    colorScheme: this.getColorScheme(),
-    leftMargin: this.getLeftMargin(),
-    rightMargin: this.getRightMargin(),
-    barSpacing: this.getBarSpacing(),
-    barWidth: this.getBarWidth(),
-    stretchMode: this.getStretchMode(),
-    xLabelAlignment: this.getXLabelAlignment()
-  });
-};
-
-BarStyleAttrs.prototype.getColorScheme = function() {
-  return this._colorScheme;
-};
-
-BarStyleAttrs.prototype.getLeftMargin = function() {
-  return this._leftMargin;
-};
-
-BarStyleAttrs.prototype.getRightMargin = function() {
-  return this._rightMargin;
-};
-
-BarStyleAttrs.prototype.getBarSpacing = function() {
-  return this._barSpacing;
-};
-
-BarStyleAttrs.prototype.getBarWidth = function() {
-  return this._barWidth;
-};
-
-BarStyleAttrs.prototype.getStretchMode = function() {
-  return this._stretchMode;
-};
-
-BarStyleAttrs.prototype.getXLabelAlignment = function() {
-  return this._xLabelAlignment;
+  var attrs = {};
+  for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
+    var key = BarStyleAttrs.ATTRIBUTES[i];
+    attrs[key] = this['_' + key];
+  }
+  return new BarStyleAttrs(attrs);
 };
 
 BarStyleAttrs.prototype.computeRange = function(region, pointCount) {

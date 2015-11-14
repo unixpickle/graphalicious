@@ -66,8 +66,8 @@ The animation behavior of a *ChunkView* can be controlled:
 A *ContentView* should notify a *ChunkView* when the *DataSource* changes. These methods return a boolean value, indicating whether or not an animation has been initiated by the change. These methods also take a boolean *animate* value, suggesting whether or not this change should trigger an animation. The *animate* argument is necessary but not sufficient for an animation to take place.
 
  * *bool* deletion(oldIndex, animate) - a data point was deleted from the *DataSource*.
- * *void* insertion(index) - a data point was inserted into the *DataSource* at the given index.
- * *bool* modification(index) - a data point in the *DataSource* was modified.
+ * *void* insertion(index, animate) - a data point was inserted into the *DataSource* at the given index.
+ * *bool* modification(index, animate) - a data point in the *DataSource* was modified.
 
 A *ContentView* should notify a *ChunkView* of any pointer events. These events take [PointerPosition](#the-pointerposition-type) arguments:
 
