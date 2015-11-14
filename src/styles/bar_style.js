@@ -1,29 +1,63 @@
 //deps includes.js
 
-function BarStyle(attrs) {
-  EventEmitter.call(this);
-
+function BarStyleAttrs(attrs) {
   this._colorScheme = attrs.colorScheme;
   this._leftMargin = attrs.leftMargin;
   this._rightMargin = attrs.rightMargin;
   this._barSpacing = attrs.barSpacing;
   this._barWidth = attrs.barWidth;
-  this._stretchMode = attrs.stretchMode || BarStyle.STRETCH_MODE_JUSTIFY_RIGHT;
-  this._xLabelAlignment = attrs.xLabelAlignment || BarStyle.X_LABELS_LEFT;
-
-  this._colorScheme.on('change', this.emit.bind('superficialChange'));
+  this._stretchMode = attrs.stretchMode || BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT;
+  this._xLabelAlignment = attrs.xLabelAlignment || BarStyleAttrs.X_LABELS_LEFT;
 }
 
-BarStyle.STRETCH_MODE_JUSTIFY_RIGHT = 0;
-BarStyle.STRETCH_MODE_JUSTIFY_LEFT = 1;
+BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 0;
+BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 1;
 
-BarStyle.X_LABELS_LEFT = 0;
-BarStyle.X_LABELS_CENTER = 1;
-BarStyle.X_LABELS_RIGHT = 2;
+BarStyleAttrs.X_LABELS_LEFT = 0;
+BarStyleAttrs.X_LABELS_CENTER = 1;
+BarStyleAttrs.X_LABELS_RIGHT = 2;
 
-BarStyle.prototype = Object.create(EventEmitter.prototype);
+BarStyleAttrs.prototype.copyAttributes = function() {
+  return new BarStyleAttrs({
+    colorScheme: this.getColorScheme(),
+    leftMargin: this.getLeftMargin(),
+    rightMargin: this.getRightMargin(),
+    barSpacing: this.getBarSpacing(),
+    barWidth: this.getBarWidth(),
+    stretchMode: this.getStretchMode(),
+    xLabelAlignment: this.getXLabelAlignment()
+  });
+};
 
-BarStyle.prototype.computeRange = function(region, pointCount) {
+BarStyleAttrs.prototype.getColorScheme = function() {
+  return this._colorScheme;
+};
+
+BarStyleAttrs.prototype.getLeftMargin = function() {
+  return this._leftMargin;
+};
+
+BarStyleAttrs.prototype.getRightMargin = function() {
+  return this._rightMargin;
+};
+
+BarStyleAttrs.prototype.getBarSpacing = function() {
+  return this._barSpacing;
+};
+
+BarStyleAttrs.prototype.getBarWidth = function() {
+  return this._barWidth;
+};
+
+BarStyleAttrs.prototype.getStretchMode = function() {
+  return this._stretchMode;
+};
+
+BarStyleAttrs.prototype.getXLabelAlignment = function() {
+  return this._xLabelAlignment;
+};
+
+BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
   var startIndex = Math.floor((region.left - this.getLeftMargin()) /
     (this.getBarSpacing() + this.getBarWidth()));
   var endIndex = Math.ceil((region.left + region.width - this.getLeftMargin()) /
@@ -35,7 +69,7 @@ BarStyle.prototype.computeRange = function(region, pointCount) {
   };
 };
 
-BarStyle.prototype.computeRegion = function(range, pointCount) {
+BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
   var maxLeft = this.getLeftMargin() + this.getRightMargin() + pointCount*this.getBarWidth() +
     Math.max(0, (pointCount-1)*this.getBarSpacing());
 
@@ -59,17 +93,17 @@ BarStyle.prototype.computeRegion = function(range, pointCount) {
   return {left: startLeft, width: endLeft-startLeft};
 };
 
-BarStyle.prototype.xLabelPosition = function(pointIndex, pointCount) {
+BarStyleAttrs.prototype.xLabelPosition = function(pointIndex, pointCount) {
   var barLeft = this.getLeftSpacing() + (this.getBarWidth()+this.getBarSpacing())*pointIndex;
   switch (this.getXLabelAlignment()) {
-  case BarStyle.X_LABELS_LEFT:
+  case BarStyleAttrs.X_LABELS_LEFT:
     if (pointIndex === 0) {
       return this.getLeftMargin() / 2;
     } else {
       return barLeft - this.getBarSpacing()/2;
     }
     break;
-  case BarStyle.X_LABELS_RIGHT:
+  case BarStyleAttrs.X_LABELS_RIGHT:
     if (pointIndex === pointCount-1) {
       var fullWidth = this.computeRegion({startIndex: 0, length: pointCount}, pointCount).width;
       return fullWidth - (this.getRightMargin() / 2);
@@ -77,7 +111,7 @@ BarStyle.prototype.xLabelPosition = function(pointIndex, pointCount) {
       return barLeft + this.getBarWidth() + this.getBarSpacing()/2;
     }
     break;
-  case BarStyle.X_LABELS_CENTER:
+  case BarStyleAttrs.X_LABELS_CENTER:
     return barLeft + (this.getBarWidth() / 2);
     break;
   default:
@@ -85,36 +119,24 @@ BarStyle.prototype.xLabelPosition = function(pointIndex, pointCount) {
   }
 };
 
-BarStyle.prototype.getColorScheme = function() {
-  return this._colorScheme;
-};
+function BarStyle(attrs) {
+  EventEmitter.call(this);
+  BarStyleAttrs.call(this, attrs);
 
-BarStyle.prototype.getLeftMargin = function() {
-  return this._leftMargin;
-};
+  this.getColorScheme().on('change', this.emit.bind('superficialChange'));
+}
 
-BarStyle.prototype.getRightMargin = function() {
-  return this._rightMargin;
-};
+BarStyle.prototype = Object.create(EventEmitter.prototype);
 
-BarStyle.prototype.getBarSpacing = function() {
-  return this._barSpacing;
-};
-
-BarStyle.prototype.getBarWidth = function() {
-  return this._barWidth;
-};
-
-BarStyle.prototype.getStretchMode = function() {
-  return this._stretchMode;
-};
-
-BarStyle.prototype.getXLabelAlignment = function() {
-  return this._xLabelAlignment;
-};
+// Inheret from BarStyleAttrs as well as EventEmitter.
+for (var attr in BarStyleAttrs.prototype) {
+  if (BarStyleAttrs.prototype.hasOwnProperty(attr)) {
+    BarStyle.prototype[attr] = BarStyleAttrs.prototype[attr];
+  }
+}
 
 BarStyle.prototype.setAttributes = function(attrs) {
-  var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode', 
+  var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode',
     'xLabelAlignment'];
   for (var i = 0, len = allKeys.length; i < len; ++i) {
     var key = allKeys[i];
