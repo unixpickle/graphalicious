@@ -7,6 +7,7 @@ function loadHandler() {
   document.getElementById('footer').appendChild(view.element());
   view.element().style.position = 'absolute';
   view.element().style.left = LEFT_MARGIN + 'px';
+  view.element().style.backgroundColor = 'white';
 
   var dataSource = window.DemoDataSource.random(1000, 3000, true);
   new Controls(dataSource);
@@ -18,7 +19,7 @@ function loadHandler() {
     loader1: new window.SplashScreen(colorScheme),
     loader2: new window.SplashScreen(colorScheme),
     topMargin: 20,
-    bottomMargin: 20,
+    bottomMargin: 5,
     labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})
   };
   var content = new window.graphalicious.ylcv.ContentView(config);
