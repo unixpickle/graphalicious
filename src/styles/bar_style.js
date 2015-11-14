@@ -18,6 +18,42 @@ BarStyle.STRETCH_MODE_JUSTIFY_LEFT = 1;
 
 BarStyle.prototype = Object.create(EventEmitter.prototype);
 
+BarStyle.prototype.computeRange = function(region, pointCount) {
+  var startIndex = Math.floor((region.left - this.getLeftMargin()) /
+    (this.getBarSpacing() + this.getBarWidth()));
+  var endIndex = Math.ceil((region.left + region.width - this.getLeftMargin()) /
+    (this.getBarSpacing() + this.getBarWidth()));
+
+  return {
+    startIndex: Math.max(0, Math.min(pointCount-1, startIndex)),
+    length: Math.max(0, Math.min(length, endIndex - startIndex))
+  };
+};
+
+BarStyle.prototype.computeRegion = function(range, pointCount) {
+  var maxLeft = this.getLeftMargin() + this.getRightMargin() + pointCount*this.getBarWidth() +
+    Math.max(0, (pointCount-1)*this.getBarSpacing());
+
+  var startLeft = 0;
+  if (range.startIndex >= pointCount - 1) {
+    startLeft = maxLeft;
+  } else if (range.startIndex > 0) {
+    startLeft = (this.getBarSpacing()+this.getBarWidth())*range.startIndex + this.getLeftMargin();
+  }
+
+  var endLeft = 0;
+  var endIndex = range.startIndex + range.length - 1;
+  if (endIndex >= pointCount-1) {
+    endLeft = maxLeft;
+  } else if (endIndex > 0) {
+    endLeft = (this.getBarSpacing()+this.getBarWidth())*range.startIndex + this.getLeftMargin();
+  }
+
+  assert(startLeft <= endLeft);
+
+  return {left: startLeft, width: endLeft-startLeft};
+};
+
 BarStyle.prototype.getColorScheme = function() {
   return this._colorScheme;
 };
