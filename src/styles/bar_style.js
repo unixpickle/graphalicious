@@ -26,14 +26,13 @@ BarStyleAttrs.DEFAULTS = {
   animateModifications: true
 };
 
-// Create getters for all of the attributes in BarStyleAttrs.prototype.
 for (var i = 0, len = BarStyleAttrs.ATTRIBUTES; i < len; ++i) {
   var key = BarStyleAttrs.ATTRIBUTES[i];
-  function(key) {
+  (function(key) {
     BarStyleAttrs.prototype['get' + key[0].toUpperCase() + key.substr(1)] = function() {
       return this['_' + key];
     };
-  }(key);
+  })(key);
 }
 
 BarStyleAttrs.prototype.copyAttributes = function() {
