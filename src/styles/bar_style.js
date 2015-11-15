@@ -49,19 +49,40 @@ BarStyleAttrs.prototype.copyAttributes = function() {
   return new BarStyleAttrs(attrs);
 };
 
+// computeRange generates a range of points whose corresponding BarChunkView would encompass the
+// given region.
+// This assumes that the created BarChunkView would include left and right spacing.
 BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
-  var startIndex = Math.floor((region.left - this.getLeftMargin()) /
-    (this.getBarSpacing() + this.getBarWidth()));
-  var endIndex = Math.ceil((region.left + region.width - this.getLeftMargin()) /
-    (this.getBarSpacing() + this.getBarWidth()));
+  if (pointCount === 0) {
+    return {startIndex: 0, length: 0};
+  }
+
+  var startIndex = 0;
+  if (region.left > this.getLeftMargin() + this.getBarWidth()) {
+    var shifted = region.left - (this.getLeftMargin() + this.getBarWidth());
+    startIndex = 1 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing()));
+  }
+
+  var endIndex = 1;
+  var right = region.left + region.width;
+  if (right > this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
+    var shifted = right - (this.getLeftMargin() + this.getBarWidth() + getBarSpacing());
+    endIndex = 2 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing());
+  }
 
   return {
     startIndex: Math.max(0, Math.min(pointCount-1, startIndex)),
-    length: Math.max(0, Math.min(length, endIndex - startIndex))
+    length: Math.max(0, Math.min(pointCount-startIndex, endIndex - startIndex))
   };
 };
 
+// computeRegion generates a region wrapping the given range.
+// The region will include spacing on the left and right.
 BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
+  if (pointCount === 0) {
+    return {left: 0, width: 0};
+  }
+
   var maxLeft = this.getLeftMargin() + this.getRightMargin() + pointCount*this.getBarWidth() +
     Math.max(0, (pointCount-1)*this.getBarSpacing());
 
@@ -69,15 +90,15 @@ BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
   if (range.startIndex >= pointCount - 1) {
     startLeft = maxLeft;
   } else if (range.startIndex > 0) {
-    startLeft = (this.getBarSpacing()+this.getBarWidth())*range.startIndex + this.getLeftMargin();
+    startLeft = (range.startIndex-1)*this.getBarSpacing() + range.startIndex*this.getBarWidth();
   }
 
   var endLeft = 0;
-  var endIndex = range.startIndex + range.length - 1;
-  if (endIndex >= pointCount-1) {
+  var endIndex = range.startIndex + range.length;
+  if (endIndex >= pointCount) {
     endLeft = maxLeft;
   } else if (endIndex > 0) {
-    endLeft = (this.getBarSpacing()+this.getBarWidth())*range.startIndex + this.getLeftMargin();
+    endLeft = (this.getBarSpacing()+this.getBarWidth())*endIndex + this.getLeftMargin();
   }
 
   assert(startLeft <= endLeft);
