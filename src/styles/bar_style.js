@@ -53,7 +53,7 @@ BarStyleAttrs.prototype.copyAttributes = function() {
 // given region.
 // This assumes that the created BarChunkView would include left and right spacing.
 BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
-  if (pointCount === 0) {
+  if (pointCount === 0 || region.width <= 0) {
     return {startIndex: 0, length: 0};
   }
 
@@ -79,7 +79,7 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
 // computeRegion generates a region wrapping the given range.
 // The region will include spacing on the left and right.
 BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
-  if (pointCount === 0) {
+  if (pointCount === 0 || range.length <= 0) {
     return {left: 0, width: 0};
   }
 
@@ -87,10 +87,11 @@ BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
     Math.max(0, (pointCount-1)*this.getBarSpacing());
 
   var startLeft = 0;
-  if (range.startIndex >= pointCount - 1) {
+  if (range.startIndex >= pointCount) {
     startLeft = maxLeft;
   } else if (range.startIndex > 0) {
-    startLeft = (range.startIndex-1)*this.getBarSpacing() + range.startIndex*this.getBarWidth();
+    startLeft = (range.startIndex-1)*this.getBarSpacing() + range.startIndex*this.getBarWidth() +
+      this.getLeftMargin();
   }
 
   var endLeft = 0;
