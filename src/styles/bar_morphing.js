@@ -48,7 +48,43 @@ MorphingBarLandscape.prototype.computeRange = function(region) {
 };
 
 MorphingBarLandscape.prototype.computeRegion = function(range) {
-  // TODO: this.
+  var leadingSpace = this._leadingSpace();
+  var width = this._width();
+
+  var left = 0;
+  if (range.startIndex > 0 && range.startIndex < this._morphingIndex) {
+    left = this._attrs.getLeftMargin() + range.startIndex*this._attrs.getBarWidth() +
+      (range.startIndex-1)*this._attrs.getBarSpacing();
+  } else if (range.startIndex > 0 && range.startIndex === this._morphingIndex) {
+    left = leadingSpace - this._morphingBarSpacing();
+  } else if (range.startIndex === this._morphingIndex + 1) {
+    left = leadingSpace + this._morphingBarWidth();
+  } else if (range.startIndex > this._morphingIndex + 1) {
+    var shiftedIndex = range.startIndex - (this._morphingIndex + 2);
+    var shiftedOffset = leadingSpace + this._morphingBarWidth() + this._morphingBarSpacing() +
+      this._attrs.getBarWidth();
+    left = shiftedOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
+  }
+
+  var right = 0;
+  var endIndex = range.startIndex + range.length;
+  if (endIndex >= this._pointCount) {
+    right = width;
+  } else if (endIndex > 0 && endIndex < this._morphingIndex) {
+    right = endIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing()) +
+      this._attrs.getLeftMargin();
+  } else if (endIndex > 0 && endIndex === this._morphingIndex) {
+    right = leadingSpace;
+  } else if (endIndex >= this._morphingIndex + 1) {
+    var shiftedIndex = endIndex - (this._morphingIndex + 1);
+    var shiftedOffset = leadingSpace + this._morphingBarWidth() + this._morphingBarSpacing();
+    right = shifteOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
+  }
+
+  return {
+    left: Math.max(0, Math.min(width, left)),
+    width: Math.max(0, Math.min(width-left, right-left))
+  };
 };
 
 // _width returns the width of the complete morphing landscape.
