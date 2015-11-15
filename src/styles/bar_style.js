@@ -31,7 +31,7 @@ BarStyleAttrs.DEFAULTS = {
   animateModifications: true
 };
 
-for (var i = 0, len = BarStyleAttrs.ATTRIBUTES; i < len; ++i) {
+for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
   var key = BarStyleAttrs.ATTRIBUTES[i];
   (function(key) {
     BarStyleAttrs.prototype['get' + key[0].toUpperCase() + key.substr(1)] = function() {
@@ -58,21 +58,21 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
   }
 
   var startIndex = 0;
-  if (region.left > this.getLeftMargin() + this.getBarWidth()) {
+  if (region.left >= this.getLeftMargin() + this.getBarWidth()) {
     var shifted = region.left - (this.getLeftMargin() + this.getBarWidth());
     startIndex = 1 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing()));
   }
 
   var endIndex = 1;
-  var right = region.left + region.width;
-  if (right > this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
-    var shifted = right - (this.getLeftMargin() + this.getBarWidth() + getBarSpacing());
+  var right = region.left + region.width - 1;
+  if (right >= this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
+    var shifted = right - (this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing());
     endIndex = 2 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing()));
   }
 
   return {
     startIndex: Math.max(0, Math.min(pointCount-1, startIndex)),
-    length: Math.max(0, Math.min(pointCount-startIndex, endIndex - startIndex))
+    length: Math.max(1, Math.min(pointCount-startIndex, endIndex-startIndex))
   };
 };
 
