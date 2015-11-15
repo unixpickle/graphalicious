@@ -3,12 +3,17 @@
 function BarStyleAttrs(attrs) {
   for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
     var key = BarStyleAttrs.ATTRIBUTES[i];
-    this['_' + key] = attrs[key] || BarStyleAttrs.DEFAULTS[key];
+    if (attrs.hasOwnProperty(key)) {
+      this['_' + key] = attrs[key]
+    } else {
+      this['_' + key] = BarStyleAttrs.DEFAULTS[key];
+    }
   }
 }
 
 BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 0;
 BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 1;
+BarStyleAttrs.STRETCH_MODE_FILL = 2;
 
 BarStyleAttrs.X_LABELS_LEFT = 0;
 BarStyleAttrs.X_LABELS_CENTER = 1;
