@@ -67,7 +67,7 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
   var right = region.left + region.width;
   if (right > this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
     var shifted = right - (this.getLeftMargin() + this.getBarWidth() + getBarSpacing());
-    endIndex = 2 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing());
+    endIndex = 2 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing()));
   }
 
   return {
