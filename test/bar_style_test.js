@@ -1,3 +1,6 @@
+// SMALL_NUM is used to avoid failing tests because of meaningless rounding errors.
+var SMALL_NUM = 0.001;
+
 var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 var fs = require('fs');
@@ -27,28 +30,29 @@ function testComputeRange() {
   // These are arrays of the form [left, width, startIndex, length].
   var tests = [
     [0, 1, 0, 1],
+    [1, 1, 0, 1],
     [0, 17+13, 0, 1],
-    [0, 17+13+6, 0, 1],
-    [0, 17+13+7, 0, 1],
-    [0, 17+13+8, 0, 2],
+    [0, 17+13+7-SMALL_NUM, 0, 1],
+    [0, 17+13+7+SMALL_NUM, 0, 2],
+    [1, 17+13+6-SMALL_NUM, 0, 1],
+    [1, 17+13+6+SMALL_NUM, 0, 2],
+    [17+13-SMALL_NUM, 1, 0, 1],
+    [17+13+SMALL_NUM, 1, 1, 1],
+    [17+13+SMALL_NUM, 1, 1, 1],
+    [17+13+SMALL_NUM, 7+13, 1, 1],
+    [17+13+SMALL_NUM, 7+13+7-SMALL_NUM*2, 1, 1],
+    [17+13+SMALL_NUM, 7+13+7+SMALL_NUM*2, 1, 2],
     [0, totalWidth, 0, 11],
     [0, totalWidth-1, 0, 11],
     [0, totalWidth*2, 0, 11],
-    [0, totalWidth-19-12, 0, 11],
-    [0, totalWidth-19-13, 0, 10],
-    [0, totalWidth-19-13-1, 0, 10],
-    [1, 1, 0, 1],
-    [1, 17+13+6, 0, 1],
-    [2, 17+13+6, 0, 2],
-    [17+12, 1, 0, 1],
-    [17+13, 1, 1, 1],
-    [17+13, 7+13, 1, 1],
-    [17+13, 7+13+7, 1, 1],
-    [17+13, 7+13+8, 1, 2],
-    [17+14, 7+13+7, 1, 2],
-    [totalWidth-19-13-7, 1, 10, 1],
-    [totalWidth-19-13-8, 1, 9, 1],
-    [totalWidth-19-13-8, 8, 9, 1],
+    [0, totalWidth-19-13+SMALL_NUM, 0, 11],
+    [0, totalWidth-19-13-SMALL_NUM, 0, 10],
+    [0, totalWidth-19-14, 0, 10],
+    [totalWidth-19-13-7+SMALL_NUM, 1, 10, 1],
+    [totalWidth-19-13-8, 2, 9, 1],
+    [totalWidth-19-13-8, 1-SMALL_NUM, 9, 1],
+    [totalWidth-19-13-8, 8-SMALL_NUM, 9, 1],
+    [totalWidth-19-13-8, 8+SMALL_NUM, 9, 2],
     [totalWidth-19-13-8, 9, 9, 2]
   ];
 

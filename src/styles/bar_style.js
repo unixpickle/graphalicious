@@ -64,10 +64,10 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
   }
 
   var endIndex = 1;
-  var right = region.left + region.width - 1;
-  if (right >= this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
+  var right = region.left + region.width;
+  if (right > this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing()) {
     var shifted = right - (this.getLeftMargin() + this.getBarWidth() + this.getBarSpacing());
-    endIndex = 2 + Math.floor(shifted/(this.getBarWidth()+this.getBarSpacing()));
+    endIndex = 1 + Math.ceil(shifted/(this.getBarWidth()+this.getBarSpacing()));
   }
 
   return {
