@@ -32,6 +32,7 @@ function testComputeRangeMorphingMiddle() {
       morphingVisibility: morphingValue
     });
 
+    var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 6*13 + (5+0.5+0.5*morphingValue)*7;
     var spaceAfterMorphing = 19 + 4*13 + (3+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13*morphingValue;
@@ -60,13 +61,20 @@ function testComputeRangeMorphingMiddle() {
       [19+13, spaceBeforeMorphing-13-19+SMALL_NUM, 1, 6],
       [spaceBeforeMorphing-8, 8-SMALL_NUM, 5, 1],
       [spaceBeforeMorphing-8, 8+SMALL_NUM, 5, 2],
+      [spaceBeforeMorphing-SMALL_NUM*2, SMALL_NUM, 6, 1],
       // Barely touch the right of the morphing bar.
       [spaceBeforeMorphing+morphingWidth+SMALL_NUM, 1, 7, 1],
       [spaceBeforeMorphing+morphingWidth+SMALL_NUM, SMALL_NUM, 7, 1],
       [spaceBeforeMorphing+morphingWidth+SMALL_NUM, totalWidth, 7, 4],
       [spaceBeforeMorphing+morphingWidth-SMALL_NUM, 1, 6, 1],
-      [spaceBeforeMorphing-SMALL_NUM*2, SMALL_NUM, 6, 1],
+      // Surround the morphing bar.
       [spaceBeforeMorphing-SMALL_NUM, morphingWidth+SMALL_NUM*2, 6, 1],
+      [
+        spaceBeforeMorphing - morphingPadding + SMALL_NUM,
+        morphingPadding*2 + morphingWidth - SMALL_NUM*2,
+        6,
+        1
+      ],
       // Make sure it behaves regularly after the morphing bar.
       [0, totalWidth, 0, 11],
       [0, totalWidth-1, 0, 11],
