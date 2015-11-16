@@ -14,8 +14,8 @@ MorphingBarLandscape.prototype.computeRange = function(region) {
     // this._morphingIndex since the morphing bar spacing is smaller than the regular bar spacing.
     startIndex = Math.min(this._attrs.computeRange(region, this._pointCount).startIndex,
       this._morphingIndex-1);
-  } else if (region.left >= leadingSpace + this._morphingBarWidth()) {
-    var shift = leadingSpace + this._morphingBarWidth() + this._morphingBarSpacing() +
+  } else if (region.left >= leadingSpacing + this._morphingBarWidth()) {
+    var shift = leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing() +
       this._attrs.getBarWidth();
     if (region.left < shift) {
       startIndex = this._morphingIndex + 1;
@@ -30,25 +30,25 @@ MorphingBarLandscape.prototype.computeRange = function(region) {
 
   var endIndex = 0;
   var right = region.left + region.width;
-  if (right < leadingSpacing) {
+  if (right <= leadingSpacing) {
     var finalRange = this._attrs.computeRange(region, this._pointCount);
     endIndex = finalRange.startIndex + finalRange.length;
-  } else if (right < leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing()) {
+  } else if (right <= leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing()) {
     endIndex = this._morphingIndex + 1;
   } else {
     var shifted = right - (leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing());
-    endIndex = this._morphingIndex + 2 +
-      Math.floor(shifted/(this._attrs.getBarWidth()+this._attrs.getBarSpacing()));
+    endIndex = this._morphingIndex + 1 +
+      Math.ceil(shifted/(this._attrs.getBarWidth()+this._attrs.getBarSpacing()));
   }
 
   return {
     startIndex: Math.max(0, Math.min(this._pointCount-1, startIndex)),
-    length: Math.max(0, Math.min(this._pointCount-startIndex, endIndex - startIndex))
+    length: Math.max(1, Math.min(this._pointCount-startIndex, endIndex - startIndex))
   };
 };
 
 MorphingBarLandscape.prototype.computeRegion = function(range) {
-  var leadingSpace = this._leadingSpace();
+  var leadingSpacing = this._leadingSpacing();
   var width = this._width();
 
   var left = 0;
@@ -56,12 +56,12 @@ MorphingBarLandscape.prototype.computeRegion = function(range) {
     left = this._attrs.getLeftMargin() + range.startIndex*this._attrs.getBarWidth() +
       (range.startIndex-1)*this._attrs.getBarSpacing();
   } else if (range.startIndex > 0 && range.startIndex === this._morphingIndex) {
-    left = leadingSpace - this._morphingBarSpacing();
+    left = leadingSpacing - this._morphingBarSpacing();
   } else if (range.startIndex === this._morphingIndex + 1) {
-    left = leadingSpace + this._morphingBarWidth();
+    left = leadingSpacing + this._morphingBarWidth();
   } else if (range.startIndex > this._morphingIndex + 1) {
     var shiftedIndex = range.startIndex - (this._morphingIndex + 2);
-    var shiftedOffset = leadingSpace + this._morphingBarWidth() + this._morphingBarSpacing() +
+    var shiftedOffset = leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing() +
       this._attrs.getBarWidth();
     left = shiftedOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
   }
@@ -74,10 +74,10 @@ MorphingBarLandscape.prototype.computeRegion = function(range) {
     right = endIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing()) +
       this._attrs.getLeftMargin();
   } else if (endIndex > 0 && endIndex === this._morphingIndex) {
-    right = leadingSpace;
+    right = leadingSpacing;
   } else if (endIndex >= this._morphingIndex + 1) {
     var shiftedIndex = endIndex - (this._morphingIndex + 1);
-    var shiftedOffset = leadingSpace + this._morphingBarWidth() + this._morphingBarSpacing();
+    var shiftedOffset = leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing();
     right = shifteOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
   }
 
@@ -96,7 +96,7 @@ MorphingBarLandscape.prototype._width = function() {
   return this._morphingVisibility*biggerWidth + (1-this._morphingVisibility)*smallerWidth;
 };
 
-// _leadingSpace returns the number of pixels before the first pixel of the morphing bar.
+// _leadingSpacing returns the number of pixels before the first pixel of the morphing bar.
 MorphingBarLandscape.prototype._leadingSpacing = function() {
   if (this._morphingIndex === 0) {
     return this._attrs.getLeftMargin();
