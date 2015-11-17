@@ -108,32 +108,6 @@ BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
   return {left: startLeft, width: endLeft-startLeft};
 };
 
-BarStyleAttrs.prototype.xLabelPosition = function(pointIndex, pointCount) {
-  var barLeft = this.getLeftSpacing() + (this.getBarWidth()+this.getBarSpacing())*pointIndex;
-  switch (this.getXLabelAlignment()) {
-  case BarStyleAttrs.X_LABELS_LEFT:
-    if (pointIndex === 0) {
-      return this.getLeftMargin() / 2;
-    } else {
-      return barLeft - this.getBarSpacing()/2;
-    }
-    break;
-  case BarStyleAttrs.X_LABELS_RIGHT:
-    if (pointIndex === pointCount-1) {
-      var fullWidth = this.computeRegion({startIndex: 0, length: pointCount}, pointCount).width;
-      return fullWidth - (this.getRightMargin() / 2);
-    } else {
-      return barLeft + this.getBarWidth() + this.getBarSpacing()/2;
-    }
-    break;
-  case BarStyleAttrs.X_LABELS_CENTER:
-    return barLeft + (this.getBarWidth() / 2);
-    break;
-  default:
-    throw new Error('unknown xLabelAlignment: ' + this.getXLabelAlignment());
-  }
-};
-
 function BarStyle(attrs) {
   EventEmitter.call(this);
   BarStyleAttrs.call(this, attrs);

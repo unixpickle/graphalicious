@@ -99,8 +99,89 @@ function testComputeRangeMorphingMiddle() {
   }
 }
 
+function testComputeRangeMorphingNearEnd() {
+  for (var morphingValue = 0; morphingValue <= 1; morphingValue += 0.1) {
+    var attrs = new BarStyleAttrs({
+      leftMargin: 17,
+      rightMargin: 19,
+      barSpacing: 7,
+      barWidth: 13
+    });
+
+    var landscape = new MorphingBarLandscape({
+      attrs: attrs,
+      pointCount: 11,
+      morphingIndex: 9,
+      morphingVisibility: morphingValue
+    });
+
+    var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
+    var spaceBeforeMorphing = 17 + 9*13 + (8+0.5+0.5*morphingValue)*7;
+    var spaceAfterMorphing = 19 + 13 + morphingPadding;
+    var morphingWidth = 13*morphingValue;
+    var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
+
+    // These are of the form [left, width, startIndex, length].
+    var tests = [
+      // Make sure it behaves regularly before the morphing bar.
+      [0, 1, 0, 1],
+      [1, 1, 0, 1],
+      [0, 17+13, 0, 1],
+      [0, 17+13+7-SMALL_NUM, 0, 1],
+      [0, 17+13+7+SMALL_NUM, 0, 2],
+      [1, 17+13+6-SMALL_NUM, 0, 1],
+      [1, 17+13+6+SMALL_NUM, 0, 2],
+      [17+13-SMALL_NUM, 1, 0, 1],
+      [17+13+SMALL_NUM, 1, 1, 1],
+      [17+13+SMALL_NUM, 1, 1, 1],
+      [17+13+SMALL_NUM, 7+13, 1, 1],
+      [17+13+SMALL_NUM, 7+13+7-SMALL_NUM*2, 1, 1],
+      [17+13+SMALL_NUM, 7+13+7+SMALL_NUM*2, 1, 2],
+      // Barely touch the left of the morphing bar.
+      [0, spaceBeforeMorphing-SMALL_NUM, 0, 9],
+      [0, spaceBeforeMorphing+SMALL_NUM, 0, 10],
+      [19+13, spaceBeforeMorphing-13-19-SMALL_NUM, 1, 8],
+      [19+13, spaceBeforeMorphing-13-19+SMALL_NUM, 1, 9],
+      [spaceBeforeMorphing-8, 8-SMALL_NUM, 8, 1],
+      [spaceBeforeMorphing-8, 8+SMALL_NUM, 8, 2],
+      [spaceBeforeMorphing-SMALL_NUM*2, SMALL_NUM, 9, 1],
+      // Barely touch the right of the morphing bar.
+      [spaceBeforeMorphing+morphingWidth+SMALL_NUM, 1, 10, 1],
+      [spaceBeforeMorphing+morphingWidth+SMALL_NUM, SMALL_NUM, 10, 1],
+      [spaceBeforeMorphing+morphingWidth+SMALL_NUM, totalWidth, 10, 1],
+      [spaceBeforeMorphing+morphingWidth-SMALL_NUM, 1, 9, 1],
+      [totalWidth-19-13-morphingPadding-SMALL_NUM, totalWidth, 9, 2],
+      // Surround the morphing bar.
+      [spaceBeforeMorphing-SMALL_NUM, morphingWidth+SMALL_NUM*2, 9, 1],
+      [
+        spaceBeforeMorphing - morphingPadding + SMALL_NUM,
+        morphingPadding*2 + morphingWidth - SMALL_NUM*2,
+        9,
+        1
+      ],
+      // Make sure it behaves regularly after the morphing bar.
+      [0, totalWidth, 0, 11],
+      [0, totalWidth-1, 0, 11],
+      [0, totalWidth*2, 0, 11],
+      [0, totalWidth-19-13+SMALL_NUM, 0, 11],
+      [0, totalWidth-19-13-SMALL_NUM, 0, 10],
+      [0, totalWidth-19-14, 0, 10],
+      [totalWidth-19-13-morphingPadding+SMALL_NUM, totalWidth, 10, 1],
+      [totalWidth-19-13-2, 1, 10, 1]
+    ];
+
+    for (var i = 0, len = tests.length; i < len; ++i) {
+      var test = tests[i];
+      var range = landscape.computeRange({left: test[0], width: test[1]});
+      assert.equal(range.startIndex, test[2], test);
+      assert.equal(range.length, test[3], test);
+    }
+  }
+}
+
 // TODO: in the test for computeRegion, try giving it a completely hidden morphing bar and see what
 // happens.
 
 testComputeRangeMorphingMiddle();
+testComputeRangeMorphingNearEnd();
 console.log('PASS');
