@@ -235,27 +235,28 @@ function testComputeRangeMorphingFirst() {
       [0, 17-SMALL_NUM, 0, 1],
       [0, 16, 0, 1],
       [0, 1, 0, 1],
-      [17-SMALL_NUM*2, 17-SMALL_NUM, 0, 1],
+      [17-SMALL_NUM*2, SMALL_NUM, 0, 1],
       // Regions directly past the morphing bar.
       [17+morphingWidth+SMALL_NUM, SMALL_NUM, 1, 1],
       [17+morphingWidth+SMALL_NUM, morphingSpace, 1, 1],
-      [17+morphingWidth+SMALL_NUM, morphingSpace+13+7, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace+13+7-SMALL_NUM*2, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace+13+7, 1, 2],
       [17+morphingWidth+SMALL_NUM, morphingSpace+13+7+2*SMALL_NUM, 1, 2],
-      [17+morphingWidth+SMALL_NUM, totalWidth, 1, 10],
+      [17+morphingWidth+SMALL_NUM, totalWidth, 1, 10]
     ];
 
     if (morphingValue > 0) {
       // Regions which only include the morphing bar.
       tests = tests.concat([
         [0, 17+SMALL_NUM, 0, 1],
-        [0, 17+morphingWidth+morphingPadding-SMALL_NUM, 0, 1],
-        [17-SMALL_NUM, 17+morphingWidth+SMALL_NUM, 0, 1]
+        [0, 17+morphingWidth+morphingSpace-SMALL_NUM, 0, 1],
+        [17-SMALL_NUM, morphingWidth+2*SMALL_NUM, 0, 1]
       ]);
       // Regions intersecting the morphing bar.
       if (morphingWidth > 0) {
         tests = tests.concat([
           [17+SMALL_NUM, SMALL_NUM, 0, 1],
-          [17+morphingWidth-SMALL_NUM, morphingPadding, 0, 1]
+          [17+morphingWidth-SMALL_NUM, morphingSpace, 0, 1]
         ]);
       }
     } else {

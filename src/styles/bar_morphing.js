@@ -12,8 +12,8 @@ MorphingBarLandscape.prototype.computeRange = function(region) {
   if (region.left < leadingSpacing - this._morphingBarSpacing()) {
     // NOTE: we have to use Math.min() because the regular attrs might report an index of
     // this._morphingIndex since the morphing bar spacing is smaller than the regular bar spacing.
-    startIndex = Math.min(this._attrs.computeRange(region, this._pointCount).startIndex,
-      this._morphingIndex-1);
+    startIndex = Math.max(Math.min(this._attrs.computeRange(region, this._pointCount).startIndex,
+      this._morphingIndex-1), 0);
   } else if (region.left >= leadingSpacing + this._morphingBarWidth()) {
     var shift = leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing() +
       this._attrs.getBarWidth();
@@ -118,5 +118,9 @@ MorphingBarLandscape.prototype._morphingBarWidth = function() {
 };
 
 MorphingBarLandscape.prototype._morphingBarSpacing = function() {
+  if (this._morphingIndex === 0 || this._morphingIndex === this._pointCount-1) {
+    var totalWidth = this._attrs.getBarWidth() + this._attrs.getBarSpacing();
+    return Math.min(this._attrs.getBarSpacing(), this._morphingVisibility*totalWidth);
+  }
   return (1 + this._morphingVisibility) * this._attrs.getBarSpacing() / 2;
 };
