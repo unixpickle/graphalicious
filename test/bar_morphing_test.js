@@ -16,30 +16,42 @@ var MorphingBarLandscape = (function() {
   return eval(code);
 })();
 
-function testComputeRangeMorphingMiddle() {
-  for (var morphingValue = 0; morphingValue <= 1; morphingValue += 0.1) {
+function computeRangeTests(morphingIndex, generator) {
+  for (var v = 0; v <= 10; v += 10) {
     var attrs = new BarStyleAttrs({
       leftMargin: 17,
       rightMargin: 19,
       barSpacing: 7,
       barWidth: 13
     });
-
     var landscape = new MorphingBarLandscape({
       attrs: attrs,
       pointCount: 11,
-      morphingIndex: 6,
-      morphingVisibility: morphingValue
+      morphingIndex: morphingIndex,
+      morphingVisibility: v / 10
     });
 
+    var tests = generator(v / 10);
+    for (var i = 0, len = tests.length; i < len; ++i) {
+      var test = tests[i];
+      var range = landscape.computeRange({left: test[0], width: test[1]});
+      var msg = 'Expected ' + JSON.stringify({startIndex: test[2], length: test[3]}) +
+        ' but got ' + JSON.stringify(range) + ' for test ' + i + ' and visibility=' + v/10;
+      assert.equal(range.startIndex, test[2], msg);
+      assert.equal(range.length, test[3], msg);
+    }
+  }
+}
+
+function testComputeRangeMorphingMiddle() {
+  computeRangeTests(6, function(morphingValue) {
     var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 6*13 + (5+0.5+0.5*morphingValue)*7;
     var spaceAfterMorphing = 19 + 4*13 + (3+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
 
-    // These are of the form [left, width, startIndex, length].
-    var tests = [
+    return [
       // Make sure it behaves regularly before the morphing bar.
       [0, 1, 0, 1],
       [1, 1, 0, 1],
@@ -89,40 +101,18 @@ function testComputeRangeMorphingMiddle() {
       [totalWidth-19-13-8, 8+SMALL_NUM, 9, 2],
       [totalWidth-19-13-8, 9, 9, 2]
     ];
-
-    for (var i = 0, len = tests.length; i < len; ++i) {
-      var test = tests[i];
-      var range = landscape.computeRange({left: test[0], width: test[1]});
-      assert.equal(range.startIndex, test[2], test);
-      assert.equal(range.length, test[3], test);
-    }
-  }
+  });
 }
 
 function testComputeRangeMorphingNearEnd() {
-  for (var morphingValue = 0; morphingValue <= 1; morphingValue += 0.1) {
-    var attrs = new BarStyleAttrs({
-      leftMargin: 17,
-      rightMargin: 19,
-      barSpacing: 7,
-      barWidth: 13
-    });
-
-    var landscape = new MorphingBarLandscape({
-      attrs: attrs,
-      pointCount: 11,
-      morphingIndex: 9,
-      morphingVisibility: morphingValue
-    });
-
+  computeRangeTests(9, function(morphingValue) {
     var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 9*13 + (8+0.5+0.5*morphingValue)*7;
     var spaceAfterMorphing = 19 + 13 + morphingPadding;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
 
-    // These are of the form [left, width, startIndex, length].
-    var tests = [
+    return [
       // Make sure it behaves regularly before the morphing bar.
       [0, 1, 0, 1],
       [1, 1, 0, 1],
@@ -169,40 +159,18 @@ function testComputeRangeMorphingNearEnd() {
       [totalWidth-19-13-morphingPadding+SMALL_NUM, totalWidth, 10, 1],
       [totalWidth-19-13-2, 1, 10, 1]
     ];
-
-    for (var i = 0, len = tests.length; i < len; ++i) {
-      var test = tests[i];
-      var range = landscape.computeRange({left: test[0], width: test[1]});
-      assert.equal(range.startIndex, test[2], test);
-      assert.equal(range.length, test[3], test);
-    }
-  }
+  });
 }
 
 function testComputeRangeMorphingNearStart() {
-  for (var morphingValue = 0; morphingValue <= 1; morphingValue += 0.1) {
-    var attrs = new BarStyleAttrs({
-      leftMargin: 17,
-      rightMargin: 19,
-      barSpacing: 7,
-      barWidth: 13
-    });
-
-    var landscape = new MorphingBarLandscape({
-      attrs: attrs,
-      pointCount: 11,
-      morphingIndex: 1,
-      morphingVisibility: morphingValue
-    });
-
+  computeRangeTests(1, function(morphingValue) {
     var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 13 + morphingPadding;
     var spaceAfterMorphing = 19 + 9*13 + (8+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
 
-    // These are of the form [left, width, startIndex, length].
-    var tests = [
+    return [
       // Make sure it behaves regularly before the morphing bar.
       [0, 1, 0, 1],
       [1, 1, 0, 1],
@@ -245,17 +213,8 @@ function testComputeRangeMorphingNearStart() {
       [totalWidth-19-13-8, 8+SMALL_NUM, 9, 2],
       [totalWidth-19-13-8, 9, 9, 2]
     ];
-
-    for (var i = 0, len = tests.length; i < len; ++i) {
-      var test = tests[i];
-      var range = landscape.computeRange({left: test[0], width: test[1]});
-      assert.equal(range.startIndex, test[2], test);
-      assert.equal(range.length, test[3], test);
-    }
-  }
+  });
 }
-
-// TODO: make one method that does tests from other three morphing range tests.
 
 // TODO: in the test for computeRegion, try giving it a completely hidden morphing bar and see what
 // happens.
