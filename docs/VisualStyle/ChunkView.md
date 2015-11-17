@@ -18,22 +18,20 @@ When a *ChunkView* is drawn into an HTML5 canvas, it is given a **canvas viewpor
 
 Sometimes, the complete landscape will not be as wide as the canvas viewport. In this case, the complete landscape literally does not "fill up" the place where it is being rendered. The visual style of a *ChunkView* determines how it handles this situation. Sometimes, a *ChunkView* may visually stretch itself; other times, a *ChunkView* may choose to justify itself to the left or right of the canvas viewport.
 
-After a *ChunkView* is done drawing itself, it returns a **utilization report**&mdash;a pair `(x, width)` specifying the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen realestate was actually taken up.
+After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a pair `(x, width, x-label-start, x-label-offsets)` specifying both the x-axis label positions and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen realestate was actually taken up.
 
-The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. Since the height of a *ChunkView* is determined externally, it must be specified as an argument to the event handlers. In addition, since a *ChunkView* can be stretched horizontally, the stretched width may be specified as well.
+The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. The events themselves specify coordinates relative to the canvas. As a result, the *ChunkView* will need to request a re-draw in order to utilize the coordinates in any meaningful way.
 
 # The PointerPosition type
 
-The *PointerPosition* type expresses the coordinates of a pointer (e.g. the mouse) in a *ChunkView*'s coordinate system. A *PointerPosition* object has the following fields:
+The *PointerPosition* type expresses the coordinates of a pointer (e.g., the mouse or the users finger) in an HTML5 canvas's coordinate system. A *PointerPosition* object has the following fields:
 
- * *number* x - the x-axis coordinate, relative to the leftmost part of the *ChunkView*. If the *ChunkView* is not being stretched, this is between 0 and the *ChunkView*'s inherent width. If the *ChunkView* is being stretched, this is between 0 and the *ChunkView*'s stretched width.
- * *number* y - the y-axis coordinate, relative to the top of the *ChunkView*. This is between 0 and the current height of the *ChunkView*.
- * *number* width - the width to which the *ChunkView* is being stretched. If the *ChunkView* is not being stretched, this is the *ChunkView*'s inherent width.
- * *number* height - the current height of the *ChunkView*.
+ * *number* x - the x-axis coordinate, relative to the leftmost part of the canvas.
+ * *number* y - the y-axis coordinate, relative to the top of the canvas.
 
-# The UtilizationReport type
+# The DrawReport type
 
-The *UtilizationReport* type represents a horizontal range of pixels in a 2D drawing context. It has the following fields:
+The *DrawReport* type represents a horizontal range of pixels in a 2D drawing context. It has the following fields:
 
  * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels.
  * *number* width - the width of the range, in pixels.
@@ -57,7 +55,6 @@ A set of methods can be used to get the current properties of the morphing parti
  * *int* getEncompassingWidth() - get the width of the morphing complete scene.
  * [Range](VisualStyle.md#the-range-type) computeRange(region, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
  * [Region](#the-region-type) computeRegion(range, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
- * *number* xLabelPosition(pointIndex, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
 
 The animation behavior of a *ChunkView* can be controlled:
 
@@ -78,7 +75,7 @@ A *ContentView* should notify a *ChunkView* of any pointer events. These events 
 
 Drawing can be performed with these methods:
 
- * [UtilizationReport](#the-utilizationreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport.
+ * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport.
 
 # Events
 
@@ -86,4 +83,4 @@ A *ChunkView* may emit the following events:
 
  * animationFrame(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is. After a progress of 1 is reported, the *ChunkView* will emit *animationEnd*.
  * animationEnd() - an animation has ended.
-
+ * redraw() - request a redraw for a superficial (not width-changing) reason. This is useful for responding to pointer events.
