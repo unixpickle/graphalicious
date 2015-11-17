@@ -11,9 +11,10 @@ function BarStyleAttrs(attrs) {
   }
 }
 
-BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 0;
-BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 1;
-BarStyleAttrs.STRETCH_MODE_FILL = 2;
+BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 0;
+BarStyleAttrs.STRETCH_MODE_JUSTIFY_CENTER = 1;
+BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 2;
+BarStyleAttrs.STRETCH_MODE_ELONGATE = 3;
 
 BarStyleAttrs.X_LABELS_LEFT = 0;
 BarStyleAttrs.X_LABELS_CENTER = 1;
