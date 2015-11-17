@@ -216,10 +216,62 @@ function testComputeRangeMorphingNearStart() {
   });
 }
 
+function testComputeRangeMorphingFirst() {
+  computeRangeTests(0, function(morphingValue) {
+    var morphingSpace = 0;
+    var morphingWidth = 0;
+    if (morphingValue > 7/(13+7)) {
+      morphingWidth = 13 * (morphingValue - 7/(13+7)) / (13/(13+7));
+      morphingSpace = 7;
+    } else {
+      morphingSpace = morphingValue / (7/(13+7));
+    }
+    var spaceAfterMorphing = 19 + 10*13 + 9*7 + morphingSpace;
+    var totalWidth = 17 + morphingWidth + spaceAfterMorphing;
+
+    var tests = [
+      // Regions in the whitespace before the morphing bar.
+      [0, 1, 0, 1],
+      [0, 17-SMALL_NUM, 0, 1],
+      [0, 16, 0, 1],
+      [0, 1, 0, 1],
+      [17-SMALL_NUM*2, 17-SMALL_NUM, 0, 1],
+      // Regions directly past the morphing bar.
+      [17+morphingWidth+SMALL_NUM, SMALL_NUM, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace+13+7, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace+13+7+2*SMALL_NUM, 1, 2],
+      [17+morphingWidth+SMALL_NUM, totalWidth, 1, 10],
+    ];
+
+    if (morphingValue > 0) {
+      // Regions which only include the morphing bar.
+      tests = tests.concat([
+        [0, 17+SMALL_NUM, 0, 1],
+        [0, 17+morphingWidth+morphingPadding-SMALL_NUM, 0, 1],
+        [17-SMALL_NUM, 17+morphingWidth+SMALL_NUM, 0, 1]
+      ]);
+      // Regions intersecting the morphing bar.
+      if (morphingWidth > 0) {
+        tests = tests.concat([
+          [17+SMALL_NUM, SMALL_NUM, 0, 1],
+          [17+morphingWidth-SMALL_NUM, morphingPadding, 0, 1]
+        ]);
+      }
+    } else {
+      // A fancy region past the morphing bar.
+      tests.push([17+SMALL_NUM, SMALL_NUM, 1, 1]);
+    }
+
+    return tests;
+  });
+}
+
 // TODO: in the test for computeRegion, try giving it a completely hidden morphing bar and see what
 // happens.
 
 testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
 testComputeRangeMorphingNearStart();
+testComputeRangeMorphingFirst();
 console.log('PASS');
