@@ -45,7 +45,7 @@ function computeRangeTests(morphingIndex, generator) {
 
 function testComputeRangeMorphingMiddle() {
   computeRangeTests(6, function(morphingValue) {
-    var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
+    var morphingSpace = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 6*13 + (5+0.5+0.5*morphingValue)*7;
     var spaceAfterMorphing = 19 + 4*13 + (3+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13 * morphingValue;
@@ -82,8 +82,8 @@ function testComputeRangeMorphingMiddle() {
       // Surround the morphing bar.
       [spaceBeforeMorphing-SMALL_NUM, morphingWidth+SMALL_NUM*2, 6, 1],
       [
-        spaceBeforeMorphing - morphingPadding + SMALL_NUM,
-        morphingPadding*2 + morphingWidth - SMALL_NUM*2,
+        spaceBeforeMorphing - morphingSpace + SMALL_NUM,
+        morphingSpace*2 + morphingWidth - SMALL_NUM*2,
         6,
         1
       ],
@@ -106,9 +106,9 @@ function testComputeRangeMorphingMiddle() {
 
 function testComputeRangeMorphingNearEnd() {
   computeRangeTests(9, function(morphingValue) {
-    var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
+    var morphingSpace = (0.5 + 0.5*morphingValue) * 7;
     var spaceBeforeMorphing = 17 + 9*13 + (8+0.5+0.5*morphingValue)*7;
-    var spaceAfterMorphing = 19 + 13 + morphingPadding;
+    var spaceAfterMorphing = 19 + 13 + morphingSpace;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
 
@@ -140,12 +140,12 @@ function testComputeRangeMorphingNearEnd() {
       [spaceBeforeMorphing+morphingWidth+SMALL_NUM, SMALL_NUM, 10, 1],
       [spaceBeforeMorphing+morphingWidth+SMALL_NUM, totalWidth, 10, 1],
       [spaceBeforeMorphing+morphingWidth-SMALL_NUM, 1, 9, 1],
-      [totalWidth-19-13-morphingPadding-SMALL_NUM, totalWidth, 9, 2],
+      [totalWidth-19-13-morphingSpace-SMALL_NUM, totalWidth, 9, 2],
       // Surround the morphing bar.
       [spaceBeforeMorphing-SMALL_NUM, morphingWidth+SMALL_NUM*2, 9, 1],
       [
-        spaceBeforeMorphing - morphingPadding + SMALL_NUM,
-        morphingPadding*2 + morphingWidth - SMALL_NUM*2,
+        spaceBeforeMorphing - morphingSpace + SMALL_NUM,
+        morphingSpace*2 + morphingWidth - SMALL_NUM*2,
         9,
         1
       ],
@@ -156,7 +156,7 @@ function testComputeRangeMorphingNearEnd() {
       [0, totalWidth-19-13+SMALL_NUM, 0, 11],
       [0, totalWidth-19-13-SMALL_NUM, 0, 10],
       [0, totalWidth-19-14, 0, 10],
-      [totalWidth-19-13-morphingPadding+SMALL_NUM, totalWidth, 10, 1],
+      [totalWidth-19-13-morphingSpace+SMALL_NUM, totalWidth, 10, 1],
       [totalWidth-19-13-2, 1, 10, 1]
     ];
   });
@@ -164,8 +164,8 @@ function testComputeRangeMorphingNearEnd() {
 
 function testComputeRangeMorphingNearStart() {
   computeRangeTests(1, function(morphingValue) {
-    var morphingPadding = (0.5 + 0.5*morphingValue) * 7;
-    var spaceBeforeMorphing = 17 + 13 + morphingPadding;
+    var morphingSpace = (0.5 + 0.5*morphingValue) * 7;
+    var spaceBeforeMorphing = 17 + 13 + morphingSpace;
     var spaceAfterMorphing = 19 + 9*13 + (8+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
@@ -175,12 +175,12 @@ function testComputeRangeMorphingNearStart() {
       [0, 1, 0, 1],
       [1, 1, 0, 1],
       [0, 17+13, 0, 1],
-      [0, 17+13+morphingPadding-SMALL_NUM, 0, 1],
-      [1, 17+12+morphingPadding-SMALL_NUM, 0, 1],
+      [0, 17+13+morphingSpace-SMALL_NUM, 0, 1],
+      [1, 17+12+morphingSpace-SMALL_NUM, 0, 1],
       [17+13-SMALL_NUM, 1, 0, 1],
       // Barely touch the left of the morphing bar.
       [17+13+SMALL_NUM, 1, 1, 1],
-      [1, 17+13+morphingPadding, 0, 2],
+      [1, 17+13+morphingSpace, 0, 2],
       [0, spaceBeforeMorphing-SMALL_NUM, 0, 1],
       [0, spaceBeforeMorphing+SMALL_NUM, 0, 2],
       [spaceBeforeMorphing-8, 8-SMALL_NUM, 0, 1],
@@ -194,8 +194,8 @@ function testComputeRangeMorphingNearStart() {
       // Surround the morphing bar.
       [spaceBeforeMorphing-SMALL_NUM, morphingWidth+SMALL_NUM*2, 1, 1],
       [
-        spaceBeforeMorphing - morphingPadding + SMALL_NUM,
-        morphingPadding*2 + morphingWidth - SMALL_NUM*2,
+        spaceBeforeMorphing - morphingSpace + SMALL_NUM,
+        morphingSpace*2 + morphingWidth - SMALL_NUM*2,
         1,
         1
       ],
