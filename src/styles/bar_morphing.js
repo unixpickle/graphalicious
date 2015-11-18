@@ -78,7 +78,7 @@ MorphingBarLandscape.prototype.computeRegion = function(range) {
   } else if (endIndex >= this._morphingIndex + 1) {
     var shiftedIndex = endIndex - (this._morphingIndex + 1);
     var shiftedOffset = leadingSpacing + this._morphingBarWidth() + this._morphingBarSpacing();
-    right = shifteOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
+    right = shiftedOffset + shiftedIndex*(this._attrs.getBarWidth()+this._attrs.getBarSpacing());
   }
 
   return {
