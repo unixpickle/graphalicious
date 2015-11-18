@@ -268,6 +268,85 @@ function testComputeRangeMorphingFirst() {
   });
 }
 
+function testComputeRangeMorphingLast() {
+  computeRangeTests(10, function(morphingValue) {
+    var morphingSpace = 0;
+    var morphingWidth = 0;
+    if (morphingValue > 7/(13+7)) {
+      morphingWidth = 13 * (morphingValue - 7/(13+7)) / (13/(13+7));
+      morphingSpace = 7;
+    } else {
+      morphingSpace = morphingValue / (7/(13+7));
+    }
+    var spaceBeforeMorphing = 17 + 10*13 + 9*7 + morphingSpace;
+    var totalWidth = 19 + morphingWidth + spaceBeforeMorphing;
+
+    var tests = [
+      // Orginary regions near the beginning of the data.
+      [0, 100, 0, 5],
+      [51, 49, 2, 3],
+      // Regions in the whitespace after the morphing bar.
+      [totalWidth-1, 1, 10, 1],
+      [totalWidth-19+SMALL_NUM, 19-SMALL_NUM, 10, 1],
+      [totalWidth-16, 100, 10, 1],
+      [totalWidth-19+SMALL_NUM, SMALL_NUM, 10, 1],
+      // Regions directly before the morphing bar.
+      [totalWidth-19-morphingWidth-morphingSpace-13-7+SMALL_NUM, 13+7-2*SMALL_NUM, 9, 1],
+      [totalWidth-19-morphingWidth-morphingSpace-2*SMALL_NUM, morphingSpace+SMALL_NUM, 9, 1],
+      [
+        totalWidth - 19 - morphingWidth - morphingSpace - 13 - 7 - SMALL_NUM,
+        13 + 7 + morphingSpace,
+        8,
+        2
+      ],
+      // Regions which include the morphing bar.
+      [
+        totalWidth - 19 - morphingWidth - morphingSpace - 13 - 7 + SMALL_NUM,
+        13 + 7 + morphingSpace,
+        9,
+        2
+      ],
+      [
+        totalWidth - 19 - morphingWidth - morphingSpace - 13 - 7 - SMALL_NUM,
+        13 + 7 + morphingSpace + 2*SMALL_NUM,
+        8,
+        3
+      ],
+    ];
+
+    if (morphingValue > 0) {
+      tests = tests.concat([
+        // Regions which only include the morphing bar.
+        [totalWidth-19-morphingWidth-SMALL_NUM*2, SMALL_NUM, 10, 1],
+        [totalWidth-19-morphingWidth, 1, 10, 1],
+        [totalWidth-19-morphingWidth-morphingSpace+SMALL_NUM, 1000, 10, 1],
+        [totalWidth-19-morphingWidth-morphingSpace+SMALL_NUM, 1, 10, 1],
+        [totalWidth-19-morphingWidth-SMALL_NUM, 1, 10, 1],
+        // Regions directly before the morphing bar.
+        [
+          totalWidth - 19 - morphingWidth - morphingSpace - 13 - 7 + SMALL_NUM,
+          13 + 7 + morphingSpace - 2*SMALL_NUM,
+          9,
+          1
+        ],
+        [totalWidth-19-morphingWidth-morphingSpace-SMALL_NUM, morphingSpace, 9, 1],
+      ]);
+      // Regions intersecting the morphing bar.
+      if (morphingWidth > 0) {
+        tests = tests.concat([
+          [totalWidth-19-2*SMALL_NUM, SMALL_NUM, 10, 1],
+          [totalWidth-19-morphingWidth+SMALL_NUM, SMALL_NUM, 10, 1],
+        ]);
+      }
+    } else {
+      // A fancy bar right before the morphing bar.
+      tests.push([totalWidth-19-2*SMALL_NUM, SMALL_NUM, 9, 1]);
+    }
+
+    return tests;
+  });
+}
+
 // TODO: in the test for computeRegion, try giving it a completely hidden morphing bar and see what
 // happens.
 
@@ -275,4 +354,5 @@ testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
 testComputeRangeMorphingNearStart();
 testComputeRangeMorphingFirst();
+testComputeRangeMorphingLast();
 console.log('PASS');

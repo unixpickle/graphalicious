@@ -101,8 +101,7 @@ MorphingBarLandscape.prototype._leadingSpacing = function() {
   if (this._morphingIndex === 0) {
     return this._attrs.getLeftMargin();
   } else if (this._morphingIndex === this._pointCount-1) {
-    return this._attrs.computeRegion({startIndex: 0, length: this._pointCount},
-      this._pointCount).width - this._attrs.getRightMargin() - this._morphingBarWidth();
+    return this._width() - this._attrs.getRightMargin() - this._morphingBarWidth();
   }
   return this._attrs.getLeftMargin() + this._morphingIndex*this._attrs.getBarWidth() +
     (this._morphingIndex-1)*this._attrs.getBarSpacing() +
