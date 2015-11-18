@@ -382,7 +382,7 @@ function testComputeRegionMorphingMiddle() {
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
 
-    var tests = [
+    return [
       // Ranges before the morphing bar.
       [0, 1, 0, 17+13+7],
       [0, 2, 0, 17+13*2+7*2],
@@ -391,8 +391,8 @@ function testComputeRegionMorphingMiddle() {
       // Ranges which extend past the morphing bar.
       [0, 11, 0, totalWidth],
       [0, 10, 0, totalWidth-19-13],
-      [1, 10, 0, totalWidth-17-13],
-      [1, 9, 0, totalWidth-17-13*2-19],
+      [1, 10, 17+13, totalWidth-17-13],
+      [1, 9, 17+13, totalWidth-17-13*2-19],
       // Ranges which are left-adjacent to the morphing bar.
       [0, 6, 0, 17+13*6+7*5+morphingSpace],
       [5, 1, 17+13*5+7*4, 13+7+morphingSpace],
@@ -402,11 +402,9 @@ function testComputeRegionMorphingMiddle() {
       // Ranges which contain the morphing bar.
       [6, 1, spaceBeforeMorphing-morphingSpace, morphingSpace*2+morphingWidth],
       [5, 2, spaceBeforeMorphing-morphingSpace-13-7, 13+7+morphingSpace*2+morphingWidth],
-      [6, 2, spaceBeforeMorphing-morphingSpace, 13+7+morphingSpace*2+morphingWidth+13+7],
+      [6, 2, spaceBeforeMorphing-morphingSpace, morphingSpace*2+morphingWidth+13+7],
       [5, 3, spaceBeforeMorphing-morphingSpace-13-7, 13*2+7*2+morphingSpace*2+morphingWidth],
     ];
-
-    return tests;
   });
 }
 
