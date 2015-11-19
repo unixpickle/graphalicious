@@ -6,6 +6,12 @@ function MorphingBarLandscape(info) {
 }
 
 MorphingBarLandscape.prototype.computeRange = function(region) {
+  region = boundedRegion(region, this._width());
+
+  if (region.width <= 0) {
+    return {startIndex: 0, length: 0};
+  }
+
   var leadingSpacing = this._leadingSpacing();
 
   var startIndex = 0;

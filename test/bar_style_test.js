@@ -29,6 +29,9 @@ function testComputeRange() {
 
   // These are arrays of the form [left, width, startIndex, length].
   var tests = [
+    [-10, 9, 0, 0],
+    [-10, 11, 0, 1],
+    [-10, 10+17+13+7+SMALL_NUM, 0, 2],
     [0, 1, 0, 1],
     [1, 1, 0, 1],
     [0, 17+13, 0, 1],

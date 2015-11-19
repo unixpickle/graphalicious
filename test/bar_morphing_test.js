@@ -37,7 +37,8 @@ function computeRangeTests(morphingIndex, generator) {
       var test = tests[i];
       var range = landscape.computeRange({left: test[0], width: test[1]});
       var msg = 'Expected ' + JSON.stringify({startIndex: test[2], length: test[3]}) +
-        ' but got ' + JSON.stringify(range) + ' for test ' + i + ' and visibility=' + v/10;
+        ' but got ' + JSON.stringify(range) + ' for test ' + i + ' (' + test +
+        ') and visibility=' + v/10;
       assert.equal(range.startIndex, test[2], msg);
       assert.equal(range.length, test[3], msg);
     }
@@ -54,6 +55,9 @@ function testComputeRangeMorphingMiddle() {
 
     return [
       // Make sure it behaves regularly before the morphing bar.
+      [-10, 9, 0, 0],
+      [-10, 11, 0, 1],
+      [-10, 10+17+13+7+SMALL_NUM, 0, 2],
       [0, 1, 0, 1],
       [1, 1, 0, 1],
       [0, 17+13, 0, 1],
@@ -68,6 +72,7 @@ function testComputeRangeMorphingMiddle() {
       [17+13+SMALL_NUM, 7+13+7-SMALL_NUM*2, 1, 1],
       [17+13+SMALL_NUM, 7+13+7+SMALL_NUM*2, 1, 2],
       // Barely touch the left of the morphing bar.
+      [-10, 10+spaceBeforeMorphing-SMALL_NUM, 0, 6],
       [0, spaceBeforeMorphing-SMALL_NUM, 0, 6],
       [0, spaceBeforeMorphing+SMALL_NUM, 0, 7],
       [19+13, spaceBeforeMorphing-13-19-SMALL_NUM, 1, 5],
@@ -115,6 +120,9 @@ function testComputeRangeMorphingNearEnd() {
 
     return [
       // Make sure it behaves regularly before the morphing bar.
+      [-10, 9, 0, 0],
+      [-10, 11, 0, 1],
+      [-10, 10+17+13+7+SMALL_NUM, 0, 2],
       [0, 1, 0, 1],
       [1, 1, 0, 1],
       [0, 17+13, 0, 1],
@@ -173,6 +181,8 @@ function testComputeRangeMorphingNearStart() {
 
     return [
       // Make sure it behaves regularly before the morphing bar.
+      [-10, 9, 0, 0],
+      [-10, 11, 0, 1],
       [0, 1, 0, 1],
       [1, 1, 0, 1],
       [0, 17+13, 0, 1],
@@ -180,6 +190,7 @@ function testComputeRangeMorphingNearStart() {
       [1, 17+12+morphingSpace-SMALL_NUM, 0, 1],
       [17+13-SMALL_NUM, 1, 0, 1],
       // Barely touch the left of the morphing bar.
+      [-10, 10+17+13+morphingSpace+SMALL_NUM, 0, 2],
       [17+13+SMALL_NUM, 1, 1, 1],
       [1, 17+13+morphingSpace, 0, 2],
       [0, spaceBeforeMorphing-SMALL_NUM, 0, 1],
@@ -231,7 +242,9 @@ function testComputeRangeMorphingFirst() {
     var totalWidth = 17 + morphingWidth + spaceAfterMorphing;
 
     var tests = [
+      [-10, 9, 0, 0],
       // Regions in the whitespace before the morphing bar.
+      [-10, 11, 0, 1],
       [0, 1, 0, 1],
       [0, 17-SMALL_NUM, 0, 1],
       [0, 16, 0, 1],
@@ -239,7 +252,7 @@ function testComputeRangeMorphingFirst() {
       [17-SMALL_NUM*2, SMALL_NUM, 0, 1],
       // Regions directly past the morphing bar.
       [17+morphingWidth+SMALL_NUM, SMALL_NUM, 1, 1],
-      [17+morphingWidth+SMALL_NUM, morphingSpace, 1, 1],
+      [17+morphingWidth+SMALL_NUM, morphingSpace+SMALL_NUM, 1, 1],
       [17+morphingWidth+SMALL_NUM, morphingSpace+13+7-SMALL_NUM*2, 1, 1],
       [17+morphingWidth+SMALL_NUM, morphingSpace+13+7, 1, 2],
       [17+morphingWidth+SMALL_NUM, morphingSpace+13+7+2*SMALL_NUM, 1, 2],
@@ -249,6 +262,7 @@ function testComputeRangeMorphingFirst() {
     if (morphingValue > 0) {
       // Regions which only include the morphing bar.
       tests = tests.concat([
+        [-10, 10+17+SMALL_NUM, 0, 1],
         [0, 17+SMALL_NUM, 0, 1],
         [0, 17+morphingWidth+morphingSpace-SMALL_NUM, 0, 1],
         [17-SMALL_NUM, morphingWidth+2*SMALL_NUM, 0, 1]
@@ -256,6 +270,7 @@ function testComputeRangeMorphingFirst() {
       // Regions intersecting the morphing bar.
       if (morphingWidth > 0) {
         tests = tests.concat([
+          [-10, 10+17+morphingWidth+morphingSpace+SMALL_NUM, 0, 2],
           [17+SMALL_NUM, SMALL_NUM, 0, 1],
           [17+morphingWidth-SMALL_NUM, morphingSpace, 0, 1]
         ]);
@@ -283,7 +298,10 @@ function testComputeRangeMorphingLast() {
     var totalWidth = 19 + morphingWidth + spaceBeforeMorphing;
 
     var tests = [
-      // Orginary regions near the beginning of the data.
+      // Ordinary regions near the beginning of the data.
+      [-10, 9, 0, 0],
+      [-10, 11, 0, 1],
+      [-10, 10+17+13+7+SMALL_NUM, 0, 2],
       [0, 100, 0, 5],
       [51, 49, 2, 3],
       // Regions in the whitespace after the morphing bar.
@@ -313,6 +331,7 @@ function testComputeRangeMorphingLast() {
         8,
         3
       ],
+      [-10, 10+totalWidth-19-morphingWidth+SMALL_NUM, 0, 11],
     ];
 
     if (morphingValue > 0) {
@@ -456,9 +475,6 @@ function testComputeRegionMorphingNearEnd() {
     ];
   });
 }
-
-// TODO: in the test for computeRegion, try giving it a completely hidden morphing bar and see what
-// happens.
 
 testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
