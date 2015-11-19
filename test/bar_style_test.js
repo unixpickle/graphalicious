@@ -76,6 +76,11 @@ function testComputeRegion() {
 
   // These are arrays of the form [startIndex, length, left, width].
   var tests = [
+    [-1, 1, 0, 0],
+    [-2, 1, 0, 0],
+    [-10, 5, 0, 0],
+    [-10, 11, 0, 17+13+7],
+    [-10, 12, 0, 17+13*2+7*2],
     [0, 1, 0, 17+13+7],
     [0, 2, 0, 17+13*2+7*2],
     [1, 1, 17+13, 7*2+13],
@@ -85,7 +90,9 @@ function testComputeRegion() {
     [9, 2, totalWidth-19-13*2-7*2, 7*2+13*2+19],
     [0, 100, 0, totalWidth],
     [0, 11, 0, totalWidth],
-    [0, 10, 0, totalWidth-19-13]
+    [0, 10, 0, totalWidth-19-13],
+    [11, 1, 0, 0],
+    [12, 1, 0, 0]
   ];
 
   for (var i = 0, len = tests.length; i < len; ++i) {

@@ -80,6 +80,8 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
 // computeRegion generates a region wrapping the given range.
 // The region will include spacing on the left and right.
 BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
+  range = boundedRange(range, pointCount);
+
   if (pointCount === 0 || range.length <= 0) {
     return {left: 0, width: 0};
   }
@@ -141,3 +143,27 @@ BarStyle.prototype.createChunkView = function(chunk, dataSource) {
 };
 
 exports.BarStyle = BarStyle;
+
+function boundedRange(range, pointCount) {
+  if (range.startIndex >= pointCount) {
+    return {startIndex: 0, length: 0};
+  } else if (range.startIndex + range.length <= 0) {
+    return {startIndex: 0, length: 0};
+  }
+
+  var res = {startIndex: range.startIndex, length: range.length};
+
+  if (res.startIndex < 0) {
+    res.length += res.startIndex;
+    res.startIndex = 0;
+    if (res.length <= 0) {
+      res.length = 0;
+    }
+  }
+
+  if (res.startIndex + res.length >= pointCount) {
+    res.length = pointCount - res.startIndex;
+  }
+
+  return res;
+}

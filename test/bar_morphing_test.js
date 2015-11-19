@@ -4,16 +4,17 @@ var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 var fs = require('fs');
 
-var BarStyleAttrs = (function() {
-  var code = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
-  code = '(function() {' + code + ';return BarStyleAttrs})()';
-  return eval(code);
-})();
+var BarStyleAttrs;
+var MorphingBarLandscape;
 
-var MorphingBarLandscape = (function() {
-  var code = fs.readFileSync(__dirname + '/../src/styles/bar_morphing.js');
-  code = '(function() {' + code + ';return MorphingBarLandscape})()';
-  return eval(code);
+(function() {
+  var code1 = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
+  var code2 = fs.readFileSync(__dirname + '/../src/styles/bar_morphing.js');
+  code = '(function() {' + code1 + code2 +
+    ';return [MorphingBarLandscape, BarStyleAttrs];})()';
+  var res = eval(code);
+  MorphingBarLandscape = res[0];
+  BarStyleAttrs = res[1];
 })();
 
 function computeRangeTests(morphingIndex, generator) {
@@ -384,6 +385,11 @@ function testComputeRegionMorphingMiddle() {
 
     return [
       // Ranges before the morphing bar.
+      [-1, 1, 0, 0],
+      [-2, 1, 0, 0],
+      [-10, 5, 0, 0],
+      [-10, 11, 0, 17+13+7],
+      [-10, 12, 0, 17+13*2+7*2],
       [0, 1, 0, 17+13+7],
       [0, 2, 0, 17+13*2+7*2],
       [1, 1, 17+13, 7*2+13],
