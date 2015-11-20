@@ -546,6 +546,37 @@ function testComputeRegionMorphingFirst() {
   });
 }
 
+function testComputeRegionMorphingLast() {
+  computeRegionTests(10, function(morphingValue) {
+    var morphingSpace = 0;
+    var morphingWidth = 0;
+    if (morphingValue > 7/(13+7)) {
+      morphingWidth = 13 * (morphingValue - 7/(13+7)) / (13/(13+7));
+      morphingSpace = 7;
+    } else {
+      morphingSpace = morphingValue / (7/(13+7));
+    }
+    var spaceBeforeMorphing = 17 + 10*13 + 9*7 + morphingSpace;
+    var totalWidth = 19 + morphingWidth + spaceBeforeMorphing;
+
+    return [
+      // Regions before the morphing bar.
+      [-1, 1, 0, 0],
+      [-2, 1, 0, 0],
+      [-10, 5, 0, 0],
+      [0, 1, 0, 17+13+7],
+      [0, 5, 0, 13*5+7*5+17],
+      [1, 5, 17+13, 13*5+7*6],
+      [0, 10, 0, totalWidth-19-morphingWidth],
+      // Regions including the morphing bar.
+      [0, 11, 0, totalWidth],
+      [10, 1, spaceBeforeMorphing-morphingSpace, totalWidth-spaceBeforeMorphing+morphingSpace],
+      [10, 2, spaceBeforeMorphing-morphingSpace, totalWidth-spaceBeforeMorphing+morphingSpace],
+      [1, 10, 17+13, totalWidth-17-13]
+    ];
+  });
+}
+
 testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
 testComputeRangeMorphingNearStart();
@@ -555,4 +586,5 @@ testComputeRegionMorphingMiddle();
 testComputeRegionMorphingNearEnd();
 testComputeRegionMorphingNearStart();
 testComputeRegionMorphingFirst();
+testComputeRegionMorphingLast();
 console.log('PASS');
