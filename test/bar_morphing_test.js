@@ -483,7 +483,7 @@ function testComputeRegionMorphingNearStart() {
     var spaceAfterMorphing = 19 + 9*13 + (8+0.5+0.5*morphingValue)*7;
     var morphingWidth = 13 * morphingValue;
     var totalWidth = spaceBeforeMorphing + morphingWidth + spaceAfterMorphing;
-    
+
     return [
       // Ranges before the morphing bar.
       [-1, 1, 0, 0],
@@ -510,6 +510,42 @@ function testComputeRegionMorphingNearStart() {
   });
 }
 
+function testComputeRegionMorphingFirst() {
+  computeRegionTests(0, function(morphingValue) {
+    var morphingSpace = 0;
+    var morphingWidth = 0;
+    if (morphingValue > 7/(13+7)) {
+      morphingWidth = 13 * (morphingValue - 7/(13+7)) / (13/(13+7));
+      morphingSpace = 7;
+    } else {
+      morphingSpace = morphingValue / (7/(13+7));
+    }
+    var spaceAfterMorphing = 19 + 10*13 + 9*7 + morphingSpace;
+    var totalWidth = 17 + morphingWidth + spaceAfterMorphing;
+
+    return [
+      // Null regions.
+      [-1, 1, 0, 0],
+      [-2, 1, 0, 0],
+      [-10, 5, 0, 0],
+      [3, 0, 0, 0],
+      // Regions which include the morphing bar.
+      [0, 1, 0, 17+morphingWidth+morphingSpace],
+      [0, 2, 0, 17+morphingWidth+morphingSpace+13+7],
+      [0, 11, 0, totalWidth],
+      [-10, 25, 0, totalWidth],
+      [-10, 21, 0, totalWidth],
+      [-10, 20, 0, totalWidth-19-13],
+      // Region past the morphing bar.
+      [1, 1, totalWidth-spaceAfterMorphing, morphingSpace+7+13],
+      [1, 2, totalWidth-spaceAfterMorphing, morphingSpace+7*2+13*2],
+      [1, 10, totalWidth-spaceAfterMorphing, spaceAfterMorphing],
+      [2, 9, totalWidth-spaceAfterMorphing+morphingSpace+13, spaceAfterMorphing-morphingSpace-13],
+      [2, 1, totalWidth-spaceAfterMorphing+morphingSpace+13, 7*2+13]
+    ];
+  });
+}
+
 testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
 testComputeRangeMorphingNearStart();
@@ -518,4 +554,5 @@ testComputeRangeMorphingLast();
 testComputeRegionMorphingMiddle();
 testComputeRegionMorphingNearEnd();
 testComputeRegionMorphingNearStart();
+testComputeRegionMorphingFirst();
 console.log('PASS');
