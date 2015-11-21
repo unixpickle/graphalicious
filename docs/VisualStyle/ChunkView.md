@@ -14,11 +14,13 @@ Animations are essential to beautiful graphs, and a *ChunkView* is responsible f
 
 Since a *ChunkView* knows about morphing landscapes, it is the only entity that knows where partial landscapes will be at any given time during an animation. Thus, it provides mid-animation analogs for many of the *ViewProvider* methods.
 
+A *ChunkView* also provides specific information about the position of data points on the x-axis. Specifically, it provides x-axis markers, canvas-relative horizontal offsets, for each point. These x-axis markers may be used by *ContentView*s to draw x-axis labels for each data point in the graph.
+
 When a *ChunkView* is drawn into an HTML5 canvas, it is given a **canvas viewport**, a canvas and a rectangle of pixels in which the *ChunkView* may draw itself. If the width of the complete landscape is greater than the width of the canvas viewport, then the *ChunkView* will be given a **scroll offset**. In this case, the x value in the canvas at which the partial landscape will be rendered is equal to the sum of the x value of canvas viewport, the offset of the partial landscape, and the negative scroll offset.
 
 Sometimes, the complete landscape will not be as wide as the canvas viewport. In this case, the complete landscape literally does not "fill up" the place where it is being rendered. The visual style of a *ChunkView* determines how it handles this situation. Sometimes, a *ChunkView* may visually stretch itself; other times, a *ChunkView* may choose to justify itself to the left or right of the canvas viewport.
 
-After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a pair `(x, width, x-label-start, x-label-offsets)` specifying both the x-axis label positions and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen realestate was actually taken up.
+After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a tuple `(x, width, x-markers)` specifying both the x-axis markers and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen real estate was actually taken up.
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. The events themselves specify coordinates relative to the canvas. As a result, the *ChunkView* will need to request a re-draw in order to utilize the coordinates in any meaningful way.
 
@@ -31,10 +33,22 @@ The *PointerPosition* type expresses the coordinates of a pointer (e.g., the mou
 
 # The DrawReport type
 
-The *DrawReport* type represents a horizontal range of pixels in a 2D drawing context. It has the following fields:
+The *DrawReport* type represents a horizontal range of pixels in a 2D drawing context and x-axis offsets corresponding to data points in this range. It has the following fields:
 
  * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels.
  * *number* width - the width of the range, in pixels.
+ * \[[XMarker](#the-xmarker-type)\] xmarkers - the x-axis markers in this range
+
+# The XMarker type
+
+The *XMarker* type stores various information about an x-axis marker, including its position and the point it represents. An array of XMarkers are returned from the *ChunkView*s draw routine as part of the [DrawReport](#the-drawreport-type). This type can accommodate for situations where a data point is being deleted but is partially visible. It has the following fields:
+
+ * *number* x - the x-offset, in canvas-relative cordinates, for the marker.
+ * *int* index - the index of the corresponding data point in the *DataSource*. This is -1 if the data point was deleted from the data source and is being animated away.
+ * *int* oldIndex - the index of the data point in the *DataSource* before the current animating change. This is -1 if the point was just inserted and is being animated in.
+ * [DataPoint](../DataSource.md#the-datapoint-type) dataPoint - the current (post-animation) data point for this marker. This will be null if the point is being deleted.
+ * [DataPoint](../DataSource.md#the-datapoint-type) oldDataPoint - the old (pre-animation) data point for this marker. This will be null if the point is being inserted.
+ * *number* visibility - a fraction from 0 (invisible) to 1 (completely visible) representing how animated in/out the data point is.
 
 # The CanvasViewport type
 
