@@ -16,6 +16,7 @@ function BarChunkView(attrs, chunk, dataSource) {
   this._animationStartTime = -1;
   this._animationType = BarChunkView.ANIMATION_NONE;
   this._animationDataPoint = null;
+  this._animationOriginalPoint = null;
   this._animationPointIndex = 0;
   this._animationInitialStartIndex = 0;
   this._animationInitialCount = 0;
@@ -117,7 +118,8 @@ BarChunkView.prototype.modification = function(index, animate) {
     this._startAnimation(index, BarChunkView.ANIMATION_MODIFY, point);
   }
 
-  this._dataPoints[index-this._startIndex] = point;
+  this._animationOriginalPoint = this._dataPoints[index - this._startIndex];
+  this._dataPoints[index - this._startIndex] = point;
 
   return this._animationType !== BarChunkView.ANIMATION_NONE;
 };
@@ -157,8 +159,31 @@ BarChunkView.prototype._startAnimation = function(index, type, point) {
   this._animationInitialCount = this._dataPoints.length;
   this._animationPointIndex = index;
   this._animationDataPoint = point;
+  this._animaitonOriginalPoint = null;
   this._animationProgress = 0;
   this._animationStartTime = -1;
   this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
   this._animationType = type;
+};
+
+BarChunkView.prototype._morphingLandscape = function() {
+  var properties = {
+    attrs: this._attrs,
+    pointCount: this._pointCount,
+    morphingIndex: this._animationPointIndex,
+    morphingVisibility: this._animationProgress
+  };
+
+  switch (this._animationType) {
+  case BarChunkView.ANIMATION_DELETE:
+    properites.pointCount += 1;
+  case BarChunkView.ANIMATION_INSERT:
+    break;
+  default:
+    properties.morphingVisibility = 1;
+    properties.morphingIndex = 0;
+    break;
+  }
+
+  return new MorphingBarLandscape(properties);
 };
