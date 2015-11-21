@@ -577,14 +577,49 @@ function testComputeRegionMorphingLast() {
   });
 }
 
+function testComputeBarRegion() {
+  var attrs = new BarStyleAttrs({
+    leftMargin: 17,
+    rightMargin: 19,
+    barSpacing: 7,
+    barWidth: 13
+  });
+  var landscape = new MorphingBarLandscape({
+    attrs: attrs,
+    pointCount: 11,
+    morphingIndex: 0,
+    morphingVisibility: 1
+  });
+
+  var totalWidth = 19 + 17 + 13*11 + 7*10;
+
+  // These are pairs of the form (index, left coordinate)
+  var tests = [
+    [0, 17],
+    [10, totalWidth-19-13],
+    [1, 17+13+7],
+    [5, 17+5*7+5*13]
+  ];
+  for (var i = 0, len = tests.length; i < len; ++i) {
+    var test = tests[i];
+    var result = landscape.computeBarRegion(test[0]);
+    assert(Math.abs(result.left - test[1]) < SMALL_NUM, 'Test ' + i + ' failed.');
+    assert(Math.abs(result.width - 13) < SMALL_NUM, 'Test ' + i + ' failed.');
+  }
+}
+
 testComputeRangeMorphingMiddle();
 testComputeRangeMorphingNearEnd();
 testComputeRangeMorphingNearStart();
 testComputeRangeMorphingFirst();
 testComputeRangeMorphingLast();
+
 testComputeRegionMorphingMiddle();
 testComputeRegionMorphingNearEnd();
 testComputeRegionMorphingNearStart();
 testComputeRegionMorphingFirst();
 testComputeRegionMorphingLast();
+
+testComputeBarRegion();
+
 console.log('PASS');

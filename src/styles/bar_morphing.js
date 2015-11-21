@@ -99,6 +99,32 @@ MorphingBarLandscape.prototype.computeRegion = function(range) {
   };
 };
 
+// computeBarRegion computes the region of one bar, not including whitespace.
+MorphingBarLandscape.prototype.computeBarRegion = function(index) {
+  assert(index >= 0 && index < this._pointCount);
+
+  var reg = this.computeRegion({startIndex: index, length: 1});
+
+  if (index === 0) {
+    reg.left += this._attrs.getLeftMargin();
+    reg.width -= this._attrs.getLeftMargin();
+  } else {
+    var prevReg = this.computeRegion({startIndex: index-1, length: 1});
+    var overlap = (prevReg.left + prevReg.width) - reg.left;
+    reg.left += overlap;
+    reg.width -= overlap;
+  }
+
+  if (index === this._pointCount - 1) {
+    reg.width -= this._attrs.getRightMargin();
+  } else {
+    var nextReg = this.computeRegion({startIndex: index+1, length: 1});
+    reg.width = nextReg.left - reg.left;
+  }
+
+  return reg;
+};
+
 // _width returns the width of the complete morphing landscape.
 MorphingBarLandscape.prototype._width = function() {
   var biggerWidth = this._attrs.computeRegion({startIndex: 0, length: this._pointCount},
