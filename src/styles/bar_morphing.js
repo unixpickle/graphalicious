@@ -6,7 +6,7 @@ function MorphingBarLandscape(info) {
 }
 
 MorphingBarLandscape.prototype.computeRange = function(region) {
-  region = boundedRegion(region, this._width());
+  region = boundedRegion(region, this.width());
 
   if (region.width <= 0) {
     return {startIndex: 0, length: 0};
@@ -61,7 +61,7 @@ MorphingBarLandscape.prototype.computeRegion = function(range) {
   }
 
   var leadingSpacing = this._leadingSpacing();
-  var width = this._width();
+  var width = this.width();
 
   var left = 0;
   if (range.startIndex > 0 && range.startIndex < this._morphingIndex) {
@@ -125,8 +125,12 @@ MorphingBarLandscape.prototype.computeBarRegion = function(index) {
   return reg;
 };
 
-// _width returns the width of the complete morphing landscape.
-MorphingBarLandscape.prototype._width = function() {
+// width returns the width of the complete morphing landscape.
+MorphingBarLandscape.prototype.width = function() {
+  if (this._pointCount === 0) {
+    return 0;
+  }
+
   var biggerWidth = this._attrs.computeRegion({startIndex: 0, length: this._pointCount},
     this._pointCount).width;
   var smallerWidth = this._attrs.computeRegion({startIndex: 0, length: this._pointCount-1},
@@ -139,7 +143,7 @@ MorphingBarLandscape.prototype._leadingSpacing = function() {
   if (this._morphingIndex === 0) {
     return this._attrs.getLeftMargin();
   } else if (this._morphingIndex === this._pointCount-1) {
-    return this._width() - this._attrs.getRightMargin() - this._morphingBarWidth();
+    return this.width() - this._attrs.getRightMargin() - this._morphingBarWidth();
   }
   return this._attrs.getLeftMargin() + this._morphingIndex*this._attrs.getBarWidth() +
     (this._morphingIndex-1)*this._attrs.getBarSpacing() +

@@ -38,33 +38,12 @@ BarChunkView.prototype.getWidth = function() {
 };
 
 BarChunkView.prototype.getOffset = function() {
-  var left = this._attrs.computeRegion({startIndex: this._startIndex, length: 0}).left;
-
-  if (this._animationType === BarChunkView.ANIMATION_NONE) {
-    return left;
-  }
-
-  var oldLeft = this._attrs.computeRegion({
-    startIndex: this._animationInitialStartIndex,
-    length: 0
-  }).left;
-
-  return left*this._animationProgress + oldLeft*(1-this._animationProgress);
+  var region = this._morphingLandscape().computeRegion({startIndex: this._startIndex, 1});
+  return region.left;
 };
 
 BarChunkView.prototype.getEncompassingWidth = function() {
-  var initialCount = this._encompassingCount;
-  if (this._animationType === BarChunkView.ANIMATION_DELETE) {
-    --initialCount;
-  } else if (this._animationType === BarChunkView.ANIMATION_INSERT) {
-    ++initialCount;
-  }
-
-  var width = this._attrs.computeRegion({startIndex: 0, length: this._encompassingCount},
-    this._encompassingCount).width;
-  var oldWidth = this._attrs.computeRegion({startIndex: 0, length: initialCount},
-    initialCount).width;
-  return this._animationProgress*width + (1-this._animationProgress)*oldWidth;
+  return this._morphingLandscape().width();
 };
 
 BarChunkView.prototype.deletion = function(oldIndex, animate) {
@@ -73,7 +52,8 @@ BarChunkView.prototype.deletion = function(oldIndex, animate) {
 
   this.finishAnimation();
   if (animate && this._attrs.getAnimateDeletions() &&
-      this._chunk.getLength() !== this._dataPoints.length) {
+      this._chunk.getLength() !== this._dataPoints.length &&
+      this._dataPoints.length !== 1) {
     this._startAnimation(oldIndex, BarChunkView.ANIMATION_DELETE,
       this._dataPoints[oldIndex - this._startIndex]);
   }
@@ -94,7 +74,8 @@ BarChunkView.prototype.insertion = function(index, animate) {
 
   this.finishAnimation();
   if (animate && this._attrs.getAnimateInsertions() &&
-      this._chunk.getLength() !== this._dataPoints.length) {
+      this._chunk.getLength() !== this._dataPoints.length &&
+      this._dataPoints.length !== 0) {
     this._startAnimation(index, BarChunkView.ANIMATION_INSERT, point);
   }
 

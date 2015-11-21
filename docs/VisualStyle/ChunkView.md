@@ -12,8 +12,6 @@ Since a partial landscape is a part of a complete landscape, it is helpful for a
 
 Animations are essential to beautiful graphs, and a *ChunkView* is responsible for them. An **animation** is a smooth transition between an old complete landscape and a new complete landscape. Only some changes to the complete landscape (i.e. changes to the *DataSource*) may trigger an animation, while others (i.e. changes in visual style) may not. When a *ChunkView* is performing an animation, we can imagine the complete landscape **morphing** from the old landscape to the new one. The *VisualStyle* interface does not capture said morphing, but instead only represents **final landscapes**. A final landscape is a landscape during which no animations are taking place. While a *VisualStyle* only knows about **final landscapes**, the *ChunkView* has extra information about **morphing landscapes** as well. In particular, while an animation is being performed, a *ChunkView* has two different offsets, widths, and encompassing widths. One set of values is for the final landscape, while the other is for the current morphing landscape. This is useful information because it allows the *ContentView* to know how and where to draw the *ChunkView* at every point during an animation.
 
-Since a *ChunkView* knows about morphing landscapes, it is the only entity that knows where partial landscapes will be at any given time during an animation. Thus, it provides mid-animation analogs for many of the *ViewProvider* methods.
-
 A *ChunkView* also provides specific information about the position of data points on the x-axis. Specifically, it provides x-axis markers, canvas-relative horizontal offsets, for each point. These x-axis markers may be used by *ContentView*s to draw x-axis labels for each data point in the graph.
 
 When a *ChunkView* is drawn into an HTML5 canvas, it is given a **canvas viewport**, a canvas and a rectangle of pixels in which the *ChunkView* may draw itself. If the width of the complete landscape is greater than the width of the canvas viewport, then the *ChunkView* will be given a **scroll offset**. In this case, the x value in the canvas at which the partial landscape will be rendered is equal to the sum of the x value of canvas viewport, the offset of the partial landscape, and the negative scroll offset.
@@ -67,8 +65,6 @@ A set of methods can be used to get the current properties of the morphing parti
  * *int* getWidth() - get the width of the region of the morphing partial scene of the *ChunkView*.
  * *int* getOffset() - get the offset of the region of the morphing partial scene of the *ChunkView*.
  * *int* getEncompassingWidth() - get the width of the morphing complete scene.
- * [Range](VisualStyle.md#the-range-type) computeRange(region, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
- * [Region](#the-region-type) computeRegion(range, pointCount) - does what it does on a *VisualStyle*, but for the morphing complete landscape.
 
 The animation behavior of a *ChunkView* can be controlled:
 
