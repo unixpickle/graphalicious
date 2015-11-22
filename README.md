@@ -12,22 +12,23 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
+ * Finish `BarChunkView.draw()`
+   * Test drawing edge cases (i.e. content covers part of the canvas).
+   * Implement and test stretching modes.
+   * Test mid-animation drawing.
  * Prevent selection of canvas in graph.
- * Clean up and clarify ChunkView docs
- * Implement BarProvider with actual options
-   * Animations
-   * Color scheme changes
-   * Secondary values
+ * Throw new ViewStyle system into existing YLCV to test it.
  * Rewrite YLCV and revise *View* architecture
-   * Document *View* better
+   * Document *View*
+   * Document *ColorScheme*
    * Give *ContentView* complete power over scrolling and drawing
    * Do not attempt to use a finite state machine
    * Separate base class for handling 300ms delay for splash screen
- * Create DotGraphViewProvider.
- * Create SplineGraphViewProvider.
- * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
+   * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
+ * Create DotGraphStyle.
+ * Create SplineGraphStyle.
 
 # License
 
