@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for f in test/*.js
+for f in test/*_test.js
 do
   echo \*\*\* $f \*\*\*
   node $f || exit

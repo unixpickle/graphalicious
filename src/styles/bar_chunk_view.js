@@ -1,6 +1,8 @@
 //deps includes.js
 
 function BarChunkView(attrs, chunk, dataSource) {
+  EventEmitter.call(this);
+
   this._attrs = attrs;
   this._chunk = chunk;
 
@@ -27,6 +29,8 @@ BarChunkView.ANIMATION_INSERT = 2;
 BarChunkView.ANIMATION_MODIFY = 3;
 
 BarChunkView.ANIMATION_DURATION = 400;
+
+BarChunkView.prototype = Object.create(EventEmitter.prototype);
 
 BarChunkView.prototype.getWidth = function() {
   var landscape = this._morphingLandscape();
@@ -213,7 +217,7 @@ BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {
     result.x = (barCoords.left + barRegion.left) / 2;
     break;
   default:
-    throw new Error('unknown x-label alignment': this._attrs.getXLabelAlignment());
+    throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
     break;
   }
   result.x += drawOffset;
@@ -331,9 +335,9 @@ BarChunkView.prototype._morphingLandscape = function() {
 // _morphingPointCount returns the number of points in this ChunkView's partial morphing landscape.
 BarChunkView.prototype._morphingPointCount = function() {
   if (this._animationType === BarChunkView.ANIMATION_DELETE) {
-    return this._pointCount + 1;
+    return this._dataPoints.length + 1;
   } else {
-    return this._pointCount;
+    return this._dataPoints.length;
   }
 };
 
@@ -351,8 +355,8 @@ BarChunkView.prototype._morphingEncompassingCount = function() {
 // This will handle deleted points and modified points in a special way.
 BarChunkView.prototype._morphingGetPoint = function(idx) {
   assert(idx >= 0);
+  assert(idx < this._morphingPointCount());
   if (this._animationType === BarChunkView.ANIMATION_DELETE) {
-    assert(idx < this._pointCount + 1);
     if (idx + this._startIndex < this._animationPointIndex) {
       return this._dataPoints[idx];
     } else if (idx + this._startIndex === this._animationPointIndex) {
@@ -361,8 +365,6 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
       return this._dataPoints[idx - 1];
     }
   } else if (this._animationType === BarChunkView.ANIMATION_MODIFY) {
-    assert(idx < this._pointCount);
-
     var newPoint = this._dataPoints[idx];
     if (idx + this._startIndex !== this._animationPointIndex) {
       return newPoint;
@@ -385,7 +387,6 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
 
     return intermediatePoint;
   } else {
-    assert(idx < this._pointCount);
     return this._dataPoints[idx];
   }
 };

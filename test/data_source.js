@@ -1,8 +1,13 @@
 (function() {
 
-  var EventEmitter = window.graphalicious.base.EventEmitter;
+  var EventEmitter;
+  if ('undefined' !== typeof window) {
+    EventEmitter = window.graphalicious.base.EventEmitter;
+  } else {
+    EventEmitter = require('events').EventEmitter;
+  }
 
-  function DemoDataSource(dataPoints) {
+  function TestDataSource(dataPoints) {
     EventEmitter.call(this);
     this._dataPoints = dataPoints;
     this._chunks = [null, null];
@@ -17,7 +22,7 @@
     };
   }
 
-  DemoDataSource.random = function(count, maxValue, haveSecondary) {
+  TestDataSource.random = function(count, maxValue, haveSecondary) {
     var points = [];
     for (var i = 0; i < count; ++i) {
       var val = Math.floor(Math.random() * maxValue);
@@ -28,24 +33,24 @@
         points.push({primary: val, secondary: -1});
       }
     }
-    return new DemoDataSource(points);
+    return new TestDataSource(points);
   };
 
-  DemoDataSource.prototype = Object.create(EventEmitter.prototype);
+  TestDataSource.prototype = Object.create(EventEmitter.prototype);
 
-  DemoDataSource.prototype.getLength = function() {
+  TestDataSource.prototype.getLength = function() {
     return this._dataPoints.length;
   };
 
-  DemoDataSource.prototype.getChunk = function(idx) {
+  TestDataSource.prototype.getChunk = function(idx) {
     return this._chunks[idx];
   };
 
-  DemoDataSource.prototype.getXAxisLabel = function(idx) {
+  TestDataSource.prototype.getXAxisLabel = function(idx) {
     return idx + 1;
   };
 
-  DemoDataSource.prototype.fetchChunk = function(idx, start, len) {
+  TestDataSource.prototype.fetchChunk = function(idx, start, len) {
     if (this._timeouts[idx] !== null) {
       clearTimeout(this._timeouts[idx]);
     }
@@ -62,17 +67,26 @@
     }.bind(this), this.loadTimeout());
   };
 
-  DemoDataSource.prototype.cancel = function(index) {
+  TestDataSource.prototype.cancel = function(index) {
     if (this.isLoadingChunk(index)) {
       clearTimeout(this._timeouts[index]);
     }
   };
 
-  DemoDataSource.prototype.isLoadingChunk = function(index) {
+  TestDataSource.prototype.isLoadingChunk = function(index) {
     return this._timeouts[index] !== null;
   };
 
-  DemoDataSource.prototype.delete = function(index) {
+  TestDataSource.prototype.fetchChunkSync = function(idx, start, len) {
+    if (this.isLoadingChunk(idx)) {
+      this.cancel(idx);
+    }
+    this._chunks[idx] = new StaticChunk(this._dataPoints, start, len);
+    this.emit('load', idx);
+    return this._chunks[idx];
+  };
+
+  TestDataSource.prototype.delete = function(index) {
     var inChunk = [];
     for (var i = 0; i < 2; ++i) {
       inChunk[i] = false;
@@ -94,7 +108,7 @@
     this.emit('delete', index, inChunk[0], inChunk[1]);
   };
 
-  DemoDataSource.prototype.insert = function(index, point) {
+  TestDataSource.prototype.insert = function(index, point) {
     for (var i = 0; i < 2; ++i) {
       var chunk = this._chunks[i];
       if (chunk === null) {
@@ -111,18 +125,18 @@
     this.emit('insert', index);
   };
 
-  DemoDataSource.prototype.invalidate = function() {
+  TestDataSource.prototype.invalidate = function() {
     // TODO: set some kind of 'invalid' flag on the chunks
     this._chunks = [null, null];
     this.emit('invalidate');
   };
 
-  DemoDataSource.prototype.modify = function(index, newPoint) {
+  TestDataSource.prototype.modify = function(index, newPoint) {
     this._dataPoints[index] = newPoint;
     this.emit('modify', index);
   };
 
-  DemoDataSource.prototype.getDataPoint = function(index) {
+  TestDataSource.prototype.getDataPoint = function(index) {
     return this._dataPoints[index];
   };
 
@@ -144,6 +158,10 @@
     return this._points[this._start+relIdx];
   };
 
-  window.DemoDataSource = DemoDataSource;
+  if ('undefined' !== typeof window) {
+    window.TestDataSource = TestDataSource;
+  } else {
+    module.exports = TestDataSource;
+  }
 
 })();

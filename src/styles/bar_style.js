@@ -129,6 +129,13 @@ for (var attr in BarStyleAttrs.prototype) {
   }
 }
 
+// Inherit global properties from BarStyleAttrs.
+for (var attr in BarStyleAttrs) {
+  if (attr.match(/^STRETCH_MODE_/) || attr.match(/^X_LABELS_/)) {
+    BarStyle[attr] = BarStyleAttrs[attr];
+  }
+}
+
 BarStyle.prototype.setAttributes = function(attrs) {
   var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode',
     'xLabelAlignment'];
