@@ -13,7 +13,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Finish `BarChunkView.draw()`
-   * Test drawing edge cases (i.e. content covers part of the canvas).
    * Implement and test stretching modes.
    * Test mid-animation drawing.
  * Prevent selection of canvas in graph.
