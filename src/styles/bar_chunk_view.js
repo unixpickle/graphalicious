@@ -128,7 +128,7 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
 
   if (range.length === totalCount) {
     assert(range.startIndex === 0);
-    return this._drawStretched(viewport, maxValue);
+    return this._drawStretched(landscape, viewport, maxValue);
   } else if (this._startIndex + pointCount <= range.startIndex ||
              range.startIndex + range.length <= this._startIndex) {
     return {left: viewport.x, width: 0, xmarkers: []};
@@ -160,8 +160,29 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   return region;
 };
 
-BarChunkView.prototype._drawStretched = function(viewport, maxValue) {
-  // TODO: this.
+BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) {
+  var range = {startIndex: this._startIndex, length: this._morphingPointCount()};
+  var stretchMode = this._attrs.getStretchMode();
+
+  if (stretchMode === STRETCH_MODE_ELONGATE) {
+    // TODO: stretch the context here, use drawRange(), then translate the xmarkers.
+    throw new Error('not yet implemented');
+  }
+
+  var left = viewport.x;
+  if (stretchMode === BarStyleAttrs.STRETCH_MODE_JUSTIFY_CENTER) {
+    left += (viewport.width - landscape.width()) / 2;
+  } else if (stretchMode === BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT) {
+    left += viewport.width - landscape.width();
+  }
+
+  var markers = this._drawRange(left, landscape, range, viewport, maxValue);
+  var region = landscape.computeRegion(range);
+  return {
+    left: region.left + left,
+    width: region.width,
+    xmarkers: markers
+  };
 };
 
 BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewport, maxValue) {
