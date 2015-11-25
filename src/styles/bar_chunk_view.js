@@ -165,8 +165,26 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   var stretchMode = this._attrs.getStretchMode();
 
   if (stretchMode === STRETCH_MODE_ELONGATE) {
-    // TODO: stretch the context here, use drawRange(), then translate the xmarkers.
-    throw new Error('not yet implemented');
+    var regularWidth = landscape.width();
+    var stretchFactor = viewport.width / regularWidth;
+    viewport.context.save();
+    viewport.context.translate(viewport.x);
+    viewport.context.scale(stretchFactor, 1);
+    var markers = this._drawRange(0, landscape, range, viewport, maxValue);
+    viewport.context.restore();
+
+    for (var i = 0, len = markers.length; i < len; ++i) {
+      var marker = markers[i];
+      marker.x *= stretchFactor;
+      marker.x += viewport.x;
+    }
+
+    var result = landscape.computeRegion(range);
+    result.xmarkers = markers;
+    result.width *= stretchFactor;
+    result.left *= stretchFactor;
+    result.left += viewport.x;
+    return result;
   }
 
   var left = viewport.x;
