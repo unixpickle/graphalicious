@@ -13,4 +13,16 @@ function DummyContext() {
 DummyContext.prototype.fillRect = function(x, y, width, height) {
 };
 
+DummyContext.prototype.save = function() {
+};
+
+DummyContext.prototype.restore = function() {
+};
+
+DummyContext.prototype.scale = function(x, y) {
+};
+
+DummyContext.prototype.translate = function(x, y) {
+};
+
 module.exports = DummyCanvas;
