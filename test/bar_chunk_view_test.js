@@ -369,14 +369,14 @@ function testDrawModifying() {
   assert(animated);
 
   var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
-  var report = chunkView.draw(viewport, 0, 20);
-
-  assert(report.xmarkers.length);
-  assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
-  assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
-
   for (var j = 0; j < 2; ++j) {
     currentAnimationFrameCb(j * chunkView.constructor.ANIMATION_DURATION / 2);
+
+    var report = chunkView.draw(viewport, 0, 20);
+    assert(report.xmarkers.length);
+    assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
+    assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
+
     for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
       var marker = report.xmarkers[i];
       var expectedX = 457.5 + i*45 + viewport.x;
