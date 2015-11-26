@@ -164,7 +164,7 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   var range = {startIndex: this._startIndex, length: this._morphingPointCount()};
   var stretchMode = this._attrs.getStretchMode();
 
-  if (stretchMode === STRETCH_MODE_ELONGATE) {
+  if (stretchMode === BarStyleAttrs.STRETCH_MODE_ELONGATE) {
     var regularWidth = landscape.width();
     var stretchFactor = viewport.width / regularWidth;
     viewport.context.save();

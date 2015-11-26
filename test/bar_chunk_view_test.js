@@ -243,8 +243,61 @@ function testDrawEdgeCases() {
   }
 }
 
+function testDrawJustifiedStretch() {
+  var stretchModes = [
+    BarStyle.STRETCH_MODE_JUSTIFY_LEFT,
+    BarStyle.STRETCH_MODE_JUSTIFY_CENTER,
+    BarStyle.STRETCH_MODE_JUSTIFY_RIGHT
+  ];
+  var labelStarts = [
+    457.5,
+    525,
+    592.5
+  ];
+  var utilizedLeft = [
+    455,
+    522.5,
+    590
+  ];
+  for (var j = 0; j < 3; ++j) {
+    var style = new BarStyle({
+      colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+      leftMargin: 10,
+      rightMargin: 10,
+      barSpacing: 5,
+      barWidth: 40,
+      xLabelAlignment: BarStyle.X_LABELS_LEFT,
+      stretchMode: stretchModes[j]
+    });
+
+    var dataSource = DataSource.random(30, 10, true);
+    var chunk = dataSource.fetchChunkSync(0, 10, 10);
+
+    var chunkView = style.createChunkView(chunk, dataSource);
+    var context = new Canvas().getContext('2d');
+
+    var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
+    var report = chunkView.draw(viewport, 0, 20);
+
+    assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
+    assert(Math.abs(report.left - utilizedLeft[j] - viewport.x) < SMALL_NUM, 'invalid left offset');
+
+    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
+      var marker = report.xmarkers[i];
+      var expectedX = labelStarts[j] + i*45 + viewport.x;
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
+      assert(marker.index === i + 10);
+      assert(marker.oldIndex === i + 10);
+      assert(marker.dataPoint === chunk.getDataPoint(i));
+      assert(marker.oldDataPoint === chunk.getDataPoint(i));
+      assert(marker.visibility === 1);
+    }
+  }
+}
+
 testDrawBestCase();
 testDrawBasicScrolling();
 testDrawEdgeCases();
+testDrawJustifiedStretch();
 
 console.log('PASS');
