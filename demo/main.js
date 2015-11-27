@@ -19,7 +19,7 @@ function loadHandler() {
       colorScheme: colorScheme,
       leftMargin: 10,
       rightMargin: 10,
-      barSpacing: 50,
+      barSpacing: 5,
       barWidth: 30
     }),
     loader1: new window.SplashScreen(colorScheme),

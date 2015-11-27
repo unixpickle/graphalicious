@@ -229,7 +229,7 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
       var val = values[j];
       var height = viewport.height * (val / maxValue);
       var y = viewport.y + viewport.height - height;
-      ctx.fillColor = colors[j];
+      ctx.fillStyle = colors[j];
       ctx.fillRect(coords.left, y, coords.width, height);
     }
   }

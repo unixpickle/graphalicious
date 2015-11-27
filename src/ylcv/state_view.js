@@ -363,7 +363,7 @@ StateView.prototype._updateStateYLabels = function() {
   var predictedViewportX = this._state.positive.viewportX;
 
   var region = {
-    startIndex: predictedViewportX - this._state.positive.leftmostYLabelsWidth,
+    left: predictedViewportX - this._state.positive.leftmostYLabelsWidth,
     width: this._state.positive.viewportWidth
   };
   var range = this._style.computeRange(region, this._state.positive.dataSourceLength);
