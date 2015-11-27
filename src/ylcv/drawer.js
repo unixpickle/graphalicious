@@ -21,7 +21,7 @@ function Drawer(topMargin, bottomMargin, canvas, context, state) {
       this._state.animationProgress*this._state.yLabels.width();
     this._maxValue = (1-this._state.animationProgress)*this._state.startYLabels.maxValue() +
       this._state.animationProgress*this._state.yLabels.maxValue();
-    this._chunkView = this._state.animatingChunkView;
+    this._chunkView = this._state.animationChunkView;
   } else {
     this._yLabelWidth = this._state.yLabels.width();
     this._maxValue = this._state.yLabels.maxValue();
@@ -67,7 +67,7 @@ Drawer.prototype._drawChunkView = function() {
     width: this._state.positive.viewportWidth - this._yLabelWidth,
     height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
     context: this._context
-  }
+  };
   return this._chunkView.draw(viewport, this._state.positive.viewportX, this._maxValue);
 };
 

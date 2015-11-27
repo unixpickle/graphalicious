@@ -226,7 +226,7 @@ StateView.prototype._updateState = function(newViewState) {
 StateView.prototype._updateStateAnimation = function(oldState) {
   if (!this._state.animating) {
     if (oldState.animating) {
-      this._animationChunkView.finishAnimation();
+      this._state.animationChunkView.finishAnimation();
     }
     return;
   }
@@ -281,12 +281,12 @@ StateView.prototype._updateStateChunkView = function() {
 
 StateView.prototype._registerChunkViewEvents = function() {
   this._state.chunkView.on('animationEnd', function() {
-    var state = new ViewState(newState.positive, newState.normative, this._state);
+    var state = new ViewState(this._state.positive, this._state.normative, this._state);
     state.animating = false;
     this._updateState(state);
   }.bind(this));
   this._state.chunkView.on('animationFrame', function(progress) {
-    var state = new ViewState(newState.positive, newState.normative, this._state);
+    var state = new ViewState(this._state.positive, this._state.normative, this._state);
     state.animationProgress = progress;
     this._updateState(state);
   }.bind(this));
@@ -303,9 +303,7 @@ StateView.prototype._updateStateLiveMeasurements = function() {
     var left = (1-this._state.animationProgress)*this._state.startLeftmostLabelWidth +
       this._state.animationProgress*this._state.positive.leftmostYLabelsWidth;
     this._state.liveLeftmostLabelWidth = left;
-    this._state.liveContentWidth = this._state.animationChunkView.getInherentWidth() +
-      this._state.animationChunkView.getLeftOffset() +
-      this._state.animationChunkView.getRightOffset();
+    this._state.liveContentWidth = this._state.animationChunkView.getEncompassingWidth();
   }
 };
 
