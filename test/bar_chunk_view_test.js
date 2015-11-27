@@ -474,6 +474,85 @@ function testDrawDeleting() {
   }
 }
 
+function testDrawInserting() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT,
+    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+  });
+
+  var dataSource = DataSource.random(29, 10, true);
+  var chunk = dataSource.fetchChunkSync(0, 10, 9);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+
+  dataSource.insert(15, {primary: 15, secondary: -1});
+  var animated = chunkView.insertion(15, true);
+  assert(animated);
+
+  var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
+
+  for (var j = 0; j < 2; ++j) {
+    currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
+
+    var report = chunkView.draw(viewport, 0, 20);
+    assert(report.xmarkers.length === 10);
+    if (j === 0) {
+      assert(Math.abs(report.width - 410) < SMALL_NUM, 'invalid width');
+    } else {
+      assert(Math.abs(report.width - 455 + 45/2) < SMALL_NUM, 'invalid width');
+    }
+    assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
+
+    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
+      var marker = report.xmarkers[i];
+      var expectedX = 457.5 + i*45 + viewport.x;
+      if (j === 1) {
+        if (i === 5) {
+          expectedX -= 2.5 / 4;
+        } else if (i === 6) {
+          expectedX -= 45/2 - 2.5/4;
+        } else if (i > 6) {
+          expectedX -= 45 / 2;
+        }
+      } else {
+        if (i === 5) {
+          expectedX -= 2.5 / 2;
+        } else if (i === 6) {
+          expectedX -= 45 - 2.5/2;
+        } else if (i > 6) {
+          expectedX -= 45;
+        }
+      }
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
+      if (i > 5) {
+        assert(marker.oldIndex === i + 9);
+      } else if (i === 5) {
+        assert(marker.oldIndex === -1);
+      } else if (i < 5) {
+        assert(marker.oldIndex === i + 10);
+      }
+      assert(marker.index === i + 10);
+      assert(marker.dataPoint === chunk.getDataPoint(i));
+      if (i === 5) {
+        assert(marker.oldDataPoint === null);
+      } else {
+        assert(marker.oldDataPoint === chunk.getDataPoint(i));
+      }
+      if (i === 5) {
+        assert(marker.visibility === j/2);
+      } else {
+        assert(marker.visibility === 1);
+      }
+    }
+  }
+}
+
 testDrawBestCase();
 testDrawBasicScrolling();
 testDrawEdgeCases();
@@ -481,5 +560,6 @@ testDrawJustifiedStretch();
 testDrawElongatedStretch();
 testDrawModifying();
 testDrawDeleting();
+testDrawInserting();
 
 console.log('PASS');
