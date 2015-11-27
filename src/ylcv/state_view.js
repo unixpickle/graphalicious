@@ -21,7 +21,7 @@ function StateView(state, attrs) {
   this._loader2 = attrs.loader2;
   this._splashScreen = attrs.splashScreen;
   this._dataSource = attrs.dataSource;
-  this._provider = attrs.provider;
+  this._style = attrs.style;
   this._labelGenerator = attrs.labelGenerator;
   this._topMargin = attrs.topMargin;
   this._bottomMargin = attrs.bottomMargin;
@@ -131,16 +131,16 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex) {
   this._preserveNextKeepRight = true;
 
   if (inVisibleChunk) {
-    this._keepRightOnWidthChange = (oldIndex < middleVisiblePointIndex(state));
-    state.animating = state.chunkView.deletionInside(oldIndex);
+    this._keepRightOnWidthChange = (oldIndex < this._middleVisiblePointIndex());
+    state.animating = state.chunkView.deletion(oldIndex, true);
     --state.chunkViewLength;
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
-    state.chunkView.deletionBefore(oldIndex);
+    state.chunkView.deletion(oldIndex, false);
     --state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
-    state.chunkView.deletionAfter(oldIndex);
+    state.chunkView.deletion(oldIndex, false);
   }
 
   assert(state.positive.visibleChunkStart === state.chunkViewStartIndex);
@@ -171,15 +171,15 @@ StateView.prototype.updateStateInsert = function(newState, index) {
     } else {
       this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
     }
-    state.animating = state.chunkView.insertionInside(index);
+    state.animating = state.chunkView.insertion(index, true);
     ++state.chunkViewLength;
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
-    state.chunkView.insertionBefore();
+    state.chunkView.insertion(oldIndex, false);
     ++state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
-    state.chunkView.insertionAfter();
+    state.chunkView.insertion(oldIndex, false);
   }
 
   assert(state.positive.visibleChunkStart === state.chunkViewStartIndex);
@@ -197,10 +197,7 @@ StateView.prototype.updateStateModify = function(newState, index) {
     state.animationChunkView.finishAnimation();
   }
 
-  if (index < state.chunkViewStartIndex+state.chunkViewLength &&
-      index >= state.chunkViewStartIndex) {
-    state.animating = state.chunkView.modifyInside(index);
-  }
+  state.animating = state.chunkView.modification(index, true);
 
   this._updateState(state);
 };
@@ -275,7 +272,7 @@ StateView.prototype._updateStateChunkView = function() {
     this._state.chunkViewLength = -1;
   } else {
     var chunk = this._dataSource.getChunk(VISIBLE_CHUNK_INDEX);
-    this._state.chunkView = this._provider.createChunkView(chunk, this._dataSource);
+    this._state.chunkView = this._style.createChunkView(chunk, this._dataSource);
     this._state.chunkViewStartIndex = chunk.getStartIndex();
     this._state.chunkViewLength = chunk.getLength();
     this._registerChunkViewEvents();
@@ -292,6 +289,9 @@ StateView.prototype._registerChunkViewEvents = function() {
     var state = new ViewState(newState.positive, newState.normative, this._state);
     state.animationProgress = progress;
     this._updateState(state);
+  }.bind(this));
+  this._state.chunkView.on('redraw', function(progress) {
+    this._draw();
   }.bind(this));
 };
 
@@ -363,7 +363,10 @@ StateView.prototype._updateStateYLabels = function() {
   var predictedViewportX = this._state.positive.viewportX;
 
   var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
-  var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
+  var subregionLeft = startLeft - this._style.computeRegion({
+    startIndex: this._state.positive.visibleChunkStart,
+    length: this._state.positive.visibleChunkLength
+  }).width;
   var endLeft = subregionLeft + this._state.positive.viewportWidth;
 
   // NOTE: we don't want the y-axis labels to change once the content starts to leave the bounds of
@@ -545,7 +548,7 @@ StateView.prototype._handleWidthChange = function(oldState) {
 };
 
 // _draw instructs the StateView to draw itself given the current state.
-// This will also accounts for the current animation.
+// This will also account for the current animation.
 StateView.prototype._draw = function() {
   assert(!this._state.viewFrozen);
 
@@ -652,7 +655,7 @@ StateView.prototype._finishSplashScreenDelay = function(updateState) {
 };
 
 StateView.prototype._registerProviderEvents = function() {
-  this._provider.on('colorSchemeChange', function() {
+  this._style.on('superficialChange', function() {
     this._finishSplashScreenDelay(true);
     if (this._state.showingContent) {
       this._drawCanvas();
@@ -660,21 +663,22 @@ StateView.prototype._registerProviderEvents = function() {
   }.bind(this));
 };
 
-// middleVisiblePointIndex takes a state and returns the index of the point closest to the middle of
-// the viewport.
-function middleVisiblePointIndex(state) {
-  var middleLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-    state.positive.viewportWidth/2 - state.chunkView.getLeftOffset();
-  return state.chunkView.firstVisibleDataPoint(middleLeft) + state.positive.visibleChunkStart;
-}
+// _middleVisiblePointIndex returns the index of the point closest to the middle of the viewport.
+StateView.prototype._middleVisiblePointIndex = function() {
+  var middleLeft = (this._state.positive.viewportX - this._state.positive.leftmostYLabelsWidth) +
+    this._state.positive.viewportWidth/2;
+  var res = this._style.computeRange({left: middleLeft - 1, width: 1});
+  return res.startIndex;
+};
 
-// isScrolledToEnd returns true if the last data point is at least partly visible.
-function isScrolledToEnd(state) {
-  if (state.chunkView.getRightOffset() > 0) {
+// _isScrolledToEnd returns true if the last data point is at least partly visible.
+StateView.prototype._isScrolledToEnd = function() {
+  if (this._state.positive.visibleChunkStart + this._state.positive.visibleChunkLength <
+      this._state.positive.dataSourceLength) {
     return false;
   }
-  var endLeft = (state.positive.viewportX - state.positive.leftmostYLabelsWidth) +
-    state.positive.viewportWidth - state.chunkView.getLeftOffset();
-  var index = state.chunkView.lastVisibleDataPoint(endLeft) + state.positive.visibleChunkStart;
-  return (index === state.positive.dataSourceLength-1);
-}
+  var endLeft = (this._state.positive.viewportX - this._state.positive.leftmostYLabelsWidth) +
+    this._state.positive.viewportWidth;
+  var res = this._style.computeRange({left: endLeft - 1, width: 1});
+  return res.startIndex;
+};

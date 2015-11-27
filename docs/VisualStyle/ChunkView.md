@@ -62,9 +62,9 @@ The *CanvasViewport* type represents a rectangular region inside a canvas. It ha
 
 A set of methods can be used to get the current properties of the morphing partial and complete landscape:
 
- * *int* getWidth() - get the width of the region of the morphing partial scene of the *ChunkView*.
- * *int* getOffset() - get the offset of the region of the morphing partial scene of the *ChunkView*.
- * *int* getEncompassingWidth() - get the width of the morphing complete scene.
+ * *number* getWidth() - get the width of the region of the morphing partial scene of the *ChunkView*.
+ * *number* getOffset() - get the offset of the region of the morphing partial scene of the *ChunkView*.
+ * *number* getEncompassingWidth() - get the width of the morphing complete scene.
 
 The animation behavior of a *ChunkView* can be controlled:
 

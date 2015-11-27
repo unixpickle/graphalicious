@@ -156,11 +156,11 @@ ContentView.prototype._handleDataSourceInvalidate = function() {
 
 ContentView.prototype._registerProviderEvents = function() {
   this._boundProviderChange = this._handleProviderChange.bind(this);
-  this._provider.on('change', this._boundProviderChange);
+  this._style.on('metricChange', this._boundProviderChange);
 };
 
 ContentView.prototype._deregisterProviderEvents = function() {
-  this._provider.removeListener('change', this._boundProviderChange);
+  this._style.removeListener('metricChange', this._boundProviderChange);
 };
 
 ContentView.prototype._handleProviderChange = function() {
@@ -202,7 +202,7 @@ ContentView.prototype._recomputeContentWidthAndLength = function() {
     startIndex: 0,
     length: this._currentState.positive.dataSourceLength
   };
-  this._currentState.positive.contentWidth = this._provider.computeRegion(theoreticalChunk,
+  this._currentState.positive.contentWidth = this._style.computeRegion(theoreticalChunk,
     theoreticalChunk.length).width;
 };
 
@@ -211,7 +211,7 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
     left: 0,
     width: this._currentState.positive.viewportWidth
   };
-  var useChunk = this._provider.computeTheoreticalChunk(region, this._dataSource.getLength());
+  var useChunk = this._style.computeRange(region, this._dataSource.getLength());
 
   assert(useChunk.startIndex === 0);
   if (!force && useChunk.length === this._currentState.positive.leftmostYLabelsPointCount) {
@@ -245,7 +245,7 @@ ContentView.prototype._recomputeLeftmostLabelWidth = function(force) {
 // on the DataSource accordingly.
 ContentView.prototype._updateNormativeState = function() {
   var oldState = new NormativeState(this._currentState.normative);
-  this._currentState.normative.recompute(this._provider, this._currentState.positive);
+  this._currentState.normative.recompute(this._style, this._currentState.positive);
   this._handleNormativeChange(oldState);
 };
 
