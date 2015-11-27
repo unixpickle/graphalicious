@@ -36,13 +36,13 @@ Drawer.prototype.draw = function() {
 
   this._context.save();
   this._clipAwayYLabels();
-  var chunkRegionOrNull = this._drawChunkView();
-  if (chunkRegionOrNull !== null) {
+  var chunkRegion = this._drawChunkView();
+  if (chunkRegion.width > 0) {
     loaderFrames = this._drawEdgesAndLines(chunkRegionOrNull);
   }
   this._context.restore();
 
-  if (chunkRegionOrNull !== null) {
+  if (chunkRegion.width > 0) {
     var yWidth = this._drawYAxisLabels(chunkRegionOrNull);
     for (var i = 0; i < loaderFrames.length; ++i) {
       var frame = loaderFrames[i];
@@ -61,43 +61,13 @@ Drawer.prototype.draw = function() {
 };
 
 Drawer.prototype._drawChunkView = function() {
-  var height = this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin);
-  var y = this._topMargin;
-
-  if (this._shouldStretchContent()) {
-    var width = this._state.positive.viewportWidth - this._state.liveLeftmostLabelWidth;
-    return this._chunkView.drawStretched(this._state.liveLeftmostLabelWidth, y, width, height,
-      this._maxValue, this._context);
-  } else {
-    var chunkLeftInCanvas = this._chunkView.getLeftOffset() + this._state.liveLeftmostLabelWidth -
-      this._state.positive.viewportX;
-    var chunkEndInCanvas = chunkLeftInCanvas + this._chunkView.getInherentWidth();
-
-    // NOTE: if the chunk is off-screen, we emulate a piece of off-screen content so that the edge
-    // and line drawing routines know what to do.
-    var edgeSize = JAGGED_EDGE_SIZE + JAGGED_LINE_WIDTH;
-    if (chunkLeftInCanvas > this._state.positive.viewportWidth) {
-      if (chunkLeftInCanvas > this._state.positive.viewportWidth+edgeSize) {
-        return null;
-      }
-      return {left: chunkLeftInCanvas, width: JAGGED_EDGE_SIZE*2};
-    } else if (chunkEndInCanvas < 0) {
-      if (chunkEndInCanvas < -edgeSize) {
-        return null;
-      }
-      return {left: chunkEndInCanvas-JAGGED_EDGE_SIZE*2, width: JAGGED_EDGE_SIZE*2};
-    }
-
-    var regionLeft = Math.max(0, chunkLeftInCanvas) - chunkLeftInCanvas;
-    var regionEnd = Math.min(this._state.positive.viewportWidth, chunkEndInCanvas) -
-      chunkLeftInCanvas;
-    var regionWidth = regionEnd - regionLeft;
-    var canvasX = regionLeft + chunkLeftInCanvas;
-    this._chunkView.draw(regionLeft, regionWidth, canvasX, y, height, this._maxValue,
-      this._context);
-
-    return {left: canvasX, width: regionWidth};
+  var viewport = {
+    x: this._yLabelWidth,
+    y: this._topMargin,
+    width: this._state.positive.viewportWidth - regionLeft,
+    height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin)
   }
+  return this._chunkView.draw(viewport, this._state.positive.viewportX);
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
@@ -231,9 +201,4 @@ Drawer.prototype._clipAwayYLabels = function() {
     this._state.positive.viewportHeight);
   this._context.clip();
   this._context.closePath();
-};
-
-Drawer.prototype._shouldStretchContent = function() {
-  return this._state.liveContentWidth + this._state.liveLeftmostLabelWidth <
-    this._state.positive.viewportWidth;
 };
