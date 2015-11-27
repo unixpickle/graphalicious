@@ -6,7 +6,8 @@ var assert = require('assert');
 var fs = require('fs');
 var BarStyleAttrs = (function() {
   var code = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
-  code = '(function() {' + code + ';return BarStyleAttrs})()';
+  var utils = fs.readFileSync(__dirname + '/../src/styles/utilities.js');
+  code = '(function() {' + code + ';' + utils + ';return BarStyleAttrs})()';
   return eval(code);
 })();
 

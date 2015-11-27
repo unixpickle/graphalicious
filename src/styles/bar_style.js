@@ -54,8 +54,8 @@ BarStyleAttrs.prototype.copyAttributes = function() {
 // given region.
 // This assumes that the created BarChunkView would include left and right spacing.
 BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
-  var totalWidth = this.computeRegion({startIndex: 0, length: pointCount}, pointCount).width;
-  region = boundedRegion(region, totalWidth);
+  var totalRegion = this.computeRegion({startIndex: 0, length: pointCount}, pointCount);
+  region = regionIntersection(region, totalRegion);
 
   if (pointCount === 0 || region.width <= 0) {
     return {startIndex: 0, length: 0};
@@ -83,7 +83,7 @@ BarStyleAttrs.prototype.computeRange = function(region, pointCount) {
 // computeRegion generates a region wrapping the given range.
 // The region will include spacing on the left and right.
 BarStyleAttrs.prototype.computeRegion = function(range, pointCount) {
-  range = boundedRange(range, pointCount);
+  range = rangeIntersection(range, {startIndex: 0, length: pointCount});
 
   if (pointCount === 0 || range.length <= 0) {
     return {left: 0, width: 0};
@@ -153,51 +153,3 @@ BarStyle.prototype.createChunkView = function(chunk, dataSource) {
 };
 
 exports.BarStyle = BarStyle;
-
-function boundedRange(range, pointCount) {
-  if (range.startIndex >= pointCount) {
-    return {startIndex: 0, length: 0};
-  } else if (range.startIndex + range.length <= 0) {
-    return {startIndex: 0, length: 0};
-  }
-
-  var res = {startIndex: range.startIndex, length: range.length};
-
-  if (res.startIndex < 0) {
-    res.length += res.startIndex;
-    res.startIndex = 0;
-    if (res.length <= 0) {
-      res.length = 0;
-    }
-  }
-
-  if (res.startIndex + res.length >= pointCount) {
-    res.length = pointCount - res.startIndex;
-  }
-
-  return res;
-}
-
-function boundedRegion(region, totalWidth) {
-  if (region.left >= totalWidth) {
-    return {left: 0, width: 0};
-  } else if (region.left + region.width <= 0) {
-    return {left: 0, width: 0};
-  }
-
-  var res = {left: region.left, width: region.width};
-
-  if (res.left < 0) {
-    res.width += res.left;
-    res.left = 0;
-    if (res.width <= 0) {
-      res.width = 0;
-    }
-  }
-
-  if (res.left + res.width >= totalWidth) {
-    res.width = totalWidth - res.left;
-  }
-
-  return res;
-}

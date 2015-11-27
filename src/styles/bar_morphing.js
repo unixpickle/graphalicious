@@ -6,7 +6,7 @@ function MorphingBarLandscape(info) {
 }
 
 MorphingBarLandscape.prototype.computeRange = function(region) {
-  region = boundedRegion(region, this.width());
+  region = regionIntersection(region, {left: 0, width: this.width()});
 
   if (region.width <= 0) {
     return {startIndex: 0, length: 0};
@@ -54,7 +54,7 @@ MorphingBarLandscape.prototype.computeRange = function(region) {
 };
 
 MorphingBarLandscape.prototype.computeRegion = function(range) {
-  range = boundedRange(range, this._pointCount);
+  range = rangeIntersection(range, {startIndex: 0, length: this._pointCount});
 
   if (range.length <= 0) {
     return {left: 0, width: 0};

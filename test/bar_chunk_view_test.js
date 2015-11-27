@@ -25,7 +25,7 @@ var currentAnimationFrameCb;
   };
 
   var files = ['base/color_scheme.js', 'styles/bar_style.js', 'styles/bar_morphing.js',
-    'styles/bar_chunk_view.js'];
+    'styles/bar_chunk_view.js', 'styles/utilities.js'];
   var codeBody = '';
   for (var i = 0, len = files.length; i < len; ++i) {
     codeBody += fs.readFileSync(__dirname + '/../src/' + files[i]);
