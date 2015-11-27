@@ -12,8 +12,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Finish `BarChunkView.draw()`
-   * Test mid-animation drawing.
  * Prevent selection of canvas in graph.
  * Throw new ViewStyle system into existing YLCV to test it.
  * Rewrite YLCV and revise *View* architecture
@@ -25,6 +23,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
    * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
+ * Implement pointer events in BarChunkView.
  * Create DotGraphStyle.
  * Create SplineGraphStyle.
 
