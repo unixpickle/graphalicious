@@ -93,14 +93,14 @@ NormativeState._removeSmallEdgeGaps = function(region, positiveState) {
 
 // recompute uses a ViewProvider and a PositiveState to update this normative state's fields based
 // on what data should be loaded.
-NormativeState.prototype.recompute = function(provider, positiveState) {
-  this._recomputeLeftmost(provider, positiveState);
-  this._recomputeVisible(provider, positiveState);
+NormativeState.prototype.recompute = function(style, positiveState) {
+  this._recomputeLeftmost(style, positiveState);
+  this._recomputeVisible(style, positiveState);
 };
 
-NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) {
+NormativeState.prototype._recomputeLeftmost = function(style, positiveState) {
   var minWidth = positiveState.viewportWidth + NormativeState.LEFTMOST_MIN_BUFFER;
-  var minLength = provider.computeTheoreticalChunk({width: minWidth, left: 0},
+  var minLength = style.computeRange({width: minWidth, left: 0},
     positiveState.dataSourceLength).length;
 
   if (positiveState.leftmostChunkLength >= minLength) {
@@ -118,12 +118,12 @@ NormativeState.prototype._recomputeLeftmost = function(provider, positiveState) 
     };
 
     NormativeState._removeSmallEdgeGaps(theoreticalChunk, positiveState);
-    this.leftmostChunkLength = provider.computeTheoreticalChunk(theoreticalChunk,
+    this.leftmostChunkLength = style.computeRange(theoreticalChunk,
       positiveState.dataSourceLength).length;
   }
 };
 
-NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
+NormativeState.prototype._recomputeVisible = function(style, positiveState) {
   var upperBound = positiveState.contentWidth + positiveState.leftmostYLabelsWidth -
     positiveState.viewportWidth;
   var viewportX = Math.max(0, upperBound);
@@ -135,7 +135,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
     left: viewportX - positiveState.leftmostYLabelsWidth - NormativeState.VISIBLE_MIN_BUFFER,
     width: NormativeState.VISIBLE_MIN_BUFFER*2 + positiveState.viewportWidth
   };
-  var minChunk = provider.computeTheoreticalChunk(minRegion, positiveState.dataSourceLength);
+  var minChunk = style.computeRange(minRegion, positiveState.dataSourceLength);
 
   var visibleChunkEnd = positiveState.visibleChunkStart + positiveState.visibleChunkLength;
   if (positiveState.visibleChunkStart <= minChunk.startIndex &&
@@ -167,7 +167,7 @@ NormativeState.prototype._recomputeVisible = function(provider, positiveState) {
   }
 
   NormativeState._removeSmallEdgeGaps(needRegion, positiveState);
-  var needChunk = provider.computeTheoreticalChunk(needRegion, positiveState.dataSourceLength);
+  var needChunk = style.computeRange(needRegion, positiveState.dataSourceLength);
 
   if (!this.needsVisibleChunk) {
     this.needsVisibleChunk = true;
