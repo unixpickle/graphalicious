@@ -175,11 +175,11 @@ StateView.prototype.updateStateInsert = function(newState, index) {
     ++state.chunkViewLength;
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
-    state.chunkView.insertion(oldIndex, false);
+    state.chunkView.insertion(index, false);
     ++state.chunkViewStartIndex;
   } else {
     this._keepRightOnWidthChange = false;
-    state.chunkView.insertion(oldIndex, false);
+    state.chunkView.insertion(index, false);
   }
 
   assert(state.positive.visibleChunkStart === state.chunkViewStartIndex);

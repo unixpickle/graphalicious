@@ -62,13 +62,14 @@ Drawer.prototype.draw = function() {
 
 Drawer.prototype._drawChunkView = function() {
   var viewport = {
-    x: this._yLabelWidth,
+    x: 0,
     y: this._topMargin,
-    width: this._state.positive.viewportWidth - this._yLabelWidth,
+    width: this._state.positive.viewportWidth,
     height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
     context: this._context
   };
-  return this._chunkView.draw(viewport, this._state.positive.viewportX, this._maxValue);
+  return this._chunkView.draw(viewport, this._state.positive.viewportX -
+    this._state.positive.leftmostYLabelsWidth, this._maxValue);
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {

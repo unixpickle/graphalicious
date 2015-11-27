@@ -132,19 +132,12 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   if (range.length === totalCount) {
     assert(range.startIndex === 0);
     return this._drawStretched(landscape, viewport, maxValue);
-  } else if (this._startIndex + pointCount <= range.startIndex ||
-             range.startIndex + range.length <= this._startIndex) {
-    return {left: viewport.x, width: 0, xmarkers: []};
   }
 
-  if (range.startIndex < this._startIndex) {
-    range.length -= this._startIndex - range.startIndex;
-    range.startIndex = this._startIndex;
+  range = rangeIntersection(range, {startIndex: this._startIndex, length: pointCount});
+  if (range.length === 0) {
+    return {left: viewport.x, width: 0, xmarkers: []}
   }
-  if (range.startIndex + range.length > this._startIndex + pointCount) {
-    range.length = this._startIndex + pointCount - range.startIndex;
-  }
-  assert(range.length > 0);
 
   var drawOffset = viewport.x - scrollX;
   var xmarkers = this._drawRange(drawOffset, landscape, range, viewport, maxValue);

@@ -9,7 +9,7 @@ function loadHandler() {
   view.element().style.left = LEFT_MARGIN + 'px';
   view.element().style.backgroundColor = 'white';
 
-  var dataSource = window.TestDataSource.random(100, 3000, true);
+  var dataSource = window.TestDataSource.random(150, 3000, true);
   new Controls(dataSource);
 
   var config = {
