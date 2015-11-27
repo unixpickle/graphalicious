@@ -9,6 +9,7 @@ var Canvas = require(__dirname + '/dummy_canvas.js');
 
 var BarStyle;
 var ColorScheme;
+var BarChunkView;
 
 var currentAnimationFrameCb;
 
@@ -29,10 +30,13 @@ var currentAnimationFrameCb;
   for (var i = 0, len = files.length; i < len; ++i) {
     codeBody += fs.readFileSync(__dirname + '/../src/' + files[i]);
   }
-  var code = '(function() {var exports = {};' + codeBody + ';return exports;})()';
+  var code = '(function() {var exports = {};' + codeBody + ';' +
+    'exports.BarChunkView = BarChunkView;' +
+    'return exports;})()';
   var res = eval(code);
   ColorScheme = res.ColorScheme;
   BarStyle = res.BarStyle;
+  BarChunkView = res.BarChunkView;
 })();
 
 function testDrawBestCase() {
@@ -370,7 +374,7 @@ function testDrawModifying() {
 
   var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
   for (var j = 0; j < 2; ++j) {
-    currentAnimationFrameCb(j * chunkView.constructor.ANIMATION_DURATION / 2);
+    currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
 
     var report = chunkView.draw(viewport, 0, 20);
     assert(report.xmarkers.length === 10);
@@ -417,8 +421,9 @@ function testDrawDeleting() {
   assert(animated);
 
   var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
+
   for (var j = 0; j < 2; ++j) {
-    currentAnimationFrameCb(j * chunkView.constructor.ANIMATION_DURATION / 2);
+    currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
 
     var report = chunkView.draw(viewport, 0, 20);
     assert(report.xmarkers.length === 10);
@@ -434,8 +439,10 @@ function testDrawDeleting() {
       var expectedX = 457.5 + i*45 + viewport.x;
       if (j === 1) {
         if (i === 5) {
-          expectedX -= 2.5 / 2;
-        } else if (i > 5) {
+          expectedX -= 2.5 / 4;
+        } else if (i === 6) {
+          expectedX -= 45/2 - 2.5/4;
+        } else if (i > 6) {
           expectedX -= 45 / 2;
         }
       }

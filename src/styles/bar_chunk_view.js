@@ -365,7 +365,11 @@ BarChunkView.prototype._morphingLandscape = function() {
   if (this._animationType === BarChunkView.ANIMATION_DELETE ||
       this._animationType === BarChunkView.ANIMATION_INSERT) {
     properties.morphingIndex = this._animationPointIndex;
-    properties.morphingVisibility = this._animationProgress;
+    if (this._animationType === BarChunkView.ANIMATION_INSERT) {
+      properties.morphingVisibility = this._animationProgress;
+    } else {
+      properties.morphingVisibility = 1 - this._animationProgress;
+    }
   }
 
   return new MorphingBarLandscape(properties);
