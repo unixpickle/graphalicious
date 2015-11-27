@@ -132,7 +132,7 @@ StateView.prototype.updateStateDelete = function(newState, oldIndex) {
 
   if (inVisibleChunk) {
     this._keepRightOnWidthChange = (oldIndex < this._middleVisiblePointIndex());
-    state.animating = state.chunkView.deletion(oldIndex, true);
+    state.animating = state.chunkView.deletion(oldIndex, this._state.animate);
     --state.chunkViewLength;
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
@@ -165,13 +165,13 @@ StateView.prototype.updateStateInsert = function(newState, index) {
   this._preserveNextKeepRight = true;
 
   if (inVisibleChunk) {
-    if (index === this._state.positive.dataSourceLength && isScrolledToEnd(this._state)) {
+    if (index === this._state.positive.dataSourceLength && this._isScrolledToEnd()) {
       // NOTE: this is the special case where we keep right to show the last data point.
       this._keepRightOnWidthChange = true;
     } else {
-      this._keepRightOnWidthChange = (index < middleVisiblePointIndex(state));
+      this._keepRightOnWidthChange = (index < this._middleVisiblePointIndex());
     }
-    state.animating = state.chunkView.insertion(index, true);
+    state.animating = state.chunkView.insertion(index, this._state.animate);
     ++state.chunkViewLength;
   } else if (beforeVisibleChunk) {
     this._keepRightOnWidthChange = true;
@@ -197,7 +197,7 @@ StateView.prototype.updateStateModify = function(newState, index) {
     state.animationChunkView.finishAnimation();
   }
 
-  state.animating = state.chunkView.modification(index, true);
+  state.animating = state.chunkView.modification(index, this._state.animate);
 
   this._updateState(state);
 };
@@ -362,27 +362,20 @@ StateView.prototype._updateStateYLabels = function() {
   // this._keepRightOnWidthChange and the chunkView's animation info.
   var predictedViewportX = this._state.positive.viewportX;
 
-  var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
-  var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
-  var endLeft = subregionLeft + this._state.positive.viewportWidth;
-
-  // NOTE: we don't want the y-axis labels to change once the content starts to leave the bounds of
-  // the viewport (i.e. the user scrolled past the loaded chunk).
-  if (subregionLeft < 0) {
-    endLeft -= subregionLeft;
-    subregionLeft = 0;
-  } else if (endLeft > this._state.chunkView.getInherentWidth()) {
-    var diff = endLeft - this._state.chunkView.getInherentWidth();
-    endLeft -= diff;
-    subregionLeft -= diff;
-  }
-
-  var firstPoint = this._state.chunkView.postAnimationFirstVisibleDataPoint(subregionLeft);
-  var lastPoint = this._state.chunkView.postAnimationLastVisibleDataPoint(endLeft);
+  var region = {
+    startIndex: predictedViewportX - this._state.positive.leftmostYLabelsWidth,
+    width: this._state.positive.viewportWidth
+  };
+  var range = this._style.computeRange(region, this._state.positive.dataSourceLength);
+  range = rangeIntersection(range, {
+    startIndex: this._state.positive.visibleChunkStart,
+    length: this._state.positive.visibleChunkLength
+  });
 
   var maxValue = 0;
-  for (var i = firstPoint; i <= lastPoint; ++i) {
-    maxValue = Math.max(maxValue, chunk.getDataPoint(i).primary);
+  for (var i = range.startIndex, end = range.startIndex + range.length; i < end; ++i) {
+    var idx = i - this._state.positive.visibleChunkStart;
+    maxValue = Math.max(maxValue, chunk.getDataPoint(idx).primary);
   }
 
   var usableHeight = this._state.positive.barShowingHeight - this._topMargin - this._bottomMargin;
@@ -470,11 +463,7 @@ StateView.prototype._handleAnimateChange = function(contentChanged) {
     this._loader2.setAnimate(false);
   }
 
-  if (this._state.showingContent) {
-    if (this._state.chunkView) {
-      this._state.chunkView.setAnimate(this._state.animate);
-    }
-  } else {
+  if (!this._state.showingContent) {
     this._splashScreen.setAnimate(this._state.animate);
   }
 };
@@ -485,12 +474,8 @@ StateView.prototype._handleShowingContentChange = function() {
     this._splashScreen.setAnimate(false);
 
     this._element.appendChild(this._canvas);
-    this._state.chunkView.setAnimate(this._state.animate);
   } else {
     this._element.removeChild(this._canvas);
-    if (this._state.chunkView !== null) {
-      this._state.chunkView.setAnimate(false);
-    }
     this._element.appendChild(this._splashScreen.element());
     this._splashScreen.setAnimate(this._state.animate);
   }

@@ -38,12 +38,12 @@ Drawer.prototype.draw = function() {
   this._clipAwayYLabels();
   var chunkRegion = this._drawChunkView();
   if (chunkRegion.width > 0) {
-    loaderFrames = this._drawEdgesAndLines(chunkRegionOrNull);
+    loaderFrames = this._drawEdgesAndLines(chunkRegion);
   }
   this._context.restore();
 
   if (chunkRegion.width > 0) {
-    var yWidth = this._drawYAxisLabels(chunkRegionOrNull);
+    var yWidth = this._drawYAxisLabels(chunkRegion);
     for (var i = 0; i < loaderFrames.length; ++i) {
       var frame = loaderFrames[i];
       if (frame.left < yWidth) {
@@ -64,20 +64,22 @@ Drawer.prototype._drawChunkView = function() {
   var viewport = {
     x: this._yLabelWidth,
     y: this._topMargin,
-    width: this._state.positive.viewportWidth - regionLeft,
-    height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin)
+    width: this._state.positive.viewportWidth - this._yLabelWidth,
+    height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
+    context: this._context
   }
-  return this._chunkView.draw(viewport, this._state.positive.viewportX);
+  return this._chunkView.draw(viewport, this._state.positive.viewportX, this._maxValue);
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
   var leftX = -JAGGED_LINE_WIDTH;
-  if (this._chunkView.getLeftOffset() > 0) {
+  if (this._state.positive.visibleChunkStart > 0) {
     leftX = contentRect.left;
   }
 
   var rightX = this._state.positive.viewportWidth + JAGGED_LINE_WIDTH;
-  if (this._chunkView.getRightOffset() > 0) {
+  if (this._state.positive.visibleChunkStart + this._state.positive.visibleChunkLength <
+      this._state.positive.dataSourceLength) {
     var suggestedValue = contentRect.left+contentRect.width;
     if (suggestedValue < this._state.positive.viewportWidth-JAGGED_LINE_WIDTH) {
       rightX = suggestedValue;
