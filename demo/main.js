@@ -15,7 +15,13 @@ function loadHandler() {
   var config = {
     splashScreen: new window.SplashScreen(colorScheme),
     dataSource: dataSource,
-    provider: new window.graphalicious.providers.BarViewProvider(colorScheme),
+    style: new window.graphalicious.styles.BarStyle({
+      colorScheme: colorScheme,
+      leftMargin: 10,
+      rightMargin: 10,
+      barSpacing: 50,
+      barWidth: 30
+    }),
     loader1: new window.SplashScreen(colorScheme),
     loader2: new window.SplashScreen(colorScheme),
     topMargin: 20,

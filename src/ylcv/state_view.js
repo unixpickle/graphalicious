@@ -363,10 +363,7 @@ StateView.prototype._updateStateYLabels = function() {
   var predictedViewportX = this._state.positive.viewportX;
 
   var startLeft = predictedViewportX - this._state.positive.leftmostYLabelsWidth;
-  var subregionLeft = startLeft - this._style.computeRegion({
-    startIndex: this._state.positive.visibleChunkStart,
-    length: this._state.positive.visibleChunkLength
-  }).width;
+  var subregionLeft = startLeft - this._state.chunkView.getPostAnimationLeftOffset();
   var endLeft = subregionLeft + this._state.positive.viewportWidth;
 
   // NOTE: we don't want the y-axis labels to change once the content starts to leave the bounds of
