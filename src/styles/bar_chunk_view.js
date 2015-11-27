@@ -426,6 +426,8 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
       intermediatePoint.secondary = np * oldPoint.secondary;
     } else if (newPoint.secondary >= 0 && oldPoint.secondary < 0) {
       intermediatePoint.secondary = p * newPoint.secondary;
+    } else {
+      intermediatePoint.secondary = p*newPoint.secondary + np*oldPoint.secondary;
     }
 
     return intermediatePoint;
