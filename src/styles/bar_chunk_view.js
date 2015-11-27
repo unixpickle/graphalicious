@@ -28,7 +28,7 @@ BarChunkView.ANIMATION_DELETE = 1;
 BarChunkView.ANIMATION_INSERT = 2;
 BarChunkView.ANIMATION_MODIFY = 3;
 
-BarChunkView.ANIMATION_DURATION = 400;
+BarChunkView.ANIMATION_DURATION = 300;
 
 BarChunkView.prototype = Object.create(EventEmitter.prototype);
 
@@ -51,6 +51,7 @@ BarChunkView.prototype.getEncompassingWidth = function() {
 
 BarChunkView.prototype.deletion = function(oldIndex, animate) {
   assert(this._encompassingCount > 0);
+  assert(oldIndex < this._encompassingCount);
   --this._encompassingCount;
 
   this.finishAnimation();
@@ -72,6 +73,7 @@ BarChunkView.prototype.deletion = function(oldIndex, animate) {
 
 BarChunkView.prototype.insertion = function(index, animate) {
   ++this._encompassingCount;
+  assert(index <= this._encompassingCount);
 
   this.finishAnimation();
   if (this._chunk.getLength() > this._dataPoints.length) {
@@ -91,6 +93,7 @@ BarChunkView.prototype.insertion = function(index, animate) {
 
 BarChunkView.prototype.modification = function(index, animate) {
   assert(this._encompassingCount > 0);
+  assert(index < this._encompassingCount);
 
   if (index < this._startIndex || index >= this._startIndex+this._dataPoints.length) {
     return false;
@@ -223,7 +226,8 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
     var coords = landscape.computeBarRegion(i);
     coords.left += drawOffset;
 
-    xmarkers.push(this._computeXMarker(landscape, drawOffset, i));
+    var xmarker = this._computeXMarker(landscape, drawOffset, i);
+    xmarkers.push(xmarker);
 
     for (var j = 0, len = values.length; j < len; ++j) {
       var val = values[j];

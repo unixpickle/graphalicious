@@ -647,7 +647,8 @@ StateView.prototype._registerProviderEvents = function() {
 StateView.prototype._middleVisiblePointIndex = function() {
   var middleLeft = (this._state.positive.viewportX - this._state.positive.leftmostYLabelsWidth) +
     this._state.positive.viewportWidth/2;
-  var res = this._style.computeRange({left: middleLeft - 1, width: 1});
+  var res = this._style.computeRange({left: middleLeft - 1, width: 1},
+    this._state.positive.dataSourceLength);
   return res.startIndex;
 };
 
@@ -659,6 +660,7 @@ StateView.prototype._isScrolledToEnd = function() {
   }
   var endLeft = (this._state.positive.viewportX - this._state.positive.leftmostYLabelsWidth) +
     this._state.positive.viewportWidth;
-  var res = this._style.computeRange({left: endLeft - 1, width: 1});
-  return res.startIndex;
+  var res = this._style.computeRange({left: endLeft - 1, width: 1},
+    this._state.positive.dataSourceLength);
+  return res.startIndex === this._state.positive.dataSourceLength - 1;
 };
