@@ -364,6 +364,19 @@ StateView.prototype._updateStateYLabels = function() {
     left: predictedViewportX - this._state.positive.leftmostYLabelsWidth,
     width: this._state.positive.viewportWidth
   };
+
+  var contentRegion = this._style.computeRegion({
+    startIndex: this._state.positive.visibleChunkStart,
+    length: this._state.positive.visibleChunkLength
+  }, this._state.positive.dataSourceLength);
+
+  // NOTE: we don't want to change the labels once the content goes offscreen.
+  if (region.left < contentRegion.left) {
+    region.left = contentRegion.left;
+  } else if (region.left + region.width > contentRegion.left+contentRegion.width) {
+    region.left = contentRegion.left + contentRegion.width - region.width;
+  }
+
   var range = this._style.computeRange(region, this._state.positive.dataSourceLength);
   range = rangeIntersection(range, {
     startIndex: this._state.positive.visibleChunkStart,

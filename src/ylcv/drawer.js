@@ -62,9 +62,9 @@ Drawer.prototype.draw = function() {
 
 Drawer.prototype._drawChunkView = function() {
   var viewport = {
-    x: 0,
+    x: -JAGGED_EDGE_SIZE,
     y: this._topMargin,
-    width: this._state.positive.viewportWidth,
+    width: this._state.positive.viewportWidth + JAGGED_EDGE_SIZE*2,
     height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
     context: this._context
   };
