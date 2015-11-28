@@ -134,6 +134,14 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     return this._drawStretched(landscape, viewport, maxValue);
   }
 
+  // NOTE: if the content is offscreen besides some whitespace an edge, include the data point for
+  // that edge.
+  if (range.startIndex + range.length <= this._startIndex) {
+    range = {startIndex: this._startIndex, length: 1};
+  } else if (range.startIndex >= this._startIndex+pointCount) {
+    range = {startIndex: this._startIndex+pointCount-1, length: 1};
+  }
+
   range = rangeIntersection(range, {startIndex: this._startIndex, length: pointCount});
   if (range.length === 0) {
     return {left: viewport.x, width: 0, xmarkers: []}

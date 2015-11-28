@@ -240,7 +240,7 @@ function testDrawEdgeCases() {
 
   // Draw the content so that it only fills the middle of the viewport.
 
-  viewport.width = 10+20*40+20*5
+  viewport.width = 10 + 20*40 + 20*5;
   report = chunkView.draw(viewport, 0, 20);
 
   assert(Math.abs(report.width - (11*5 + 10*40)) < SMALL_NUM, 'invalid width');
@@ -257,6 +257,34 @@ function testDrawEdgeCases() {
     assert(marker.visibility === 1);
     assert(Math.abs(marker.x - startMarkerX - i*45) < SMALL_NUM);
   }
+
+  // Draw the content so that it covers one pixel on the far left side.
+
+  viewport.width = 10 + 40*5 + 4*5 + 1;
+  var report = chunkView.draw(viewport, 0, 20);
+  assert(Math.abs(report.width - 1) < SMALL_NUM, 'invalid width');
+  assert(Math.abs(report.left - (viewport.x+10+40*5+4*5)) < SMALL_NUM, 'invalid left offset');
+
+  assert(report.xmarkers.length === 1);
+  assert(report.xmarkers[0].index === 5);
+  assert(report.xmarkers[0].oldIndex === 5);
+  assert(report.xmarkers[0].dataPoint === chunk.getDataPoint(0));
+  assert(report.xmarkers[0].oldDataPoint === chunk.getDataPoint(0));
+  assert(report.xmarkers[0].visibility === 1);
+  assert(report.xmarkers[0].x === report.left + 2.5);
+
+  // Draw the content so that it covers one pixel on the far right side.
+  var report = chunkView.draw(viewport, 10+40*15+5*15-1, 20);
+  assert(Math.abs(report.width - 1) < SMALL_NUM, 'invalid width');
+  assert(Math.abs(report.left - viewport.x) < SMALL_NUM, 'invalid left offset');
+
+  assert(report.xmarkers.length === 1);
+  assert(report.xmarkers[0].index === 14);
+  assert(report.xmarkers[0].oldIndex === 14);
+  assert(report.xmarkers[0].dataPoint === chunk.getDataPoint(9));
+  assert(report.xmarkers[0].oldDataPoint === chunk.getDataPoint(9));
+  assert(report.xmarkers[0].visibility === 1);
+  assert(report.xmarkers[0].x === report.left - 4 - 40 - 2.5);
 }
 
 function testDrawJustifiedStretch() {
