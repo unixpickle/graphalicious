@@ -99,8 +99,8 @@ Drawer.prototype._drawEdgesAndLines = function(contentRect) {
   this._context.clip();
 
   if (this._state.animating) {
-    this._drawHorizontalLines(this._state.startYLabels, 1-this._animationProgress);
-    this._drawHorizontalLines(this._state.yLabels, this._animationProgress);
+    this._drawHorizontalLines(this._state.startYLabels, 1-this._state.animationProgress);
+    this._drawHorizontalLines(this._state.yLabels, this._state.animationProgress);
   } else {
     this._drawHorizontalLines(this._state.yLabels, 1);
   }
