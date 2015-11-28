@@ -69,7 +69,7 @@ Drawer.prototype._drawChunkView = function() {
     context: this._context
   };
   return this._chunkView.draw(viewport, this._state.positive.viewportX -
-    this._state.positive.leftmostYLabelsWidth, this._maxValue);
+    this._state.positive.leftmostYLabelsWidth - JAGGED_EDGE_SIZE, this._maxValue);
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
