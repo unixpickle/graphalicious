@@ -161,6 +161,10 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   }
   region.xmarkers = xmarkers;
 
+  if (region.width < 0) {
+    region.width = 0;
+  }
+
   return region;
 };
 
