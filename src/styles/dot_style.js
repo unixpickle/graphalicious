@@ -20,6 +20,9 @@ function dotAttrsToBarAttrs(attrs) {
   var keyChanges = {dotSize: 'barWidth', dotSpacing: 'barSpacing'};
   for (var i = 0, len = keys.length; i < len; ++i) {
     var key = keys[i];
+    if (key === 'barWidth' || key === 'barSpacing') {
+      continue;
+    }
     barAttrs[keyChanges[key] || key] = attrs[key];
   }
   return barAttrs;

@@ -224,7 +224,7 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
 
     var dataPoint = this._morphingGetPoint(i - this._startIndex);
     var values = [dataPoint.primary];
-    if (dataPoint.secondary) {
+    if (dataPoint.secondary >= 0) {
       values.push(dataPoint.secondary);
     }
 

@@ -1,6 +1,7 @@
 var view;
 var LEFT_MARGIN = 130;
 var RIGHT_MARGIN = 200;
+
 function loadHandler() {
   var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
   view = new window.graphalicious.base.View(colorScheme);
@@ -9,31 +10,12 @@ function loadHandler() {
   view.element().style.left = LEFT_MARGIN + 'px';
   view.element().style.backgroundColor = 'white';
 
-  var dataSource = window.TestDataSource.random(150, 3000, true);
-  new Controls(dataSource);
+  var dataSource = window.TestDataSource.random(150, 3000, false);
 
-  var config = {
-    splashScreen: new window.SplashScreen(colorScheme),
-    dataSource: dataSource,
-    style: new window.graphalicious.styles.BarStyle({
-      colorScheme: colorScheme,
-      leftMargin: 10,
-      rightMargin: 10,
-      barSpacing: 5,
-      barWidth: 30
-    }),
-    loader1: new window.SplashScreen(colorScheme),
-    loader2: new window.SplashScreen(colorScheme),
-    topMargin: 20,
-    bottomMargin: 5,
-    labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})
-  };
-  var content = new window.graphalicious.ylcv.ContentView(config);
-  content.element().style.backgroundColor = 'white';
-  view.setContent(content);
   layoutView();
   view.setAnimate(true);
 
+  new Controls(dataSource, view, colorScheme);
   new window.DataList(dataSource);
 
   window.addEventListener('resize', layoutView);

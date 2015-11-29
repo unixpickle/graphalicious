@@ -1,6 +1,17 @@
 (function() {
 
-  function Controls(dataSource) {
+  function Controls(dataSource, view, colorScheme) {
+    this._graphStyle = {
+      colorScheme: colorScheme,
+      leftMargin: 10,
+      rightMargin: 10,
+      barSpacing: 5,
+      barWidth: 30,
+      dotSpacing: 20,
+      dotSize: 10
+    };
+    this._view = view;
+    
     this._dataSource = dataSource;
     this._dataSource.loadTimeout = this.loadTimeout.bind(this);
     this._dataSource.loadSuccess = this.loadSuccess.bind(this);
@@ -25,8 +36,13 @@
 
     this._invalidateButton = document.getElementById('invalidate-button');
 
+    this._graphTypeDropdown = document.getElementById('graph-type-dropdown');
+
     this._registerTabEvents();
     this._registerActionEvents();
+    this._registerProviderEvents();
+    
+    this._updateContent();
   }
 
   Controls.prototype.loadTimeout = function() {
@@ -88,6 +104,41 @@
     this._invalidateButton.addEventListener('click', function() {
       this._dataSource.invalidate();
     }.bind(this));
+  };
+
+  Controls.prototype._registerProviderEvents = function() {
+    this._graphTypeDropdown.addEventListener('change', this._updateContent.bind(this));
+  };
+  
+  Controls.prototype._updateContent = function() {
+    if (this._view.getContent() !== null) {
+      var content = this._view.getContent();
+      this._view.setContent(null);
+      content.dispose();
+      this._dataSource.invalidate();
+    }
+    var style;
+    switch (this._graphTypeDropdown.value) {
+    case 'bar':
+      style = new window.graphalicious.styles.BarStyle(this._graphStyle);
+      break;
+    case 'dot':
+      style = new window.graphalicious.styles.DotStyle(this._graphStyle);
+      break;
+    }
+    var config = {
+      splashScreen: new window.SplashScreen(this._graphStyle.colorScheme),
+      dataSource: this._dataSource,
+      style: style,
+      loader1: new window.SplashScreen(this._graphStyle.colorScheme),
+      loader2: new window.SplashScreen(this._graphStyle.colorScheme),
+      topMargin: 20,
+      bottomMargin: 5,
+      labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})
+    };
+    var content = new window.graphalicious.ylcv.ContentView(config);
+    content.element().style.backgroundColor = 'white';
+    this._view.setContent(content);
   };
 
   function parseDataPoint(str) {
