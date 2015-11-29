@@ -24,7 +24,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
  * Implement pointer events in BarChunkView.
- * Create DotGraphStyle.
  * Create SplineGraphStyle.
 
 # License
