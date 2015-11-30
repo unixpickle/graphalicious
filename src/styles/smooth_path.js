@@ -38,7 +38,7 @@ function smoothPath(points, outputPointSpace) {
 
     var dx = dxList[i];
     var nextDx = dxList[i+1];
-    var common = dx + dxNext;
+    var common = dx + nextDx;
     deg1[i+1] = 3 * common / ((common+nextDx)/slope + (common+dx)/nextSlope);
   }
 
