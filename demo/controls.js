@@ -11,7 +11,7 @@
       dotSize: 10
     };
     this._view = view;
-    
+
     this._dataSource = dataSource;
     this._dataSource.loadTimeout = this.loadTimeout.bind(this);
     this._dataSource.loadSuccess = this.loadSuccess.bind(this);
@@ -41,7 +41,7 @@
     this._registerTabEvents();
     this._registerActionEvents();
     this._registerProviderEvents();
-    
+
     this._updateContent();
   }
 
@@ -109,7 +109,7 @@
   Controls.prototype._registerProviderEvents = function() {
     this._graphTypeDropdown.addEventListener('change', this._updateContent.bind(this));
   };
-  
+
   Controls.prototype._updateContent = function() {
     if (this._view.getContent() !== null) {
       var content = this._view.getContent();
@@ -124,6 +124,9 @@
       break;
     case 'dot':
       style = new window.graphalicious.styles.DotStyle(this._graphStyle);
+      break;
+    case 'curve':
+      style = new window.graphalicious.styles.CurveStyle(this._graphStyle);
       break;
     }
     var config = {
