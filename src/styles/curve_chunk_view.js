@@ -60,7 +60,7 @@ CurveChunkView.prototype._strokePath = function(range, params, getter) {
     var newRange = {startIndex: startIndex, length: length};
     if (idx === startIndex || idx === startIndex+length-1) {
       return this._strokePathEdgeMorphing(newRange, params, getter);
-    } else if (idx > startIndex && index < startIndex+length) {
+    } else if (idx > startIndex && idx < startIndex+length) {
       return this._strokePathMidMorphing(newRange, params, getter);
     }
   }
@@ -89,7 +89,7 @@ CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, gette
   var points = generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
-  var ctx = viewport.context;
+  var ctx = params.viewport.context;
   ctx.beginPath();
   ctx.moveTo(linePoints[0].x, linePoints[0].y);
   for (var i = 1, len = linePoints.length; i < len; ++i) {
@@ -105,7 +105,7 @@ CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter
   var points = generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
-  var ctx = viewport.context;
+  var ctx = params.viewport.context;
   ctx.beginPath();
   ctx.moveTo(linePoints[0].x, linePoints[0].y);
   for (var i = 1, len = linePoints.length; i < len; ++i) {
