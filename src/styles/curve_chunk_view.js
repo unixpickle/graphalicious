@@ -2,6 +2,9 @@
 
 function CurveChunkView(attrs, chunk, dataSource) {
   DotChunkView.call(this, attrs, chunk, dataSource);
+
+  this._newMorphingPrimaryY = -1;
+  this._newMorphingSecondaryY = -1;
 }
 
 CurveChunkView.prototype = Object.create(DotChunkView.prototype);
@@ -15,11 +18,32 @@ CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, vie
     maxValue: maxValue
   };
 
-  var newMorphingY = this._strokePrimaryPath(range, params);
+  this._newMorphingPrimaryY = this._strokePrimaryPath(range, params);
 
-  // TODO: do our own thing here to position the morphing point with newMorphingY.
   return DotChunkView.prototype._drawRange.call(this, drawOffset, landscape, range, viewport,
     maxValue);
+};
+
+CurveChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
+  if (primary && this._newMorphingPrimaryY >= 0 && pointIdx === this._animationPointIndex) {
+    DotChunkView.prototype._fillBar.call(this, ctx, x, this._newMorphingPrimaryY, width, height,
+      pointIdx, primary);
+  } else {
+    DotChunkView.prototype._fillBar.call(this, ctx, x, y, width, height, pointIdx, primary);
+  }
+};
+
+CurveChunkView.prototype._radiusForDot = function(x, y, width, height, pointIdx, primary) {
+  var superValue = DotChunkView.prototype._radiusForDot.call(this, x, y, width, height, pointIdx,
+    primary);
+  if (pointIdx === this._animationPointIndex && this._newMorphingPrimaryY >= 0) {
+    if (this._animationType === BarChunkView.ANIMATION_INSERT) {
+      return this._animationProgress * superValue;
+    } else {
+      return (1 - this._animationProgress) * superValue;
+    }
+  }
+  return superValue;
 };
 
 CurveChunkView.prototype._strokePrimaryPath = function(range, params) {
@@ -43,7 +67,8 @@ CurveChunkView.prototype._strokePath = function(range, params, getter) {
     ++length;
   }
 
-  if (this._animationType !== BarChunkView.ANIMATION_NONE) {
+  if (this._animationType === BarChunkView.ANIMATION_INSERT ||
+      this._animationType === BarChunkView.ANIMATION_DELETE) {
     var idx = this._animationPointIndex;
     if (idx === startIndex) {
       if (getter(startIndex - 1) >= 0) {
@@ -101,19 +126,39 @@ CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, gette
 };
 
 CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter) {
-  var points = this._generatePointsForPath(range, params, getter);
-  var linePoints = smoothPath(points, 1);
+  var showingPoints = this._generatePointsForPath(range, params, getter);
+  var hiddenPoints = showingPoints.slice();
+  var removedPoint = hiddenPoints[this._animationPointIndex - range.startIndex];
+  hiddenPoints.splice(this._animationPointIndex-range.startIndex, 1);
+  
+  var showingPath = smoothPath(showingPoints, 1);
+  var hiddenPath = smoothPath(hiddenPoints, 1);
+  
+  assert(showingPath[0].x === hiddenPath[0].x);
+  assert(showingPath.length === hiddenPath.length);
+
+  var amountShowing;
+  if (this._animationType === BarChunkView.ANIMATION_INSERT) {
+    amountShowing = this._animationProgress;
+  } else {
+    amountShowing = 1 - this._animationProgress;
+  }
 
   var ctx = params.viewport.context;
+  var resultY = 0;
   ctx.beginPath();
-  ctx.moveTo(linePoints[0].x, linePoints[0].y);
-  for (var i = 1, len = linePoints.length; i < len; ++i) {
-    ctx.lineTo(linePoints[i].x, linePoints[i].y);
+  ctx.moveTo(showingPath[0].x, (1-amountShowing)*hiddenPath[0].y+amountShowing*showingPath[0].y);
+  for (var i = 1, len = showingPath.length; i < len; ++i) {
+    var y = (1-amountShowing)*hiddenPath[i].y + amountShowing*showingPath[i].y;
+    ctx.lineTo(showingPath[i].x, y);
+    if (showingPath[i].x <= removedPoint.x) {
+      resultY = y;
+    }
   }
   ctx.stroke();
   ctx.closePath();
 
-  return -1;
+  return resultY;
 };
 
 // _generatePointsForPath generates point objects for every value in a range, given drawing params.

@@ -239,14 +239,14 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
       var height = viewport.height * (val / maxValue);
       var y = viewport.y + viewport.height - height;
       ctx.fillStyle = colors[j];
-      this._fillBar(ctx, coords.left, y, coords.width, height, i);
+      this._fillBar(ctx, coords.left, y, coords.width, height, i, j === 0);
     }
   }
 
   return xmarkers;
 };
 
-BarChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx) {
+BarChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
   ctx.fillRect(x, y, width, height);
 }
 
