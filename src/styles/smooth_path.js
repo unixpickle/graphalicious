@@ -54,7 +54,7 @@ function smoothPath(points, outputPointSpace) {
     var invDx = 1 / dxList[i];
     var common = c1 + deg1[i+1] - 2*slope;
     deg2[i] = (slope - c1 - common) * invDx;
-    deg3[i] = common * Math.pow(invDx, 2);
+    deg3[i] = common * invDx * invDx;
   }
 
   var result = [];
