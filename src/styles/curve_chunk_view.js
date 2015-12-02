@@ -46,6 +46,15 @@ CurveChunkView.prototype._radiusForDot = function(x, y, width, height, pointIdx,
   return superValue;
 };
 
+DotChunkView.prototype._opacityForDot = function(x, y, width, height, pointIndex, primary) {
+  if (this._animationType === BarChunkView.ANIMATION_DELETE &&
+      pointIndex === this._animationPointIndex) {
+    return 1 - this._animationProgress;
+  } else {
+    return 1;
+  }
+};
+
 CurveChunkView.prototype._strokePrimaryPath = function(range, params) {
   var ctx = params.viewport.context;
   ctx.lineWidth = 3;
@@ -110,17 +119,65 @@ CurveChunkView.prototype._strokePathNoMorphing = function(range, params, getter)
 };
 
 CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, getter) {
-  var points = this._generatePointsForPath(range, params, getter);
-  var linePoints = smoothPath(points, 1);
+  if (this._animationType === BarChunkView.ANIMATION_INSERT) {
+    // NOTE: this is the effect affectionately known as "spiderman".
+    this._strokePathNoMorphing(range, params, getter);
+    return;
+  }
 
+  var showingPoints = this._generatePointsForPath(range, params, getter);
+  var showingPath = smoothPath(showingPoints, 1);
+
+  var hiddenPoints = showingPoints.slice();
+  hiddenPoints.splice(this._animationPointIndex - range.startIndex, 1);
+  var hiddenPath = smoothPath(hiddenPoints, 1);
+
+  // NOTE: the showing region necessarily overlaps with the hidden region.
+  assert(showingPath[showingPath.length-1].x >= hiddenPath[0].x);
+
+  var amountShowing = 1 - this._animationProgress;
   var ctx = params.viewport.context;
+
+  // NOTE: as we draw the overlapping part, keep in mind that the hidden x values and showing x
+  // values might be a tad misaligned, but it's okay, I promise.
+  var startShowingIdx = 0;
+  while (showingPath[startShowingIdx].x < hiddenPath[0].x) {
+    ++startShowingIdx;
+  }
+  var overlapCount = Math.min(hiddenPath.length, showingPath.length-startShowingIdx);
   ctx.beginPath();
-  ctx.moveTo(linePoints[0].x, linePoints[0].y);
-  for (var i = 1, len = linePoints.length; i < len; ++i) {
-    ctx.lineTo(linePoints[i].x, linePoints[i].y);
+  for (var i = 0; i < overlapCount; ++i) {
+    var showingY = showingPath[startShowingIdx + i].y;
+    var hiddenY = hiddenPath[i].y;
+    var x = hiddenPath[i].x;
+    var y = amountShowing*showingY + (1-amountShowing)*hiddenY;
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
   }
   ctx.stroke();
   ctx.closePath();
+
+  var oldAlpha = ctx.globalAlpha;
+  ctx.globalAlpha *= amountShowing;
+  ctx.beginPath();
+  if (range.startIndex === this._animationPointIndex) {
+    ctx.moveTo(showingPath[0].x, showingPath[0].y);
+    for (var i = 1, len = showingPath.length-hiddenPath.length; i < len; ++i) {
+      ctx.lineTo(showingPath[i].x, showingPath[i].y);
+    }
+  } else {
+    var start = hiddenPath.length;
+    ctx.moveTo(showingPath[start].x, showingPath[start].y);
+    for (var i = 1, len = showingPath.length-hiddenPath.length; i < len; ++i) {
+      ctx.lineTo(showingPath[start+i].x, showingPath[start+i].y);
+    }
+  }
+  ctx.stroke();
+  ctx.closePath();
+  ctx.globalAlpha = oldAlpha;
 
   return -1;
 };
@@ -130,10 +187,10 @@ CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter
   var hiddenPoints = showingPoints.slice();
   var removedPoint = hiddenPoints[this._animationPointIndex - range.startIndex];
   hiddenPoints.splice(this._animationPointIndex-range.startIndex, 1);
-  
+
   var showingPath = smoothPath(showingPoints, 1);
   var hiddenPath = smoothPath(hiddenPoints, 1);
-  
+
   assert(showingPath[0].x === hiddenPath[0].x);
   assert(showingPath.length === hiddenPath.length);
 
