@@ -252,7 +252,7 @@ BarChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, p
 
 // _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
 BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {
-  assert(idx >= this._startIndex && i < this._startIndex + this._morphingPointCount());
+  assert(idx >= this._startIndex && idx < this._startIndex + this._morphingPointCount());
 
   var result = this._computeXMarkerData(idx);
 
