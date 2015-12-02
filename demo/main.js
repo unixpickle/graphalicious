@@ -3,7 +3,7 @@ var LEFT_MARGIN = 130;
 var RIGHT_MARGIN = 200;
 
 function loadHandler() {
-  var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#55acc4')
+  var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#325e6a');
   view = new window.graphalicious.base.View(colorScheme);
   document.getElementById('footer').appendChild(view.element());
   view.element().style.position = 'absolute';
