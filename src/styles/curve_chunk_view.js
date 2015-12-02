@@ -43,7 +43,6 @@ CurveChunkView.prototype._strokePath = function(range, params, getter) {
     ++length;
   }
 
-  // NOTE: the animation will look wrong if the morphing point is at the edge of the range.
   if (this._animationType !== BarChunkView.ANIMATION_NONE) {
     var idx = this._animationPointIndex;
     if (idx === startIndex) {
@@ -70,7 +69,7 @@ CurveChunkView.prototype._strokePath = function(range, params, getter) {
 };
 
 CurveChunkView.prototype._strokePathNoMorphing = function(range, params, getter) {
-  var points = generatePointsForPath(range, params, getter);
+  var points = this._generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
   var ctx = params.viewport.context;
@@ -86,7 +85,7 @@ CurveChunkView.prototype._strokePathNoMorphing = function(range, params, getter)
 };
 
 CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, getter) {
-  var points = generatePointsForPath(range, params, getter);
+  var points = this._generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
   var ctx = params.viewport.context;
@@ -102,7 +101,7 @@ CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, gette
 };
 
 CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter) {
-  var points = generatePointsForPath(range, params, getter);
+  var points = this._generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
   var ctx = params.viewport.context;
@@ -117,6 +116,28 @@ CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter
   return -1;
 };
 
+// _generatePointsForPath generates point objects for every value in a range, given drawing params.
+CurveChunkView.prototype._generatePointsForPath = function(range, params, getter) {
+  var points = [];
+  for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
+    var height = params.viewport.height * (getter(i) / params.maxValue);
+    var y = params.viewport.y + params.viewport.height - height;
+
+    var coords = params.landscape.computeBarRegion(i);
+    var x = params.drawOffset + coords.left + coords.width/2;
+    if (i === 0) {
+      x = params.drawOffset + coords.left + this._attrs.getBarWidth()/2;
+    } else if (i === this._morphingEncompassingCount() - 1) {
+      x = params.drawOffset + coords.left + coords.width - this._attrs.getBarWidth()/2;
+    }
+    points.push({x: x, y: y});
+  }
+  return points;
+};
+
+// _morphingSplineGetter gets the primary or secondary value of the point at the given absolute
+// index.
+// If the index is outside of the chunk or if the secondary value is not available, this returns -1.
 CurveChunkView.prototype._morphingSplineGetter = function(primary, index) {
   var pointCount = this._morphingPointCount();
   if (index < this._startIndex || index >= this._startIndex+pointCount) {
@@ -129,15 +150,3 @@ CurveChunkView.prototype._morphingSplineGetter = function(primary, index) {
     return point.secondary;
   }
 };
-
-function generatePointsForPath(range, params, getter) {
-  var points = [];
-  for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
-    var height = params.viewport.height * (getter(i) / params.maxValue);
-    var y = params.viewport.y + params.viewport.height - height;
-
-    var coords = params.landscape.computeBarRegion(i);
-    points.push({x: params.drawOffset + coords.left + coords.width/2, y: y});
-  }
-  return points;
-}
