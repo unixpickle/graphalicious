@@ -82,7 +82,7 @@ function removeOverlappingPoints(points) {
   points = points.slice();
   for (var i = 1; i < points.length; ++i) {
     if (points[i-1].x + SMALL_NUM > points[i].x) {
-      points.splice(i-1, 1);
+      points.splice(i, 1);
       --i;
     }
   }
