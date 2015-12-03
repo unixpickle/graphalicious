@@ -1,7 +1,7 @@
 //deps dot_chunk_view.js
 
-function CurveChunkView(attrs, chunk, dataSource) {
-  DotChunkView.call(this, attrs, chunk, dataSource);
+function CurveChunkView(dotAttrs, attrs, chunk, dataSource) {
+  DotChunkView.call(this, dotAttrs, attrs, chunk, dataSource);
 
   this._newMorphingPrimaryY = -1;
   this._newMorphingSecondaryY = -1;
@@ -73,7 +73,7 @@ CurveChunkView.prototype._strokeSecondaryPath = function(range, params) {
   var ctx = params.viewport.context;
   ctx.lineWidth = 3;
   ctx.strokeStyle = this._attrs.getColorScheme().getSecondary();
-  
+
   var getter = this._morphingSplineGetter.bind(this, false);
   var subRange = {startIndex: range.startIndex, length: 0};
   var modifiedY = -1;
@@ -257,6 +257,10 @@ CurveChunkView.prototype._generatePointsForPath = function(range, params, getter
   for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
     var height = params.viewport.height * (getter(i) / params.maxValue);
     var y = params.viewport.y + params.viewport.height - height;
+
+    if (this._dotAttrs.getBottomMargin() > height) {
+      y = y + height - this._dotAttrs.getBottomMargin();
+    }
 
     var coords = params.landscape.computeBarRegion(i);
     var x = params.drawOffset + coords.left + coords.width/2;

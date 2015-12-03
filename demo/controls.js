@@ -7,8 +7,13 @@
       rightMargin: 10,
       barSpacing: 5,
       barWidth: 30,
+      
+      // The size and spacing of dots for dot graphs.
       dotSpacing: 20,
-      dotSize: 10
+      dotSize: 10,
+      
+      // The minimum number of pixels below the center of a dot.
+      bottomMargin: 5
     };
     this._view = view;
 

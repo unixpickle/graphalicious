@@ -1,17 +1,47 @@
 //deps bar_style.js
 
+function DotStyleAttrs(attrs) {
+  for (var i = 0, len = DotStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
+    var key = DotStyleAttrs.ATTRIBUTES[i];
+    if (attrs.hasOwnProperty(key)) {
+      this['_' + key] = attrs[key]
+    } else {
+      this['_' + key] = DotStyleAttrs.DEFAULTS[key];
+    }
+  }
+}
+
+DotStyleAttrs.ATTRIBUTES = ['bottomMargin'];
+
+DotStyleAttrs.DEFAULTS = {
+  bottomMargin: 0
+};
+
+for (var i = 0, len = DotStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
+  var key = DotStyleAttrs.ATTRIBUTES[i];
+  (function(key) {
+    DotStyleAttrs.prototype['get' + key[0].toUpperCase() + key.substr(1)] = function() {
+      return this['_' + key];
+    };
+  })(key);
+}
+
 function DotStyle(attrs) {
   BarStyle.call(this, dotAttrsToBarAttrs(attrs));
+  this._dotAttrs = new DotStyleAttrs(attrs);
 }
 
 DotStyle.prototype = Object.create(BarStyle.prototype);
 
 DotStyle.prototype.setAttributes = function(attrs) {
+  if (attrs.hasOwnProperty('bottomMargin')) {
+    this._bottomMargin = attrs.bottomMargin;
+  }
   BarStyle.prototype.setAttributes.call(this, dotAttrsToBarAttrs(attrs));
 };
 
 DotStyle.prototype.createChunkView = function(chunk, dataSource) {
-  return new DotChunkView(this.copyAttributes(), chunk, dataSource);
+  return new DotChunkView(this._dotAttrs, this.copyAttributes(), chunk, dataSource);
 };
 
 function dotAttrsToBarAttrs(attrs) {

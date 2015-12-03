@@ -1,15 +1,16 @@
 //deps bar_chunk_view.js
 
-function DotChunkView(attrs, chunk, dataSource) {
+function DotChunkView(dotAttrs, attrs, chunk, dataSource) {
   BarChunkView.call(this, attrs, chunk, dataSource);
+  this._dotAttrs = dotAttrs;
 }
 
 DotChunkView.prototype = Object.create(BarChunkView.prototype);
 
 DotChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
   var radius = this._radiusForDot(x, y, width, height, pointIdx, primary);
-  if (radius > height) {
-    y = y + height - radius;
+  if (this._dotAttrs.getBottomMargin() > height) {
+    y = y + height - this._dotAttrs.getBottomMargin();
   }
 
   var centerX = x + width/2;
