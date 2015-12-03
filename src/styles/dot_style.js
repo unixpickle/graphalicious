@@ -11,10 +11,12 @@ function DotStyleAttrs(attrs) {
   }
 }
 
-DotStyleAttrs.ATTRIBUTES = ['bottomMargin'];
+DotStyleAttrs.ATTRIBUTES = ['bottomMargin', 'dotStrokeWidth', 'dotStrokeColor'];
 
 DotStyleAttrs.DEFAULTS = {
-  bottomMargin: 0
+  bottomMargin: 0,
+  dotStrokeWidth: 0,
+  dotStrokeColor: 'white'
 };
 
 for (var i = 0, len = DotStyleAttrs.ATTRIBUTES.length; i < len; ++i) {

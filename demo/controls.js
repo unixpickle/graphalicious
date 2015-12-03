@@ -1,19 +1,32 @@
 (function() {
 
   function Controls(dataSource, view, colorScheme) {
-    this._graphStyle = {
-      colorScheme: colorScheme,
-      leftMargin: 10,
-      rightMargin: 10,
-      barSpacing: 5,
-      barWidth: 30,
-      
-      // The size and spacing of dots for dot graphs.
-      dotSpacing: 20,
-      dotSize: 10,
-      
-      // The minimum number of pixels below the center of a dot.
-      bottomMargin: 5
+    this._graphStyles = {
+      bar: {
+        colorScheme: colorScheme,
+        leftMargin: 10,
+        rightMargin: 10,
+        barSpacing: 5,
+        barWidth: 30
+      },
+      dot: {
+        colorScheme: colorScheme,
+        leftMargin: 10,
+        rightMargin: 10,
+        dotSpacing: 20,
+        dotSize: 10,
+        bottomMargin: 5
+      },
+      curve: {
+        colorScheme: colorScheme,
+        leftMargin: 10,
+        rightMargin: 10,
+        dotSpacing: 20,
+        dotSize: 10,
+        bottomMargin: 5,
+        dotStrokeWidth: 2,
+        dotStrokeColor: 'white'
+      }
     };
     this._view = view;
 
@@ -125,21 +138,22 @@
     var style;
     switch (this._graphTypeDropdown.value) {
     case 'bar':
-      style = new window.graphalicious.styles.BarStyle(this._graphStyle);
+      style = new window.graphalicious.styles.BarStyle(this._graphStyles.bar);
       break;
     case 'dot':
-      style = new window.graphalicious.styles.DotStyle(this._graphStyle);
+      style = new window.graphalicious.styles.DotStyle(this._graphStyles.dot);
       break;
     case 'curve':
-      style = new window.graphalicious.styles.CurveStyle(this._graphStyle);
+      style = new window.graphalicious.styles.CurveStyle(this._graphStyles.curve);
       break;
     }
+    var colorScheme = this._graphStyles.bar.colorScheme;
     var config = {
-      splashScreen: new window.SplashScreen(this._graphStyle.colorScheme),
+      splashScreen: new window.SplashScreen(colorScheme),
       dataSource: this._dataSource,
       style: style,
-      loader1: new window.SplashScreen(this._graphStyle.colorScheme),
-      loader2: new window.SplashScreen(this._graphStyle.colorScheme),
+      loader1: new window.SplashScreen(colorScheme),
+      loader2: new window.SplashScreen(colorScheme),
       topMargin: 20,
       bottomMargin: 5,
       labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})

@@ -23,8 +23,21 @@ DotChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, p
   var oldAlpha = ctx.globalAlpha;
   ctx.globalAlpha *= this._opacityForDot(x, y, width, height, pointIdx, primary);
   ctx.beginPath();
-  ctx.arc(centerX, y, radius, 0, 2*Math.PI, false);
-  ctx.fill();
+  if (this._dotAttrs.getDotStrokeWidth() > 0) {
+    var thickness = this._dotAttrs.getDotStrokeWidth() * (radius / (this._attrs.getBarWidth() / 2));
+    ctx.arc(centerX, y, radius-thickness/2, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.arc(centerX, y, radius, 0, 2*Math.PI, false);
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = this._dotAttrs.getDotStrokeColor();
+    ctx.stroke();
+  } else {
+    ctx.arc(centerX, y, radius, 0, 2*Math.PI, false);
+    ctx.fill();
+  }
   ctx.closePath();
   ctx.globalAlpha = oldAlpha;
 };
