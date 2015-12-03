@@ -12,8 +12,12 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Prevent selection of canvas in graph.
- * Throw new ViewStyle system into existing YLCV to test it.
+ * Fix existing YLCV before conducting YLCV rewrite
+   * Predict scrolling when computing y-axis labels
+   * Fix bug where spinner shows over splash screen.
+ * Implement mean graph
+   * Ask for more points than we render so we can show a full average line.
+   * Revise VisualStyle docs to make sure the above behavior is acceptable.
  * Rewrite YLCV and revise *View* architecture
    * Document *View*
    * Document *ColorScheme*
@@ -21,10 +25,10 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
    * Do not attempt to use a finite state machine
    * Separate base class for handling 300ms delay for splash screen
    * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)
+   * Prevent selection of canvas in graph.
+ * Implement pointer events in BarChunkView.
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
- * Implement pointer events in BarChunkView.
- * Create SplineGraphStyle.
 
 # License
 
