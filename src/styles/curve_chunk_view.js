@@ -19,6 +19,7 @@ CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, vie
   };
 
   this._newMorphingPrimaryY = this._strokePrimaryPath(range, params);
+  this._newMorphingSecondaryY = this._strokeSecondaryPath(range, params);
 
   return DotChunkView.prototype._drawRange.call(this, drawOffset, landscape, range, viewport,
     maxValue);
@@ -28,6 +29,10 @@ CurveChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx,
   if (primary && this._newMorphingPrimaryY >= 0 && pointIdx === this._animationPointIndex) {
     DotChunkView.prototype._fillBar.call(this, ctx, x, this._newMorphingPrimaryY, width, height,
       pointIdx, primary);
+  } else if (!primary && this._newMorphingSecondaryY >= 0 &&
+             pointIdx === this._animationPointIndex) {
+    DotChunkView.prototype._fillBar.call(this, ctx, x, this._newMorphingSecondaryY, width, height,
+      pointIdx, primary);
   } else {
     DotChunkView.prototype._fillBar.call(this, ctx, x, y, width, height, pointIdx, primary);
   }
@@ -36,7 +41,8 @@ CurveChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx,
 CurveChunkView.prototype._radiusForDot = function(x, y, width, height, pointIdx, primary) {
   var superValue = DotChunkView.prototype._radiusForDot.call(this, x, y, width, height, pointIdx,
     primary);
-  if (pointIdx === this._animationPointIndex && this._newMorphingPrimaryY >= 0) {
+  if ((primary && pointIdx === this._animationPointIndex && this._newMorphingPrimaryY >= 0) ||
+      (!primary && pointIdx === this._animationPointIndex && this._newMorphingSecondaryY >= 0)) {
     if (this._animationType === BarChunkView.ANIMATION_INSERT) {
       return this._animationProgress * superValue;
     } else {
@@ -61,6 +67,31 @@ CurveChunkView.prototype._strokePrimaryPath = function(range, params) {
   ctx.strokeStyle = this._attrs.getColorScheme().getPrimary();
   var getter = this._morphingSplineGetter.bind(this, true);
   return this._strokePath(range, params, getter);
+};
+
+CurveChunkView.prototype._strokeSecondaryPath = function(range, params) {
+  var ctx = params.viewport.context;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = this._attrs.getColorScheme().getSecondary();
+  
+  var getter = this._morphingSplineGetter.bind(this, false);
+  var subRange = {startIndex: range.startIndex, length: 0};
+  var modifiedY = -1;
+  for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
+    if (getter(i) >= 0) {
+      ++subRange.length;
+    } else {
+      if (subRange.length > 0) {
+        modifiedY = Math.max(modifiedY, this._strokePath(subRange, params, getter));
+      }
+      subRange.startIndex = i + 1;
+      subRange.length = 0;
+    }
+  }
+  if (subRange.length > 0) {
+    modifiedY = Math.max(modifiedY, this._strokePath(subRange, params, getter));
+  }
+  return modifiedY;
 };
 
 CurveChunkView.prototype._strokePath = function(range, params, getter) {
@@ -122,6 +153,8 @@ CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, gette
   if (this._animationType === BarChunkView.ANIMATION_INSERT) {
     // NOTE: this is the effect affectionately known as "spiderman".
     this._strokePathNoMorphing(range, params, getter);
+    return;
+  } else if (range.length === 1) {
     return;
   }
 
