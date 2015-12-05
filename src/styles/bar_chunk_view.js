@@ -238,17 +238,33 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
       var val = values[j];
       var height = viewport.height * (val / maxValue);
       var y = viewport.y + viewport.height - height;
+
       ctx.fillStyle = colors[j];
-      this._fillBar(ctx, coords.left, y, coords.width, height, i, j === 0);
+
+      var eclipseHeight = 0;
+      if (j === 0 && values.length > 1) {
+        eclipseHeight = viewport.height * (values[1] / maxValue);
+      }
+
+      this._drawValue({
+        ctx: ctx,
+        x: coords.left,
+        y: y,
+        width: coords.width,
+        height: height,
+        eclipseHeight: eclipseHeight,
+        pointIndex: i,
+        primary: j === 0
+      });
     }
   }
 
   return xmarkers;
 };
 
-BarChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
-  ctx.fillRect(x, y, width, height);
-}
+BarChunkView.prototype._drawValue = function(params) {
+  params.ctx.fillRect(params.x, params.y, params.width, params.height-params.eclipseHeight);
+};
 
 // _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
 BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {

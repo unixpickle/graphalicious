@@ -7,21 +7,23 @@ function DotChunkView(dotAttrs, attrs, chunk, dataSource) {
 
 DotChunkView.prototype = Object.create(BarChunkView.prototype);
 
-DotChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
-  var radius = this._radiusForDot(x, y, width, height, pointIdx, primary);
-  if (this._dotAttrs.getBottomMargin() > height) {
-    y = y + height - this._dotAttrs.getBottomMargin();
+DotChunkView.prototype._drawValue = function(params) {
+  var radius = this._radiusForDot(params);
+  var y = params.y;
+  if (this._dotAttrs.getBottomMargin() > params.height) {
+    y = y + params.height - this._dotAttrs.getBottomMargin();
   }
 
-  var centerX = x + width/2;
-  if (pointIdx === 0) {
-    centerX = x + radius;
-  } else if (pointIdx === this._morphingEncompassingCount() - 1) {
-    centerX = x + width - radius;
+  var centerX = params.x + params.width/2;
+  if (params.pointIndex === 0) {
+    centerX = params.x + radius;
+  } else if (params.pointIndex === this._morphingEncompassingCount() - 1) {
+    centerX = params.x + params.width - radius;
   }
 
+  var ctx = params.ctx;
   var oldAlpha = ctx.globalAlpha;
-  ctx.globalAlpha *= this._opacityForDot(x, y, width, height, pointIdx, primary);
+  ctx.globalAlpha *= this._opacityForDot(params);
   ctx.beginPath();
   if (this._dotAttrs.getDotStrokeWidth() > 0) {
     var thickness = this._dotAttrs.getDotStrokeWidth() * (radius / (this._attrs.getBarWidth() / 2));
@@ -42,10 +44,10 @@ DotChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, p
   ctx.globalAlpha = oldAlpha;
 };
 
-DotChunkView.prototype._radiusForDot = function(x, y, width, height, pointIdx, primary) {
+DotChunkView.prototype._radiusForDot = function(params) {
   return this._attrs.getBarWidth() / 2;
 };
 
-DotChunkView.prototype._opacityForDot = function(x, y, width, height, pointIndex, primary) {
+DotChunkView.prototype._opacityForDot = function(params) {
   return 1;
 };

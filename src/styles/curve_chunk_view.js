@@ -25,36 +25,39 @@ CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, vie
     maxValue);
 };
 
-CurveChunkView.prototype._fillBar = function(ctx, x, y, width, height, pointIdx, primary) {
-  if (primary && this._newMorphingPrimaryY >= 0 && pointIdx === this._animationPointIndex) {
-    DotChunkView.prototype._fillBar.call(this, ctx, x, this._newMorphingPrimaryY, width, height,
-      pointIdx, primary);
-  } else if (!primary && this._newMorphingSecondaryY >= 0 &&
-             pointIdx === this._animationPointIndex) {
-    DotChunkView.prototype._fillBar.call(this, ctx, x, this._newMorphingSecondaryY, width, height,
-      pointIdx, primary);
-  } else {
-    DotChunkView.prototype._fillBar.call(this, ctx, x, y, width, height, pointIdx, primary);
+CurveChunkView.prototype._drawValue = function(params) {
+  if (params.pointIndex === this._animationPointIndex) {
+    if (params.primary && this._newMorphingPrimaryY >= 0) {
+      params.y = this._newMorphingPrimaryY;
+    } else if (!params.primary && this._newMorphingSecondaryY >= 0) {
+      params.y = this._newMorphingSecondaryY;
+    }
   }
+  DotChunkView.prototype._drawValue.call(this, params);
 };
 
-CurveChunkView.prototype._radiusForDot = function(x, y, width, height, pointIdx, primary) {
-  var superValue = DotChunkView.prototype._radiusForDot.call(this, x, y, width, height, pointIdx,
-    primary);
-  if ((primary && pointIdx === this._animationPointIndex && this._newMorphingPrimaryY >= 0) ||
-      (!primary && pointIdx === this._animationPointIndex && this._newMorphingSecondaryY >= 0)) {
+CurveChunkView.prototype._radiusForDot = function(params) {
+  var superValue = DotChunkView.prototype._radiusForDot.call(this, params);
+
+  if (params.pointIndex !== this._animationPointIndex) {
+    return superValue;
+  }
+
+  if ((params.primary && this._newMorphingPrimaryY >= 0) ||
+      (!params.primary && this._newMorphingSecondaryY >= 0)) {
     if (this._animationType === BarChunkView.ANIMATION_INSERT) {
       return this._animationProgress * superValue;
     } else {
       return (1 - this._animationProgress) * superValue;
     }
   }
+
   return superValue;
 };
 
-DotChunkView.prototype._opacityForDot = function(x, y, width, height, pointIndex, primary) {
+CurveChunkView.prototype._opacityForDot = function(params) {
   if (this._animationType === BarChunkView.ANIMATION_DELETE &&
-      pointIndex === this._animationPointIndex) {
+      params.pointIndex === this._animationPointIndex) {
     return 1 - this._animationProgress;
   } else {
     return 1;
