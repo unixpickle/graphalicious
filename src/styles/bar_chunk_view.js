@@ -254,7 +254,8 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
         height: height,
         eclipseHeight: eclipseHeight,
         pointIndex: i,
-        primary: j === 0
+        primary: j === 0,
+        properness: this._morphingGetPointProperness(i - this._startIndex)
       });
     }
   }
@@ -263,7 +264,15 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
 };
 
 BarChunkView.prototype._drawValue = function(params) {
-  params.ctx.fillRect(params.x, params.y, params.width, params.height-params.eclipseHeight);
+  var ctx = params.ctx;
+  if (params.properness < 1) {
+    var oldAlpha = ctx.globalAlpha;
+    ctx.globalAlpha *= 0.6 + 0.4*params.properness;
+    ctx.fillRect(params.x, params.y, params.width, params.height-params.eclipseHeight);
+    ctx.globalAlpha = oldAlpha;
+  } else {
+    ctx.fillRect(params.x, params.y, params.width, params.height-params.eclipseHeight);
+  }
 };
 
 // _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
@@ -448,7 +457,8 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
 
     var intermediatePoint = {
       primary: p*newPoint.primary + np*oldPoint.primary,
-      secondary: -1
+      secondary: -1,
+      proper: newPoint.proper
     };
 
     if (newPoint.secondary < 0 && oldPoint.secondary >= 0) {
@@ -463,4 +473,30 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
   } else {
     return this._dataPoints[idx];
   }
+};
+
+// _morphingGetPointProperness returns the amount that a data point (given by a chunk-relative
+// index) is proper.
+// If the point is not being modified, this will return 1 if the data point is proper and
+// 0 if it is not. Otherwise, it will return something inbetween.
+BarChunkView.prototype._morphingGetPointProperness = function(idx) {
+  assert(idx >= 0);
+  assert(idx < this._morphingPointCount());
+
+  var amountProper = 0;
+  if (this._animationType === BarChunkView.ANIMATION_MODIFY &&
+      idx + this._startIndex === this._animationPointIndex) {
+    var oldProper = this._animationDataPoint.proper;
+    var newProper = this._dataPoints[idx].proper;
+
+    var oldAmount = (oldProper ? 1 : 0);
+    var newAmount = (newProper ? 1 : 0);
+
+    amountProper = this._animationProgress*newAmount + (1-this._animationProgress)*oldAmount;
+  } else {
+    var proper = this._morphingGetPoint(idx).proper;
+    amountProper = (proper ? 1 : 0);
+  }
+
+  return amountProper;
 };

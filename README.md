@@ -15,14 +15,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
  * Fix existing YLCV before conducting YLCV rewrite
    * Predict scrolling when computing y-axis labels
    * Fix bug where spinner shows over splash screen.
- * Support DNFs
-   * DNF bars are slightly transparent
-   * DNF dots in dot mode
-     * In every color besides black: secondary and primary dot are more transparent
-     * In black: primary dot is red and transparent, secondary dot is transparent
-   * DNF dots and spline in curve mode
-     * Primary dot and spline are slightly lighter (different colors)
-     * Does not affect secondary spline or dot.
  * Implement mean graph
    * Ask for more points than we render so we can show a full average line.
    * Revise VisualStyle docs to make sure the above behavior is acceptable.

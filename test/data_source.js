@@ -28,9 +28,9 @@
       var val = Math.floor(Math.random() * maxValue);
       if (haveSecondary) {
         var secondary = Math.floor(Math.random() * val);
-        points.push({primary: val, secondary: secondary});
+        points.push({primary: val, secondary: secondary, proper: true});
       } else {
-        points.push({primary: val, secondary: -1});
+        points.push({primary: val, secondary: -1, proper: true});
       }
     }
     return new TestDataSource(points);
@@ -109,6 +109,10 @@
   };
 
   TestDataSource.prototype.insert = function(index, point) {
+    if (!point.hasOwnProperty('proper')) {
+      point.proper = true;
+    }
+
     for (var i = 0; i < 2; ++i) {
       var chunk = this._chunks[i];
       if (chunk === null) {

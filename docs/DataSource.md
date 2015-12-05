@@ -4,11 +4,11 @@ The *DataSource* type asynchronously provides raw data to the graph. Since the u
 
 # Overview & Terminology
 
-The basic unit of data is a **data point**. Every data point includes a *y-axis value*, a number indicating how "high" the data point is. Some data points may also contain a second number, the *secondary y-axis value*. Secondary y-axis values are used to show a set of data below the primary set of data. Data points themselves do not contain x-axis values.
+The basic unit of data is a **data point**. Every data point includes a *y-axis value*, a number indicating how "high" the data point is. Some data points may also contain a second number, the *secondary y-axis value*. Secondary y-axis values are used to show a set of data below the primary set of data. Data points themselves do not contain x-axis values. A data point can be marked as **proper** or **improper**, but the meaning of these terms depends on the meaning of the underlying data.
 
 Data points are indexed within a *DataSource*. At any time, a *DataSource* must be able to report how many data points it contains synchronously. A **chunk** represents a range of contiguous data points within a *DataSource*. A *DataSource* needn't be able to provide chunks of data synchronously&mdash;they can be fetched and returned through a callback.
 
-Chunks should be able to hold up through various kinds of modifications. For example, if a data point before a chunk is removed, the chunk should be updated so its start index is lower. If a data point within a chunk is deleted or added, the chunk should be resized and updated to reflect the change. However, it does not make sense to persist chunks through certain kinds of modifications. If one of these modifications occurs, the chunk can be **invalidated** (destroyed, for all intents and purposes). One should not attempt to access an invalid chunk.
+Chunks should be able to persist through various kinds of modifications. For example, if a data point before a chunk is removed, the chunk should be updated so its start index is lower. If a data point within a chunk is deleted or added, the chunk should be resized and updated to reflect the change. However, it does not make sense to persist chunks through certain kinds of modifications. If one of these modifications occurs, the chunk can be **invalidated** (destroyed, for all intents and purposes). One should not attempt to access an invalid chunk.
 
 Many graph types require access to two different chunks of data simultaneously: one chunk at the beginning of the data, and one whose position can change as the user scrolls. The reason for this is irrelevant for people implementing *DataSource*. For those of you who are interested, it is caused by the fact that y-axis labels resize dynamically.
 
@@ -16,7 +16,11 @@ Some graph types have x-axis labels. For these graphs types, the *DataSource* mu
 
 # The DataPoint type
 
-Every data point is represented as a JavaScript object with two keys: `primary` and `secondary`. If the point does not contain a secondary y-axis value, the `secondary` key should be `-1`.
+Every data point has three fields:
+
+ * *number* primary - the primary value of the data point.
+ * *number* secondary - the secondary value of the data point, or -1 if no secondary value exists.
+ * *boolean* proper - the data point is "proper".
 
 # The Chunk type
 

@@ -11,12 +11,15 @@ function DotStyleAttrs(attrs) {
   }
 }
 
-DotStyleAttrs.ATTRIBUTES = ['bottomMargin', 'dotStrokeWidth', 'dotStrokeColor'];
+DotStyleAttrs.ATTRIBUTES = ['bottomMargin', 'dotStrokeWidth', 'dotStrokeColor',
+  'improperDotStrokeWidth', 'improperDotHoleColor'];
 
 DotStyleAttrs.DEFAULTS = {
   bottomMargin: 0,
   dotStrokeWidth: 0,
-  dotStrokeColor: 'white'
+  dotStrokeColor: 'white',
+  improperDotStrokeWidth: 2,
+  improperDotHoleColor: 'white'
 };
 
 for (var i = 0, len = DotStyleAttrs.ATTRIBUTES.length; i < len; ++i) {

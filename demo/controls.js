@@ -164,13 +164,19 @@
   };
 
   function parseDataPoint(str) {
+    if (str[0] === '!') {
+      var res = parseDataPoint(str.substr(1));
+      res.proper = false;
+      return res;
+    }
     var res = /^([0-9\.]*)(\/([0-9]*))?$/.exec(str);
     if (res === null) {
       return null;
     }
     return {
       primary: parseInt(res[1]) || 0,
-      secondary: parseInt(res[3]) || -1
+      secondary: parseInt(res[3]) || -1,
+      proper: true
     };
   }
 
