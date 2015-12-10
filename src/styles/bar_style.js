@@ -99,7 +99,7 @@ function BarStyle(attrs) {
   EventEmitter.call(this);
   BarStyleAttrs.call(this, attrs);
 
-  this.getColorScheme().on('change', this.emit.bind('superficialChange'));
+  this.getColorScheme().on('change', this.emit.bind(this, 'superficialChange'));
 }
 
 BarStyle.prototype = Object.create(EventEmitter.prototype);
