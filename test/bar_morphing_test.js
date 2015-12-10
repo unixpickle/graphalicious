@@ -8,10 +8,11 @@ var BarStyleAttrs;
 var MorphingBarLandscape;
 
 (function() {
+  var code0 = fs.readFileSync(__dirname + '/../src/styles/attrs.js');
   var code1 = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
   var code2 = fs.readFileSync(__dirname + '/../src/styles/bar_morphing.js');
   var code3 = fs.readFileSync(__dirname + '/../src/styles/utilities.js');
-  code = '(function() {' + code1 + code2 + code3 +
+  code = '(function() {' + code0 + code1 + code2 + code3 +
     ';return [MorphingBarLandscape, BarStyleAttrs];})()';
   var res = eval(code);
   MorphingBarLandscape = res[0];

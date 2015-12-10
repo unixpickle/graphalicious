@@ -1,14 +1,8 @@
-//deps includes.js
+//deps includes.js attrs.js
 
 function BarStyleAttrs(attrs) {
-  for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
-    var key = BarStyleAttrs.ATTRIBUTES[i];
-    if (attrs.hasOwnProperty(key)) {
-      this['_' + key] = attrs[key]
-    } else {
-      this['_' + key] = BarStyleAttrs.DEFAULTS[key];
-    }
-  }
+  setPrivateAttributeVariables(this, attrs, BarStyleAttrs.ATTRIBUTES,
+    BarStyleAttrs.DEFAULTS);
 }
 
 BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 0;
@@ -32,23 +26,7 @@ BarStyleAttrs.DEFAULTS = {
   animateModifications: true
 };
 
-for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
-  var key = BarStyleAttrs.ATTRIBUTES[i];
-  (function(key) {
-    BarStyleAttrs.prototype['get' + key[0].toUpperCase() + key.substr(1)] = function() {
-      return this['_' + key];
-    };
-  })(key);
-}
-
-BarStyleAttrs.prototype.copyAttributes = function() {
-  var attrs = {};
-  for (var i = 0, len = BarStyleAttrs.ATTRIBUTES.length; i < len; ++i) {
-    var key = BarStyleAttrs.ATTRIBUTES[i];
-    attrs[key] = this['_' + key];
-  }
-  return new BarStyleAttrs(attrs);
-};
+defineAttributeMethods(BarStyleAttrs, BarStyleAttrs.ATTRIBUTES);
 
 // computeRange generates a range of points whose corresponding BarChunkView would encompass the
 // given region.
@@ -141,14 +119,7 @@ for (var attr in BarStyleAttrs) {
 }
 
 BarStyle.prototype.setAttributes = function(attrs) {
-  var allKeys = ['leftMargin', 'rightMargin', 'barSpacing', 'barWidth', 'stretchMode',
-    'xLabelAlignment'];
-  for (var i = 0, len = allKeys.length; i < len; ++i) {
-    var key = allKeys[i];
-    if (attrs.hasOwnProperty(key)) {
-      this['_' + key] = attrs[key];
-    }
-  }
+  this._attrs.setAttributes(attrs);
   this.emit('metricChange');
 };
 

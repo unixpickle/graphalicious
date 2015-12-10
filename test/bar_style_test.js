@@ -5,9 +5,10 @@ var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 var fs = require('fs');
 var BarStyleAttrs = (function() {
+  var attrs = fs.readFileSync(__dirname + '/../src/styles/attrs.js');
   var code = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
   var utils = fs.readFileSync(__dirname + '/../src/styles/utilities.js');
-  code = '(function() {' + code + ';' + utils + ';return BarStyleAttrs})()';
+  code = '(function() {' + attrs + code + utils + 'return BarStyleAttrs})()';
   return eval(code);
 })();
 
@@ -19,7 +20,9 @@ function regionContains(bigger, smaller) {
 }
 
 function testComputeRange() {
-  var attrs = new BarStyleAttrs({
+  var attrs = new BarStyleAttrs({});
+
+  attrs.setAttributes({
     leftMargin: 17,
     rightMargin: 19,
     barSpacing: 7,
