@@ -8,6 +8,8 @@ function FullCurveChunkView(attrs, chunk, dataSource) {
   this._dataSource = dataSource;
 }
 
+FullCurveChunkView.MIN_SPACING_FOR_SMOOTH = 5;
+
 FullCurveChunkView.prototype = Object.create(EventEmitter.prototype);
 
 FullCurveChunkView.prototype.getWidth = function() {
@@ -47,55 +49,116 @@ FullCurveChunkView.prototype.modification = function(index, animate) {
 }
 
 FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
-  if (this._dataSource.getLength() === 0) {
-    return {
+  if (this._dataSource.getLength() < 2) {
+    var res = {
       left: viewport.x,
       width: 0,
       xmarkers: []
     };
+    if (this._chunk.getLength() === 1) {
+      res.width = viewport.width;
+    } else if (this._chunk.getStartIndex() === 1) {
+      res.left = viewport.x + viewport.width;
+    }
+    return res;
   }
 
   viewport.context.lineWidth = this._attrs.getLineThickness();
   viewport.context.strokeStyle = this._attrs.getColorScheme().getPrimary();
 
-  // TODO: do something like this:
-  //
-  // if (pointSpacing > FullCurveChunkView.MIN_SPACING_FOR_SMOOTH) {
-  //   this._drawSmooth(startX, pointSpacing, viewport, maxValue);
-  // } else {
-  //   this._drawStraight(startX, pointSpacing, viewport, maxValue);
-  // }
+  var totalWidth = Math.max(this.getEncompassingWidth(), viewport.width);
+  var availableWidth = totalWidth - this._attrs.totalMargins;
+  var pointSpacing = availableWidth / (this._dataSource.getLength() - 1);
 
-  throw new Error('not yet implemented');
+  var startX = viewport.x - scrollX + this._chunk.getStartIndex()*pointSpacing;
+
+  if (pointSpacing > FullCurveChunkView.MIN_SPACING_FOR_SMOOTH) {
+    this._drawSmooth(startX, pointSpacing, viewport, maxValue);
+  } else {
+    this._drawStraight(startX, pointSpacing, viewport, maxValue);
+  }
+
+  var markers = [];
+  for (var i = 0, len = this._chunk.getLength(); i < len; ++i) {
+    var x = startX + pointSpacing*i;
+    if (x < viewport.x) {
+      continue;
+    } else if (x >= viewport.x+viewport.width) {
+      break;
+    }
+    var point = this._chunk.getDataPoint(i);
+    markers.push({
+      x: x,
+      index: i + this._chunk.getStartIndex(),
+      oldIndex: index,
+      dataPoint: point,
+      oldDataPoint: point,
+      visibility: 1
+    });
+  }
+
+  var report = regionIntersection({left: viewport.x, width: viewport.width}, {
+    left: startX,
+    width: Math.max(0, (this._chunk.getLength()-1)*pointSpacing)
+  });
+  report.xmarkers = markers;
+
+  return report;
 };
 
 FullCurveChunkView.prototype._drawSmooth = function(startX, spacing, viewport, max) {
-  var connectPoints = [];
+  var smoothPoints = smoothPath(this._dataPointCoords(startX, spacing, viewport, max), 1);
+  this._strokePath(viewport, smoothPoints);
+};
+
+FullCurveChunkView.prototype._drawStraight = function(startX, spacing, viewport, max) {
+  this._strokePath(viewport, this._dataPointCoords(startX, spacing, viewport, max));
+};
+
+FullCurveChunkView.prototype._dataPointCoords = function(startX, spacing, viewport, max) {
+  var res = [];
+
   for (var i = 0, len = this._chunk.getLength(); i < len; ++i) {
-    var dataPoint = this._chunk.getDataPoint(i);
     var x = startX + i*spacing;
 
+    if (x+spacing <= viewport.x) {
+      continue;
+    } else if (x-spacing >= viewport.x+viewport.width) {
+      break;
+    }
+
+    var dataPoint = this._chunk.getDataPoint(i);
     var primaryRatio = dataPoint.primary / max;
     var y = viewport.y + (1-primaryRatio)*viewport.height;
 
-    connectPoints.push({x: x, y: y});
+    res.push({x: x, y: y});
   }
 
-  var smoothPoints = smoothPath(connectPoints, 1);
+  return res;
+};
+
+FullCurveChunkView.prototype._strokePath = function(viewport, coords) {
   var ctx = viewport.context;
+  var isFirstPoint = true;
+
   ctx.beginPath();
-  for (var i = 0, len = smoothPoints.length; i < len; ++i) {
-    var point = smoothPoints[i];
-    if (i === 0) {
+
+  for (var i = 0, len = coords.length; i < len; ++i) {
+    var coord = coords[i];
+    if (i+1 < len && coords[i+1].x < viewport.x) {
+      continue;
+    }
+    if (isFirstPoint) {
+      isFirstPoint = false;
       ctx.moveTo(point.x, point.y);
     } else {
       ctx.lineTo(point.x, point.y);
     }
+    if (coord.x >= viewport.x+viewport.width) {
+      break;
+    }
   }
+
   ctx.strokePath();
   ctx.closePath();
-};
-
-FullCurveChunkView.prototype._drawStraight = function(startX, spacing, viewport, max) {
-
 };
