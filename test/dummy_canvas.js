@@ -25,4 +25,19 @@ DummyContext.prototype.scale = function(x, y) {
 DummyContext.prototype.translate = function(x, y) {
 };
 
+DummyContext.prototype.beginPath = function() {
+};
+
+DummyContext.prototype.moveTo = function(x, y) {
+};
+
+DummyContext.prototype.lineTo = function(x, y) {
+};
+
+DummyContext.prototype.stroke = function() {
+};
+
+DummyContext.prototype.closePath = function() {
+};
+
 module.exports = DummyCanvas;

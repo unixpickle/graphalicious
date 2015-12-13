@@ -67,10 +67,11 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   viewport.context.strokeStyle = this._attrs.getColorScheme().getPrimary();
 
   var totalWidth = Math.max(this.getEncompassingWidth(), viewport.width);
-  var availableWidth = totalWidth - this._attrs.totalMargins;
+  var availableWidth = totalWidth - this._attrs.totalMargins();
   var pointSpacing = availableWidth / (this._dataSource.getLength() - 1);
 
-  var startX = viewport.x - scrollX + this._chunk.getStartIndex()*pointSpacing;
+  var startX = viewport.x - scrollX + this._chunk.getStartIndex()*pointSpacing +
+    this._attrs.getLeftMargin();
 
   if (pointSpacing > FullCurveChunkView.MIN_SPACING_FOR_SMOOTH) {
     this._drawSmooth(startX, pointSpacing, viewport, maxValue);
@@ -87,19 +88,30 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
       break;
     }
     var point = this._chunk.getDataPoint(i);
+    var idx = i + this._chunk.getStartIndex();
     markers.push({
       x: x,
-      index: i + this._chunk.getStartIndex(),
-      oldIndex: index,
+      index: idx,
+      oldIndex: idx,
       dataPoint: point,
       oldDataPoint: point,
       visibility: 1
     });
   }
 
+  var drawLeft = startX;
+  var drawWidth = Math.max(0, (this._chunk.getLength()-1)*pointSpacing);
+  if (this._chunk.getStartIndex() === 0) {
+    drawLeft -= this._attrs.getLeftMargin();
+    drawWidth += this._attrs.getLeftMargin();
+  }
+  if (this._chunk.getStartIndex()+this._chunk.getLength() === this._dataSource.getLength()) {
+    drawWidth += this._attrs.getRightMargin();
+  }
+
   var report = regionIntersection({left: viewport.x, width: viewport.width}, {
-    left: startX,
-    width: Math.max(0, (this._chunk.getLength()-1)*pointSpacing)
+    left: drawLeft,
+    width: drawWidth
   });
   report.xmarkers = markers;
 
@@ -150,15 +162,15 @@ FullCurveChunkView.prototype._strokePath = function(viewport, coords) {
     }
     if (isFirstPoint) {
       isFirstPoint = false;
-      ctx.moveTo(point.x, point.y);
+      ctx.moveTo(coord.x, coord.y);
     } else {
-      ctx.lineTo(point.x, point.y);
+      ctx.lineTo(coord.x, coord.y);
     }
     if (coord.x >= viewport.x+viewport.width) {
       break;
     }
   }
 
-  ctx.strokePath();
+  ctx.stroke();
   ctx.closePath();
 };
