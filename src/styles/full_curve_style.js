@@ -65,9 +65,9 @@ FullCurveStyleAttrs.prototype.computeRegion = function(range, pointCount) {
   range = rangeIntersection(range, {startIndex: 0, length: pointCount});
 
   if (range.length === 0) {
-    return 0;
+    return {left: 0, width: 0};
   } else if (pointCount === 1) {
-    return this.realMinWidth();
+    return {left: 0, width: this.realMinWidth()};
   }
 
   assert(pointCount > 1);
@@ -77,10 +77,10 @@ FullCurveStyleAttrs.prototype.computeRegion = function(range, pointCount) {
 
   var startLeft = 0;
   if (range.startIndex > 0) {
-    startLeft = this._attrs.getLeftMargin() + pointSpacing*this._chunk.getStartIndex();
+    startLeft = this.getLeftMargin() + pointSpacing*range.startIndex;
   }
 
-  var endLeft = this._attrs.realMinWidth();
+  var endLeft = this.realMinWidth();
   var chunkEndIndex = range.startIndex + range.length;
   if (chunkEndIndex < pointCount) {
     var countAfterEnd = pointCount - chunkEndIndex;
@@ -109,7 +109,7 @@ FullCurveStyle.prototype.computeRange = function(region, pointCount) {
 };
 
 FullCurveStyle.prototype.computeRegion = function(range, pointCount) {
-  return this._attrs.computeRange(range, pointCount);
+  return this._attrs.computeRegion(range, pointCount);
 };
 
 FullCurveStyle.prototype.createChunkView = function(chunk, dataSource) {

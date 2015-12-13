@@ -10,6 +10,10 @@ var importRes = require('./importer')([
 var FullCurveStyle = importRes.FullCurveStyle;
 var ColorScheme = importRes.ColorScheme;
 
+function assertAboutEqual(a, b, msg) {
+  assert(Math.abs(a - b) < SMALL_NUM, msg);
+}
+
 function testComputeRange() {
   var style = new FullCurveStyle({
     leftMargin: 7,
@@ -84,6 +88,59 @@ function testComputeRange() {
   }
 }
 
+function testComputeRegion() {
+  var style = new FullCurveStyle({
+    leftMargin: 7,
+    rightMargin: 9,
+    minWidth: 50,
+    colorScheme: new ColorScheme('red', 'blue')
+  });
+
+  var pointCounts = [10, 50, 100];
+  for (var i = 0, len = pointCounts.length; i < len; ++i) {
+    var count = pointCounts[i];
+
+    var region = style.computeRegion({startIndex: 0, length: 1}, count);
+    assertAboutEqual(region.left, 0);
+    assertAboutEqual(region.width, 7);
+
+    region = style.computeRegion({startIndex: 0, length: 0}, count);
+    assertAboutEqual(region.left, 0);
+    assertAboutEqual(region.width, 0);
+
+    var spacing = 34 / (count - 1);
+
+    region = style.computeRegion({startIndex: 0, length: 2}, count);
+    assertAboutEqual(region.left, 0);
+    assertAboutEqual(region.width, spacing+7);
+
+    region = style.computeRegion({startIndex: 1, length: 2}, count);
+    assertAboutEqual(region.left, 7+spacing);
+    assertAboutEqual(region.width, spacing);
+
+    region = style.computeRegion({startIndex: 1, length: 1}, count);
+    assertAboutEqual(region.left, 7+spacing);
+    assertAboutEqual(region.width, 0);
+
+    region = style.computeRegion({startIndex: count-1, length: 1}, count);
+    assertAboutEqual(region.left, 50-9);
+    assertAboutEqual(region.width, 9);
+
+    region = style.computeRegion({startIndex: 0, length: count}, count);
+    assertAboutEqual(region.left, 0);
+    assertAboutEqual(region.width, 50);
+
+    region = style.computeRegion({startIndex: 0, length: count-1}, count);
+    assertAboutEqual(region.left, 0);
+    assertAboutEqual(region.width, 50-9-spacing);
+
+    region = style.computeRegion({startIndex: 3, length: 5}, count);
+    assertAboutEqual(region.left, 7+spacing*3);
+    assertAboutEqual(region.width, spacing*4);
+  }
+}
+
 testComputeRange();
+testComputeRegion();
 
 console.log('PASS');
