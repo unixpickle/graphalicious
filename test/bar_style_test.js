@@ -1,9 +1,7 @@
 // SMALL_NUM is used to avoid failing tests because of meaningless rounding errors.
 var SMALL_NUM = 0.001;
 
-var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
-var fs = require('fs');
 
 var BarStyleAttrs = require('./importer')([
   'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'

@@ -1,8 +1,6 @@
 var SMALL_NUM = 0.001;
 
-var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
-var fs = require('fs');
 
 var DataSource = require(__dirname + '/data_source.js');
 var Canvas = require(__dirname + '/dummy_canvas.js');

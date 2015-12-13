@@ -1,8 +1,6 @@
 var SMALL_NUM = 0.001;
 
-var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
-var fs = require('fs');
 
 var importRes = require('./importer')([
   'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/bar_morphing.js',
