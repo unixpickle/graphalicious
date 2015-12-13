@@ -4,13 +4,10 @@ var SMALL_NUM = 0.001;
 var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 var fs = require('fs');
-var BarStyleAttrs = (function() {
-  var attrs = fs.readFileSync(__dirname + '/../src/styles/attrs.js');
-  var code = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
-  var utils = fs.readFileSync(__dirname + '/../src/styles/utilities.js');
-  code = '(function() {' + attrs + code + utils + 'return BarStyleAttrs})()';
-  return eval(code);
-})();
+
+var BarStyleAttrs = require('./importer')([
+  'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'
+], ['BarStyleAttrs']).BarStyleAttrs;
 
 function regionContains(bigger, smaller) {
   if (smaller.width === 0) {

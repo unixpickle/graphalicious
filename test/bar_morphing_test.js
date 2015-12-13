@@ -4,20 +4,13 @@ var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 var fs = require('fs');
 
-var BarStyleAttrs;
-var MorphingBarLandscape;
+var importRes = require('./importer')([
+  'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/bar_morphing.js',
+  'styles/utilities.js'
+], ['BarStyleAttrs', 'MorphingBarLandscape']);
 
-(function() {
-  var code0 = fs.readFileSync(__dirname + '/../src/styles/attrs.js');
-  var code1 = fs.readFileSync(__dirname + '/../src/styles/bar_style.js');
-  var code2 = fs.readFileSync(__dirname + '/../src/styles/bar_morphing.js');
-  var code3 = fs.readFileSync(__dirname + '/../src/styles/utilities.js');
-  code = '(function() {' + code0 + code1 + code2 + code3 +
-    ';return [MorphingBarLandscape, BarStyleAttrs];})()';
-  var res = eval(code);
-  MorphingBarLandscape = res[0];
-  BarStyleAttrs = res[1];
-})();
+var BarStyleAttrs = importRes.BarStyleAttrs;
+var MorphingBarLandscape = importRes.MorphingBarLandscape;
 
 function computeRangeTests(morphingIndex, generator) {
   for (var v = 0; v <= 10; v += 10) {

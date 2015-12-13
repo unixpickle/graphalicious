@@ -7,14 +7,13 @@ var fs = require('fs');
 var DataSource = require(__dirname + '/data_source.js');
 var Canvas = require(__dirname + '/dummy_canvas.js');
 
-var BarStyle;
-var ColorScheme;
-var BarChunkView;
-
 var currentAnimationFrameCb;
 
-(function() {
-  var window = {
+var importRes = require('./importer')([
+  'base/event_emitter.js', 'base/color_scheme.js', 'styles/attrs.js', 'styles/bar_style.js',
+  'styles/bar_morphing.js', 'styles/bar_chunk_view.js', 'styles/utilities.js'
+], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
+  window: {
     requestAnimationFrame: function(f) {
       currentAnimationFrameCb = f;
       return 0;
@@ -22,22 +21,12 @@ var currentAnimationFrameCb;
     cancelAnimationFrame: function() {
       currentAnimationFrameCb = null;
     }
-  };
-
-  var files = ['base/color_scheme.js', 'styles/attrs.js', 'styles/bar_style.js',
-    'styles/bar_morphing.js', 'styles/bar_chunk_view.js', 'styles/utilities.js'];
-  var codeBody = '';
-  for (var i = 0, len = files.length; i < len; ++i) {
-    codeBody += fs.readFileSync(__dirname + '/../src/' + files[i]);
   }
-  var code = '(function() {var exports = {};' + codeBody + ';' +
-    'exports.BarChunkView = BarChunkView;' +
-    'return exports;})()';
-  var res = eval(code);
-  ColorScheme = res.ColorScheme;
-  BarStyle = res.BarStyle;
-  BarChunkView = res.BarChunkView;
-})();
+});
+
+var BarStyle = importRes.BarStyle;
+var ColorScheme = importRes.ColorScheme;
+var BarChunkView = importRes.BarChunkView;
 
 function testDrawBestCase() {
   var xLabelOffsets = [
