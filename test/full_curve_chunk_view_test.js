@@ -53,6 +53,45 @@ function testDrawCompleteScrolling() {
     assert.equal(m.visibility, 1);
     assertAboutEqual(m.x, 13+7+spacing*i);
   }
+
+  report = chunkView.draw(viewport, 20, 40);
+
+  assertAboutEqual(report.left, 13);
+  assertAboutEqual(report.width, 30);
+
+  pointCount = Math.ceil(21 / spacing);
+  var missingPoints = dataSource.getLength() - pointCount;
+  assert.equal(report.xmarkers.length, pointCount);
+  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
+    var idx = i + missingPoints;
+    var m = report.xmarkers[i];
+    assert.equal(m.index, idx);
+    assert.equal(m.oldIndex, idx);
+    assert.equal(m.dataPoint, chunk.getDataPoint(idx));
+    assert.equal(m.oldDataPoint, chunk.getDataPoint(idx));
+    assert.equal(m.visibility, 1);
+    assertAboutEqual(m.x, 13+30-9-(pointCount-i-1)*spacing);
+  }
+
+  report = chunkView.draw(viewport, 10, 40);
+
+  assertAboutEqual(report.left, 13);
+  assertAboutEqual(report.width, 30);
+
+  var firstPointIndex = Math.ceil(3 / spacing);
+  var lastPointIndex = Math.floor(33 / spacing);
+  pointCount = lastPointIndex - firstPointIndex + 1;
+  assert.equal(report.xmarkers.length, pointCount);
+  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
+    var idx = i + firstPointIndex;
+    var m = report.xmarkers[i];
+    assert.equal(m.index, idx);
+    assert.equal(m.oldIndex, idx);
+    assert.equal(m.dataPoint, chunk.getDataPoint(idx));
+    assert.equal(m.oldDataPoint, chunk.getDataPoint(idx));
+    assert.equal(m.visibility, 1);
+    assertAboutEqual(m.x, 13+7+(idx*spacing)-10);
+  }
 }
 
 testDrawCompleteScrolling();
