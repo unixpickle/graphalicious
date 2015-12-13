@@ -140,7 +140,41 @@ function testComputeRegion() {
   }
 }
 
+function testSmallCounts() {
+  var style = new FullCurveStyle({
+    leftMargin: 7,
+    rightMargin: 9,
+    minWidth: 50,
+    colorScheme: new ColorScheme('red', 'blue')
+  });
+
+  var region = style.computeRegion({startIndex: 0, length: 10}, 0);
+  assertAboutEqual(region.left, 0);
+  assertAboutEqual(region.width, 0);
+
+  var range = style.computeRange({left: 0, width: 30}, 0);
+  assert.equal(range.startIndex, 0);
+  assert.equal(range.length, 0);
+
+  region = style.computeRegion({startIndex: 0, length: 0}, 1);
+  assertAboutEqual(region.left, 0);
+  assertAboutEqual(region.width, 0);
+
+  range = style.computeRange({left: 0, width: 0}, 1);
+  assert.equal(range.startIndex, 0);
+  assert.equal(range.length, 0);
+
+  region = style.computeRegion({startIndex: 0, length: 1}, 1);
+  assertAboutEqual(region.left, 0);
+  assertAboutEqual(region.width, 50);
+
+  range = style.computeRange({left: 0, width: SMALL_NUM}, 1);
+  assert.equal(range.startIndex, 0);
+  assert.equal(range.length, 1);
+}
+
 testComputeRange();
 testComputeRegion();
+testSmallCounts();
 
 console.log('PASS');
