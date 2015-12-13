@@ -26,10 +26,9 @@ FullCurveStyleAttrs.prototype.realMinWidth = function() {
 };
 
 FullCurveStyleAttrs.prototype.computeRange = function(region, pointCount) {
-  var totalWidth = this.computeRegion({startIndex: 0, length: pointCount}, pointCount);
-  region = regionIntersection(region, {left: 0, width: totalWidth});
+  region = regionIntersection(region, {left: 0, width: this.realMinWidth()});
 
-  if (pointCoint === 0) {
+  if (pointCount === 0) {
     return {startIndex: 0, length: 0};
   } else if (region.width === 0) {
     return {startIndex: 0, length: 0};
@@ -40,12 +39,23 @@ FullCurveStyleAttrs.prototype.computeRange = function(region, pointCount) {
   var availableWidth = this.realMinWidth() - this.totalMargins();
   var pointSpacing = availableWidth / (pointCount - 1);
 
-  var startIndex = Math.floor((region.left - this.getLeftMargin()) / pointSpacing);
-  var endIndex = Math.ceil((region.left + region.width - this.getLeftMargin) / pointSpacing);
+  var startIndex, endIndex;
+
+  // NOTE: if a region is in the margins, then we must include the corresponding edge point.
+  if (region.left > this.getLeftMargin()+availableWidth && region.left < this.realMinWidth()) {
+    startIndex = pointCount - 1;
+    endIndex = startIndex;
+  } else if (region.left+region.width > 0 && region.left+region.width < this.getLeftMargin()) {
+    startIndex = 0;
+    endIndex = startIndex;
+  } else {
+    startIndex = Math.floor((region.left - this.getLeftMargin()) / pointSpacing);
+    endIndex = Math.ceil((region.left + region.width - this.getLeftMargin()) / pointSpacing);
+  }
 
   var unboundedRange = {
     startIndex: startIndex,
-    endIndex: endIndex - startIndex
+    length: endIndex - startIndex + 1
   };
 
   return rangeIntersection(unboundedRange, {startIndex: 0, length: pointCount});
