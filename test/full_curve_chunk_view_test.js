@@ -209,8 +209,47 @@ function testDrawPartialScrolling() {
   }
 }
 
+function testDrawPartialStretched() {
+  var style = new FullCurveStyle({
+    leftMargin: 7,
+    rightMargin: 9,
+    minWidth: 50,
+    colorScheme: new ColorScheme('red', 'blue')
+  });
+
+  var dataSource = DataSource.random(100, 30, true);
+  var chunk = dataSource.fetchChunkSync(0, 1, 98);
+
+  var viewport = {
+    x: 13,
+    y: 10,
+    width: 60,
+    height: 50,
+    context: new DummyCanvas().getContext('2d')
+  };
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var report = chunkView.draw(viewport, 0, 40);
+
+  assert.equal(report.xmarkers.length, dataSource.getLength()-2);
+
+  var spacing = (60 - 7 - 9) / (dataSource.getLength() - 1);
+  assertAboutEqual(report.left, 13+7+spacing);
+  assertAboutEqual(report.width, 60-9-spacing*2-7);
+
+  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
+    var m = report.xmarkers[i];
+    assert.equal(m.index, i+1);
+    assert.equal(m.oldIndex, i+1);
+    assert.equal(m.dataPoint, chunk.getDataPoint(i));
+    assert.equal(m.oldDataPoint, chunk.getDataPoint(i));
+    assert.equal(m.visibility, 1);
+    assertAboutEqual(m.x, 13+7+spacing*(i+1));
+  }
+}
+
 testDrawCompleteScrolling();
 testDrawCompleteStretched();
 testDrawPartialScrolling();
+testDrawPartialStretched();
 
 console.log('PASS');
