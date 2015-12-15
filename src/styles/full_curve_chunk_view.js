@@ -154,6 +154,8 @@ FullCurveChunkView.prototype._strokePath = function(viewport, coords) {
   var isFirstPoint = true;
 
   ctx.beginPath();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
   for (var i = 0, len = coords.length; i < len; ++i) {
     var coord = coords[i];

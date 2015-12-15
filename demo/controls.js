@@ -26,6 +26,13 @@
         bottomMargin: 5,
         dotStrokeWidth: 2,
         dotStrokeColor: 'white'
+      },
+      full: {
+        colorScheme: colorScheme,
+        leftMargin: 10,
+        rightMargin: 10,
+        lineThickness: 4,
+        minWidth: 250
       }
     };
     this._view = view;
@@ -146,6 +153,8 @@
     case 'curve':
       style = new window.graphalicious.styles.CurveStyle(this._graphStyles.curve);
       break;
+    case 'full':
+      style = new window.graphalicious.styles.FullCurveStyle(this._graphStyles.full);
     }
     var colorScheme = this._graphStyles.bar.colorScheme;
     var config = {

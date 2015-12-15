@@ -61,15 +61,28 @@ Drawer.prototype.draw = function() {
 };
 
 Drawer.prototype._drawChunkView = function() {
-  var viewport = {
-    x: -JAGGED_EDGE_SIZE,
-    y: this._topMargin,
-    width: this._state.positive.viewportWidth + JAGGED_EDGE_SIZE*2,
-    height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
-    context: this._context
-  };
-  return this._chunkView.draw(viewport, this._state.positive.viewportX -
-    this._state.positive.leftmostYLabelsWidth - JAGGED_EDGE_SIZE, this._maxValue);
+  // NOTE: this is a temporary hack to fix stretching.
+  var cutoffWidth = this._state.positive.viewportWidth + JAGGED_EDGE_SIZE*2;
+  if (this._chunkView.getEncompassingWidth() <= cutoffWidth) {
+    var viewport = {
+      x: this._state.positive.leftmostYLabelsWidth,
+      y: this._topMargin,
+      width: this._state.positive.viewportWidth - this._state.positive.leftmostYLabelsWidth,
+      height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
+      context: this._context
+    };
+    return this._chunkView.draw(viewport, this._state.positive.viewportX, this._maxValue);
+  } else {
+    var viewport = {
+      x: -JAGGED_EDGE_SIZE,
+      y: this._topMargin,
+      width: this._state.positive.viewportWidth + JAGGED_EDGE_SIZE*2,
+      height: this._state.positive.viewportHeight - (this._topMargin + this._bottomMargin),
+      context: this._context
+    };
+    return this._chunkView.draw(viewport, this._state.positive.viewportX -
+      this._state.positive.leftmostYLabelsWidth - JAGGED_EDGE_SIZE, this._maxValue);
+  }
 };
 
 Drawer.prototype._drawEdgesAndLines = function(contentRect) {
