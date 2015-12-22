@@ -27,8 +27,8 @@ The *YLCVSettings* type stores all of the configuration parameters for a YLCV. I
  * *number* labelRightMargin - the space to the right of the text of any label.
  * *string* labelColor - a CSS color used for labels.
  * *string* labelFont - a CSS font used for labels.
- * *function* valueToString - convert a primary value into a string for a label.
- * *function* roundValue - a function for rounding primary values. This will be applied to any values before they are made into labels. If `roundValue(y)=z`, then `roundValue(k*z) = k*z` for all integers `k`. In English, this means that any value which rounds to itself can be multiplied by any integer and still round to itself.
+ * *function* formatValue - convert a primary value into a string for a label.
+ * *function* roundValue - a function for rounding primary values. The YLCV applies this to the lowest non-zero label value and uses integer multiples of the result for the rest of the labels.
  * *number* topLabelSpace - a pixel quantity which determines the minimum space between a value in the graph and the maximum label's value. Let `x` be the height of the YLCV, minus the top and bottom margins. Then `((maximalLabelValue-maximalValue)/maximalLabelValue)*x >= topLabelSpace`.
 
 # Construction
@@ -38,3 +38,20 @@ To create a new YLCV, call its constructor and pass a [YLCVSettings](#the-ylcvse
 ```js
 var ylcv = new window.graphalicious.ylcv.View(settings);
 ```
+
+# Built-in interpreters
+
+The formatValue and roundValue functions from [YLCVSettings](#the-ylcvsettings-type) are responsible for **interpreting** data&mdash;turning it into human-readable text. The YLCV implementation comes with a few utilities for interpreting data.
+
+## DurationInterpretation
+
+The *DurationInterpretation* class formats primary values as if they were durations of time, measured in milliseconds. It makes sure that labels are divided into pretty durations (e.g., 250 milliseconds, 5 seconds, etc.), and formats durations in a human-readable fashion (e.g., "3:45.32"). To construct one, you can do the following:
+
+```js
+var interp = new DurationInterpretation(config);
+```
+
+The configuration constructor argument has the following keys:
+
+ * *Array* divisions - an array of millisecond values. These are used for rounding values. For instance, you might wish to use the divisions `[250, 1000, 5000]` to specify that labels should either be multiples of 250 milliseconds, 1 second, or 5 seconds. If you do not specify this, a reasonable default will be used.
+ * *int* decimals - the number of decimal places to use when formatting durations. This should be between 0 and 3, inclusive. If you do not specify this, a default will be used.
