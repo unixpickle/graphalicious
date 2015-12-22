@@ -4,7 +4,7 @@ This will be a tremendously beautiful graphing API.
 
 # Dependencies
 
-This depends on [crystal](https://github.com/unixpickle/crystal) and [eventemitter.js](https://github.com/unixpickle/eventemitter.js).
+This depends on [crystal](https://github.com/unixpickle/crystal), [eventemitter.js](https://github.com/unixpickle/eventemitter.js), and [scroller.js](https://github.com/unixpickle/scroller.js).
 
 # Building
 
