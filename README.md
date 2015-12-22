@@ -4,11 +4,11 @@ This will be a tremendously beautiful graphing API.
 
 # Dependencies
 
-This depends on [crystal](https://github.com/unixpickle/crystal).
+This depends on [crystal](https://github.com/unixpickle/crystal) and [eventemitter.js](https://github.com/unixpickle/eventemitter.js).
 
 # Building
 
-You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in order to use the build script.
+You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in order to use the build script, [build.sh](build.sh).
 
 # TODO
 

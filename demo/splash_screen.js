@@ -1,6 +1,6 @@
 (function() {
 
-  var EventEmitter = window.graphalicious.base.EventEmitter;
+  var EventEmitter = window.EventEmitter;
 
   var SPINNER_SIZE = 30;
   var RETRY_SIZE = 46;

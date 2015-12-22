@@ -4,8 +4,13 @@ var SMALL_NUM = 0.001;
 var assert = require('assert');
 
 var BarStyleAttrs = require('./importer')([
-  'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'
-], ['BarStyleAttrs']).BarStyleAttrs;
+  'styles/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'
+], ['BarStyleAttrs'], {
+  window: {
+    EventEmitter: require('events').EventEmitter
+  },
+  EventEmitter: require('events').EventEmitter
+}).BarStyleAttrs;
 
 function regionContains(bigger, smaller) {
   if (smaller.width === 0) {

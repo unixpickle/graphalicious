@@ -5,10 +5,15 @@ var DataSource = require('./data_source.js');
 var DummyCanvas = require('./dummy_canvas.js');
 
 var importRes = require('./importer')([
-  'base/event_emitter.js', 'base/color_scheme.js', 'styles/utilities.js',
+  'base/color_scheme.js', 'styles/utilities.js',
   'styles/smooth_path.js', 'styles/attrs.js', 'styles/full_curve_style.js',
   'styles/full_curve_chunk_view.js'
-], ['FullCurveStyle', 'ColorScheme']);
+], ['FullCurveStyle', 'ColorScheme'], {
+  window: {
+    EventEmitter: require('events').EventEmitter
+  },
+  EventEmitter: require('events').EventEmitter
+});
 
 var FullCurveStyle = importRes.FullCurveStyle;
 var ColorScheme = importRes.ColorScheme;

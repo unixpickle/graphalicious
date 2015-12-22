@@ -1,5 +1,3 @@
-//deps event_emitter.js
-
 var EASE_DURATION = 1000;
 
 // DraggableView is an abstract base class for views which need to support user dragging.
@@ -13,7 +11,7 @@ var EASE_DURATION = 1000;
 //
 // DraggableView subclasses EventEmitter but does not fire any events.
 function DraggableView() {
-  EventEmitter.call(this);
+  window.EventEmitter.call(this);
   this._registerMouseEvents();
   this._registerTouchEvents();
 
@@ -25,7 +23,7 @@ function DraggableView() {
   this._easeEventCallback = null;
 }
 
-DraggableView.prototype = Object.create(EventEmitter.prototype);
+DraggableView.prototype = Object.create(window.EventEmitter.prototype);
 
 DraggableView.prototype.element = function() {
   throw new Error('subclasses must override element()');

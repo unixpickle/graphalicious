@@ -3,9 +3,13 @@ var SMALL_NUM = 0.001;
 var assert = require('assert');
 
 var importRes = require('./importer')([
-  'base/event_emitter.js', 'styles/attrs.js', 'styles/bar_style.js', 'styles/bar_morphing.js',
-  'styles/utilities.js'
-], ['BarStyleAttrs', 'MorphingBarLandscape']);
+  'styles/attrs.js', 'styles/bar_style.js', 'styles/bar_morphing.js', 'styles/utilities.js'
+], ['BarStyleAttrs', 'MorphingBarLandscape'], {
+  window: {
+    EventEmitter: require('events').EventEmitter
+  },
+  EventEmitter: require('events').EventEmitter
+});
 
 var BarStyleAttrs = importRes.BarStyleAttrs;
 var MorphingBarLandscape = importRes.MorphingBarLandscape;

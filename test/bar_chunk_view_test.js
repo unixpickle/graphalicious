@@ -8,7 +8,7 @@ var Canvas = require(__dirname + '/dummy_canvas.js');
 var currentAnimationFrameCb;
 
 var importRes = require('./importer')([
-  'base/event_emitter.js', 'base/color_scheme.js', 'styles/attrs.js', 'styles/bar_style.js',
+  'base/color_scheme.js', 'styles/attrs.js', 'styles/bar_style.js',
   'styles/bar_morphing.js', 'styles/bar_chunk_view.js', 'styles/utilities.js'
 ], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
   window: {
@@ -18,8 +18,10 @@ var importRes = require('./importer')([
     },
     cancelAnimationFrame: function() {
       currentAnimationFrameCb = null;
-    }
-  }
+    },
+    EventEmitter: require('events').EventEmitter
+  },
+  EventEmitter: require('events').EventEmitter
 });
 
 var BarStyle = importRes.BarStyle;

@@ -2,7 +2,7 @@
 
   var EventEmitter;
   if ('undefined' !== typeof window) {
-    EventEmitter = window.graphalicious.base.EventEmitter;
+    EventEmitter = window.EventEmitter;
   } else {
     EventEmitter = require('events').EventEmitter;
   }
