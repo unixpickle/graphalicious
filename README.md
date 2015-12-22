@@ -14,7 +14,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
  * Rewrite YLCV and revise *View* architecture
    * Use scroller.js for view
-   * Give *ContentView* complete power over scrolling and drawing
    * Do not attempt to use a finite state machine
    * Separate base class for handling 300ms delay for splash screen
    * Create pointer event pipeline (View -> ContentView (YLCV) -> ChunkView)

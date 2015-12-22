@@ -8,8 +8,8 @@ The `setAnimate()` method of an *InlineLoaderView* works just like the equivalen
 
 # Methods
 
- * *DOMElement* element() - get the view's root DOM element. This element will automatically be sized by the *InlineLoaderView*. However, it will be positioned by the parent.
- * *void* layout(width, height) - layout the view so that it fits inside the given dimensions. This is called whenever the *InlineLoaderView* is resized.
+ * *DOMElement* element() - get the view's root DOM element. This element will automatically be sized by *layout()*. The user of the *InlineLoaderView* must position it.
+ * *void* layout(width, height) - update the size of the view's element and adjust its graphics accordingly.
  * *void* setAnimate(flag) - enable or disable animations. While animations are disabled, the view should not consume any resources which cannot be garbage collected.
  * *void* showLoading() - show the loading animation.
  * *void* showError() - show the "retry" button which accompanies an error.

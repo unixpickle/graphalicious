@@ -1,30 +1,28 @@
 # Abstract
 
-While having a [DataSource](../DataSource.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DataSource.md).
+While having a [DataSource](../DataSource.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DataSource.md) using a [VisualStyle](#../VisualStyle/VisualStyle.md).
 
 # Overview & Terminology
 
-The **total width** of a *ContentView* is the minimum width required to display it without scrolling. When a *ContentView* has a small enough total width to be rendered without scrolling, it may be asked to "stretch" itself&mdash;that is, fill more space than it's total width.
+A *ContentView* manages a **scrolling state** (as documented [in scroller.js](https://github.com/unixpickle/scroller.js#the-state-class)). Both the user and the *ContentView* itself can modify the scrolling state. If the user (or some external agent) scrolls, the offset of the scrolling state will change. If the *ContentView* needs to display more or less content, or if its underlying style changes metrically, it will update its scrolling state as well.
 
-Often times, a *ContentView* will need to scroll. In this case, there are a few measurements which have names. The **viewport width** is the width, in pixels, that can be visible at any given time. The **scroll value** represents the number of pixels to the right the user has scrolled. A scroll value of 0 means the leftmost content is visible. A scroll value of (total width - viewport width) means that the user is scrolled all the way to the right.
-
-When a *ContentView* is being drawn, its **height** measures how many pixels tall the view is. The **bar-showing height** is the height that the *ContentView* would have if a scrollbar were showing underneath it. If the *ContentView* scrolls, the height will equal the bar-showing height. The bar-showing height is useful for *ContentView*s which change their appearance based on their height, since it allows them to keep their appearance relatively constant when the scrollbar shows or hides.
+A *ContentView* does not determine its own size. An external agent (usually a [View](#../View.md)) determines the *ContentView*'s size. In turn, the *ContentView* is responsible for dealing with size changes and updating its scrolling state accordingly.
 
 It would be silly for an off-screen *ContentView* to perform animations. Therefore, it is possible to tell a *ContentView* whether or not it should show animations.
-
-Remember that a *DataSource* emits various events for remote changes. Since a *ContentView* is a visual representation of a *DataSource*, it can be affected by the same kinds of remote changes. At any time, a *ContentView* can redraw itself or change it's total width.
 
 # Methods
 
 A *ContentView* must implement the following methods:
 
- * *int* totalWidth() - get the current total width of the *ContentView*.
+ * [State](https://github.com/unixpickle/scroller.js#the-state-class)) getScrollingState() - get the *ContentView*'s current scrolling state.
+ * *void* setScrolledPixels(pixels) - update the scroll offset of the *ContentView*'s scrolling state.
  * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
- * *void* draw(viewportX, viewportWidth, height, barShowingHeight) - draw a portion of the content to fit inside a viewport. If viewport width is greater than the total width, then viewportX must be 0 and the *ContentView* will be "stretched".
+ * *void* layout(width, height) - update the *ContentView*'s dimensions.
  * *void* setAnimate(flag) - enable or disable animations.
+ * *void* dispose() - tell the *ContentView* to deregister all of its events and remove references to its resources (such as the [DataSource](#../DataSource.md)).
 
 # Events
 
 A *ContentView* may emit the following event:
 
- * widthChange(suggestedViewportX) - the total width of the *ContentView* has changed. If the *ContentView* is being displayed in a *View*, this will automatically trigger a `draw`. The `suggestedViewportX` argument is a number which indicates to the *ContentView* how the scroll position should be changed by the width change. The value may be out of valid bounds and should be bounded by the *View*.
+ * scrollingStateChange() - the *ContentView* has changed its scrolling state. This will not be triggered by *setScrolledPixels()*. However, this may be triggered by a *layout()*, since changing the *ContentView*'s width will also change the scrolling state's visible pixels.
