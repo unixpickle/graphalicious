@@ -39,7 +39,7 @@ To create a new YLCV, call its constructor and pass a [YLCVSettings](#the-ylcvse
 var ylcv = new window.graphalicious.ylcv.View(settings);
 ```
 
-# Built-in interpreters
+# Built-in interpretations
 
 The formatValue and roundValue functions from [YLCVSettings](#the-ylcvsettings-type) are responsible for **interpreting** data&mdash;turning it into human-readable text. The YLCV implementation comes with a few utilities for interpreting data.
 
@@ -55,3 +55,8 @@ The configuration constructor argument has the following keys:
 
  * *Array* divisions - an array of millisecond values. These are used for rounding values. For instance, you might wish to use the divisions `[250, 1000, 5000]` to specify that labels should either be multiples of 250 milliseconds, 1 second, or 5 seconds. If you do not specify this, a reasonable default will be used.
  * *int* decimals - the number of decimal places to use when formatting durations. This should be between 0 and 3, inclusive. If you do not specify this, a default will be used.
+
+The *DurationInterpretation* implements the following methods:
+
+ * *number* round(x) - implements the roundValue YLCV setting.
+ * *string* format(x) - implements the formatValue YLCV setting.
