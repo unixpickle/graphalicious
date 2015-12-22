@@ -13,7 +13,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Rewrite YLCV and revise *View* architecture
-   * Document *ColorScheme*
    * Use scroller.js for view
    * Give *ContentView* complete power over scrolling and drawing
    * Do not attempt to use a finite state machine
