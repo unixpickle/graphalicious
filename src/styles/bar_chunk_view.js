@@ -144,7 +144,7 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
 
   range = rangeIntersection(range, {startIndex: this._startIndex, length: pointCount});
   if (range.length === 0) {
-    return {left: viewport.x, width: 0, xmarkers: []}
+    return {left: viewport.x, width: 0, xmarkers: []};
   }
 
   var drawOffset = viewport.x - scrollX;
@@ -428,7 +428,7 @@ BarChunkView.prototype._morphingEncompassingCount = function() {
     return this._encompassingCount + 1;
   } else {
     return this._encompassingCount;
-  };
+  }
 };
 
 // _morphingGetPoint returns the data point at a chunk-relative index in the partial morphing

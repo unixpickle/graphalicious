@@ -51,7 +51,7 @@ DurationInterpretation.format = function(value) {
     minutes = padZero(minutes);
     return hours + ':' + padZero(minutes) + ':' + padZero(seconds) + fractional;
   }
-}
+};
 
 function padZero(s) {
   return s.length < 2 ? '0' + s : s;

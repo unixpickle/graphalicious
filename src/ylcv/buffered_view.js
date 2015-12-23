@@ -157,7 +157,7 @@ BufferedView.prototype.getChunkViewOffset = function() {
 // You should manually call draw() after calling this.
 BufferedView.prototype.setChunkViewOffset = function(val) {
   this._chunkViewOffset = val;
-}
+};
 
 // getYLabels returns the current y labels, used for drawing.
 BufferedView.prototype.getYLabels = function() {
@@ -191,7 +191,7 @@ BufferedView.prototype._updatePixelRatio = function(redraw) {
   if (redraw) {
     this.draw();
   }
-}
+};
 
 BufferedView.prototype._updateCanvasSize = function() {
   this._canvas.width = this._width * this._pixelRatio;

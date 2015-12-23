@@ -503,7 +503,7 @@ function testComputeRegionMorphingNearStart() {
       // Ranges after the morphing bar.
       [2, 9, totalWidth-spaceAfterMorphing, spaceAfterMorphing],
       [3, 8, totalWidth-spaceAfterMorphing+morphingSpace+13, spaceAfterMorphing-13-morphingSpace]
-    ]
+    ];
   });
 }
 

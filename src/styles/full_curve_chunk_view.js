@@ -46,7 +46,7 @@ FullCurveChunkView.prototype.insertion = function(index, animate) {
 
 FullCurveChunkView.prototype.modification = function(index, animate) {
   return false;
-}
+};
 
 FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   if (this._dataSource.getLength() < 2) {
