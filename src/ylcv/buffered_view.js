@@ -4,6 +4,9 @@
 // This view makes sure that the splash screen never appears for too short a time period,
 // and provides a grace period for new content to load after old content is invalidated.
 function BufferedView(config) {
+  this._labelLeftMargin = config.labelLeftMargin;
+  this._labelRightMargin = config.labelRightMargin;
+
   this._splashScreen = config.splashScreen;
   this._leftLoader = config.loader1;
   this._rightLoader = config.loader2;

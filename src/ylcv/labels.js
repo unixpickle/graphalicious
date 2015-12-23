@@ -49,6 +49,16 @@ Label.prototype.draw = function(ctx, x, y) {
   ctx.globalAlpha = oldAlpha;
 };
 
+Label.prototype.copyWithOpacity = function(opacity) {
+  var attrs = {};
+  for (var i = 0, len = Label.KEYS.length; i < len; ++i) {
+    var key = Label.KEYS[i];
+    attrs[key] = this['_' + key];
+  }
+  attrs.opacity = opacity;
+  return new Label(attrs);
+};
+
 function Labels(labelList, maxValue, topY, bottomY) {
   this._labelList = labelList;
   this._maxValue = maxValue;
@@ -85,6 +95,24 @@ Labels.prototype.draw = function(ctx, x) {
     var y = this.yForLabel(i);
     label.draw(ctx, x, y);
   }
+};
+
+Labels.prototype.transitionFrame = function(end, fractionDone) {
+  var newMaxValue = fractionDone*end._maxValue + (1-fractionDone)*this._maxValue;
+  var newTopY = fractionDone*end._topY + (1-fractionDone)*this._topY;
+  var newBottomY = fractionDone*end._bottomY + (1-fractionDone)*this._bottomY;
+
+  var labels = [];
+  for (var i = 0, len = this._labelList.length; i < len; ++i) {
+    var label = this._labelList[i].copyWithOpacity(1 - fractionDone);
+    labels.push(label);
+  }
+  for (var i = 0, len = end._labelList.length; i < len; ++i) {
+    var label = end._labelList[i].copyWithOpacity(fractionDone);
+    labels.push(label);
+  }
+
+  return new Labels(labels, newMaxValue, newTopY, newBottomY);
 };
 
 Labels.prototype.getCount = function() {
