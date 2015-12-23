@@ -66,6 +66,35 @@ function Labels(labelList, maxValue, topY, bottomY) {
   this._bottomY = bottomY;
 }
 
+Labels.createLabels = function(config, viewHeight, maxValue) {
+  var usableHeight = viewHeight - (config.topMargin + config.bottomMargin);
+  if (usableHeight <= 0) {
+    return new Labels([], 0, 0, 0);
+  }
+
+  var fractionOverMax = config.topLabelSpace / usableHeight;
+  var realMax = maxValue / (1 - fractionOverMax);
+  var count = Math.floor(usableHeight / config.minSpacing);
+
+  var division = config.roundValue(realMax / count);
+  var labelList = [];
+  for (var i = 0; i <= count; ++i) {
+    var labelValue = division * i;
+    var labelText = config.formatValue(labelValue);
+    var label = new Label({
+      text: labelText,
+      value: labelValue,
+      opacity: 1,
+      font: config.labelFont,
+      color: config.labelColor
+    });
+    labelList.push(label);
+  }
+
+  return new Labels(labelList, division*count, config.topMargin,
+    viewHeight-config.bottomMargin);
+};
+
 Labels.prototype.equals = function(l) {
   if (this._maxValue !== l._maxValue || this._topY !== l._topY ||
     this._bottomY !== l._bottomY || this._labelList.length !== l._labelList.length) {
