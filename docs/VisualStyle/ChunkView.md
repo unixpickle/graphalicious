@@ -79,8 +79,7 @@ A *ContentView* should notify a *ChunkView* when the *DataSource* changes. These
 A *ContentView* should notify a *ChunkView* of any pointer events. These events take [PointerPosition](#the-pointerposition-type) arguments:
 
  * *void* pointerMove(pos)
- * *void* pointerDown(pos)
- * *void* pointerUp(pos)
+ * *void* pointerClick(pos)
  * *void* pointerLeave()
 
 Drawing can be performed with these methods:

@@ -31,6 +31,9 @@ function BufferedView(config) {
   this._chunkViewOffset = 0;
   this._chunkView = null;
   this._yLabels = null;
+
+  this._currentCursorPosition = null;
+  this._registerPointerEvents();
 }
 
 BufferedView.STATE_SPLASH = 0;
@@ -105,8 +108,17 @@ BufferedView.prototype.getChunkView = function() {
 // You may pass null to indicate that there is no available ChunkView.
 //
 // You should manually call draw() after calling this.
+//
+// This may trigger a pointerMove() event on the new ChunkView, which may in
+// turn trigger a draw(). To avoid this, you can postpone on() calls on the
+// ChunkView until after setChunkView().
 BufferedView.prototype.setChunkView = function(cv) {
+  if (this._chunkView === cv) {
+    return;
+  }
+
   this._chunkView = cv;
+
   if (cv === null) {
     switch (this._state) {
     case BufferedView.STATE_SPLASH:
@@ -126,6 +138,10 @@ BufferedView.prototype.setChunkView = function(cv) {
   } else {
     switch (this._state) {
     case BufferedView.STATE_CONTENT:
+      if (this._currentCursorPosition !== null) {
+        this._chunkView.pointerMove(this._currentCursorPosition);
+      }
+      break;
     case BufferedView.STATE_EPHEMERAL_SPLASH:
       break;
     case BufferedView.STATE_SPLASH:
@@ -225,7 +241,41 @@ BufferedView.prototype._showContent = function() {
 
   this._element.removeChild(this._splashScreen.element());
   this._element.appendChild(this._canvas);
+
   this.draw();
+};
+
+BufferedView.prototype._registerPointerEvents = function() {
+  this._element.addEventListener('mousemove', function(e) {
+    var rect = this._element.getBoundingClientRect();
+    this._currentCursorPosition = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    if (this._chunkView !== null) {
+      this._chunkView.pointerMove(this._currentCursorPosition);
+    }
+  }.bind(this));
+
+  this._element.addEventListener('mouseleave', function(e) {
+    if (this._currentCursorPosition !== null) {
+      this._currentCursorPosition = null;
+      if (this._chunkView !== null) {
+        this._chunkView.pointerLeave();
+      }
+    }
+  }.bind(this));
+
+  this._element.addEventListener('click', function(e) {
+    if (this._chunkView !== null) {
+      var rect = this._element.getBoundingClientRect();
+      var pos = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+      this._chunkView.pointerClick(pos);
+    }
+  }.bind(this));
 };
 
 function makeElementsFillAndAbsolute(elements) {
