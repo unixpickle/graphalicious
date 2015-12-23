@@ -295,7 +295,6 @@ BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {
     break;
   default:
     throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
-    break;
   }
   result.x += drawOffset;
 
