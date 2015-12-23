@@ -59,6 +59,13 @@ BufferedView.prototype.context = function() {
 //
 // You should manually call draw() after calling this.
 BufferedView.prototype.layout = function(w, h) {
+  w = Math.ceil(w);
+  h = Math.ceil(h);
+
+  if (this._width === w && this._height === h) {
+    return;
+  }
+
   this._width = Math.ceil(w);
   this._height = Math.ceil(h);
 
@@ -67,6 +74,11 @@ BufferedView.prototype.layout = function(w, h) {
 
   this._updateCanvasSize();
   this._splashScreen.layout(this._width, this._height);
+
+  if (this._state === BufferedView.STATE_EPHEMERAL_CONTENT) {
+    clearTimeout(this._timeout);
+    this._showSplashScreen();
+  }
 };
 
 // getAnimate returns the animate flag, as described in setAnimate().
