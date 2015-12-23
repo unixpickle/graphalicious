@@ -47,3 +47,9 @@ function setPrivateAttributeVariables(object, attrs, properties, defaults) {
     }
   }
 }
+
+exports.defineAttributeGetters = defineAttributeGetters;
+exports.defineAttributesSetter = defineAttributesSetter;
+exports.defineAttributesCopy = defineAttributesCopy;
+exports.defineAttributeMethods = defineAttributeMethods;
+exports.setPrivateAttributeVariables = setPrivateAttributeVariables;
