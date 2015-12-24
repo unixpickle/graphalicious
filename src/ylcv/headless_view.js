@@ -123,7 +123,7 @@ HeadlessView.prototype.instantaneousState = function() {
 // shouldShowContent returns a boolean indicating whether or not the
 // view's state is sufficient for presenting data to the user.
 HeadlessView.prototype.shouldShowContent = function() {
-  return this._chunkView !== null && this._needsLeftmostChunk !== null;
+  return this._chunkView !== null && !this._needsLeftmostChunk;
 };
 
 HeadlessView.prototype._cancelAnimation = function() {
