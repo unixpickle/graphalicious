@@ -1,9 +1,13 @@
+//deps includes.js
+
 // BufferedView draws the ChunkView and the labels, shows the loaders,
 // and presents the splash screen for a YLCV.
 //
 // This view makes sure that the splash screen never appears for too short a time period,
 // and provides a grace period for new content to load after old content is invalidated.
 function BufferedView(config) {
+  EventEmitter.call(this);
+
   this._splashScreen = config.splashScreen;
   this._leftLoader = config.loader1;
   this._rightLoader = config.loader2;
@@ -43,6 +47,8 @@ BufferedView.STATE_EPHEMERAL_CONTENT = 3;
 
 BufferedView.EPHEMERAL_CONTENT_TIME = 100;
 BufferedView.EPHEMERAL_SPLASH_TIME = 300;
+
+BufferedView.prototype = Object.create(EventEmitter.prototype);
 
 // element returns the root DOM element of the view.
 BufferedView.prototype.element = function() {
@@ -199,6 +205,13 @@ BufferedView.prototype.setYLabels = function(labels) {
   this._yLabels = labels;
 };
 
+// showingSplash returns true if the splash screen is actively showing.
+// If the content is visible, even ephemerally, this returns false.
+BufferedView.prototype.showingSplash = function() {
+  return this._state === BufferedView.STATE_EPHEMERAL_SPLASH ||
+    this._state === BufferedView.STATE_SPLASH;
+};
+
 // draw draws the ContentView and the labels and positions the loaders.
 BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
@@ -245,6 +258,8 @@ BufferedView.prototype._showSplashScreen = function() {
   }
 
   this._element.appendChild(this._splashScreen.element());
+
+  this.emit('change');
 };
 
 BufferedView.prototype._showContent = function() {
@@ -255,6 +270,8 @@ BufferedView.prototype._showContent = function() {
   this._element.appendChild(this._canvas);
 
   this.draw();
+
+  this.emit('change');
 };
 
 BufferedView.prototype._registerPointerEvents = function() {
