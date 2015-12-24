@@ -240,7 +240,8 @@ HeadlessView.prototype._deregisterAnimationEvents = function() {
 };
 
 HeadlessView.prototype._handleAnimationFrame = function(progress) {
-  // TODO: update the InstantaneousState.
+  this._animationCurrentState = this._animationStartState.transitionFrame(this._steadyState,
+    progress, this._chunkView.getEncompassingWidth());
   this.emit('change');
 };
 
