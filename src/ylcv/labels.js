@@ -60,7 +60,7 @@ Labels.KEYS = ['labelList', 'maxValue', 'topY', 'bottomY', 'width', 'leftMargin'
 
 Labels.createLabels = function(config, viewHeight, maxValue) {
   var usableHeight = viewHeight - (config.topMargin + config.bottomMargin);
-  if (usableHeight <= 0) {
+  if (usableHeight <= config.topLabelSpace) {
     return new Labels([], 0, 0, 0);
   }
 
