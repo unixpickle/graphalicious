@@ -52,6 +52,9 @@ HeadlessView.MIN_CURRENT_BUFFER = 1000;
 // content, it will be extended to go all the way.
 HeadlessView.SMALL_GAP_WIDTH = 100;
 
+HeadlessView.LEFTMOST_CHUNK = 0;
+HeadlessView.CURRENT_CHUNK = 1;
+
 HeadlessView.prototype = Object.create(EventEmitter.prototype);
 
 // layout updates the state based on a new width and height.
@@ -250,4 +253,105 @@ HeadlessView.prototype._handleAnimationEnd = function() {
   this._animationStartState = null;
   this._animationCurrentState = null;
   this._deregisterAnimationEvents();
+};
+
+// _updateNeeds updates how much leftmost and current chunk data the view needs.
+// This returns an object with two boolean properties, 'leftmost' and 'current',
+// which indicate whether the needs changed for both kinds of chunk.
+HeadlessView.prototype._updateNeeds = function() {
+  return {
+    leftmost: this._updateLeftmostNeeds(),
+    current: this._updateCurrentChunkNeeds()
+  };
+};
+
+// _updateLeftmostNeeds determines how much leftmost data the leftmost labels need.
+// This returns true if the needs have changed.
+HeadlessView.prototype._updateLeftmostNeeds = function() {
+  var currentLength = 0;
+  var chunk = this._config.dataSource.getChunk(HeadlessView.LEFTMOST_CHUNK);
+  if (chunk !== null) {
+    currentLength = chunk.getLength();
+  }
+
+  var minimalLength = this._config.visualStyle.computeRange({
+    left: 0,
+    width: this._width
+  }, this._config.dataSource.getLength()).length;
+
+  var optimalLength = this._config.visualStyle.computeRange({
+    left: 0,
+    width: this._width + HeadlessView.LEFTMOST_BUFFER
+  }, this._config.dataSource.getLength()).length;
+
+  if (currentLength >= minimalLength) {
+    var changed = this._needsLeftmostChunk;
+    this._needsLeftmostChunk = false;
+    return changed;
+  } else if (!this._needsLeftmostChunk) {
+    this._needsLeftmostChunk = true;
+    this._requestedLeftmostChunkLength = optimalLength;
+    return true;
+  }
+
+  assert(this._needsLeftmostChunk);
+
+  if (this._requestedLeftmostChunkLength < minimalLength) {
+    this._requestedLeftmostChunkLength = optimalLength;
+    return true;
+  }
+
+  return false;
+};
+
+// _updateLeftmostNeeds determines the chunk that the current chunk view needs.
+// This returns true if the needs have changed.
+HeadlessView._updateCurrentChunkNeeds = function() {
+  var visibleRegion = {
+    left: this._steadyState.getScrollState().getScrolledPixels() -
+      this._steadyState.getLeftmostWidth(),
+    width: this._width
+  };
+  if (visibleRegion.left < 0) {
+    visibleRegion.left = 0;
+  }
+
+  var minimalRange = this._config.visualStyle.computeRange({
+    left: visibleRegion.left - HeadlessView.MIN_CURRENT_BUFFER,
+    width: visibleRegion.width + HeadlessView.MIN_CURRENT_BUFFER*2,
+  }, this._config.dataSource.getLength()).length;
+
+  var optimalRange = this._config.visualStyle.computeRange({
+    left: visibleRegion.left - HeadlessView.CURRENT_BUFFER,
+    width: visibleRegion.width + HeadlessView.CURRENT_BUFFER*2,
+  }, this._config.dataSource.getLength()).length;
+
+  var currentRange = {startIndex: 0, length: 0};
+  var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+  if (chunk !== null) {
+    currentRange = {startIndex: chunk.getStartIndex(), length: chunk.getLength()};
+  }
+
+  var minimalCurrentRange = rangeIntersection(currentRange, minimalRange);
+  if (minimalCurrentRange.startIndex === minimalRange.startIndex &&
+      minimalCurrentRange.length === minimalRange.length) {
+    var changed = this._needsCurrentChunk;
+    this._needsCurrentChunk = false;
+    return changed;
+  } else if (!this._needsCurrentChunk) {
+    this._needsCurrentChunk = true;
+    this._requestedCurrentChunkRange = optimalRange;
+    return true;
+  }
+
+  assert(this._needsCurrentChunk);
+
+  var minimalRequestedRange = rangeIntersection(this._requestedCurrentChunkRange, minimalRange);
+  if (minimalRequestedRange.startIndex !== minimalRange.startIndex ||
+      minimalRequestedRange.length !== minimalRange.length) {
+    this._requestedCurrentChunkRange = optimalRange;
+    return true;
+  }
+
+  return false;
 };
