@@ -11,6 +11,7 @@ function BufferedView(config) {
   this._splashScreen = config.splashScreen;
   this._leftLoader = config.loader1;
   this._rightLoader = config.loader2;
+  this._visualStyle = config.visualStyle;
 
   this._element = document.createElement('div');
   this._canvas = document.createElement('canvas');
@@ -40,6 +41,7 @@ function BufferedView(config) {
   this._registerPointerEvents();
 
   this._boundDraw = this.draw.bind(this);
+  this._visualStyle.on('superficialChange', this._boundDraw);
 }
 
 BufferedView.STATE_SPLASH = 0;
@@ -57,11 +59,12 @@ BufferedView.prototype.element = function() {
   return this._element;
 };
 
-// dispose removes any registered ChunkView event listeners.
+// dispose removes any registered event listeners on the ChunkView and VisualStyle.
 BufferedView.prototype.dispose = function() {
   if (this._chunkView) {
     this._chunkView.removeListener('redraw', this._boundDraw);
   }
+  this._visualStyle.removeListener('superficialChange', this._boundDraw);
 };
 
 // context returns the 2D drawing context for the view's canvas.
