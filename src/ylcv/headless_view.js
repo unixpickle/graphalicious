@@ -414,7 +414,8 @@ HeadlessView.prototype._updateYLabels = function() {
   }
 
   var labels = Labels.createLabels(this._config, this._height, maxPrimaryValue);
-  if (labels.equals(this._steadyState.getYLabels())) {
+  if (this._steadyState.getYLabels() !== null &&
+      labels.equals(this._steadyState.getYLabels())) {
     return;
   }
   this._steadyState = this._steadyState.copyWithYLabels(labels);
