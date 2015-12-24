@@ -73,7 +73,7 @@ HeadlessView.prototype.layout = function(w, h) {
   }
 
   this._updateScrollStateForWidthChange();
-
+  this._updateYLabels();
   // TODO: recompute the y-axis labels and leftmost labels.
   // TODO: trigger potential reloads for the leftmost chunk and the content chunk.
 };
@@ -389,8 +389,60 @@ HeadlessView.prototype._updateScrollStateForWidthChange = function() {
       startIndex: 0,
       length: this._config.dataSource.getLength()
     }, this._config.dataSource.getLength()).width;
-    this._steadyState = this._steadyState.copyWithScrollState(
-      new window.scrollerjs.State(totalPixels, this._width, totalPixels-this._width)
-    );
+    var scrollState = new window.scrollerjs.State(totalPixels, this._width,
+      totalPixels-this._width);
+    this._steadyState = new InstantaneousState(null, scrollState, null);
   }
+};
+
+HeadlessView.prototype._updateYLabels = function() {
+  assert(this._steadyState !== null);
+
+  var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+  if (chunk === null) {
+    this._steadyState = this._steadyState.copyWithYLabels(null);
+    return;
+  }
+
+  var chunkRange = {
+    startIndex: chunk.getStartIndex(),
+    length: chunk.getLength()
+  };
+
+  visibleRegion = {
+    left: this._steadyState.getScrollState().getScrolledPixels() -
+      this._steadyState.getLeftmostWidth(),
+    width: this._width
+  };
+  if (visibleRegion.left < 0) {
+    visibleRegion.left = 0;
+  }
+  var visibleRange = this._config.visualStyle.computeRange(visibleRegion,
+    this._config.dataSource.getLength());
+
+  // Don't change the labels as the user scrolls past the current chunk.
+  if (visibleRange.startIndex < chunkRange.startIndex) {
+    visibleRange.startIndex = chunkRange.startIndex;
+  } else if (visibleRange.startIndex+visibleRange.length >
+             chunkRange.startIndex+chunkRange.length) {
+    visibleRange.startIndex = chunkRange.startIndex + chunkRange.length - visibleRange.length;
+  }
+
+  var usableRange = rangeIntersection(visibleRange, chunkRange);
+  if (usableRange.length === 0) {
+    this._steadyState = this._steadyState.copyWithYLabels(null);
+    return;
+  }
+
+  var maxPrimaryValue = 0;
+  for (var i = 0, len = usableRange.length; i < len; ++i) {
+    var point = chunk.getDataPoint(i + usableRange.startIndex);
+    maxPrimaryValue = Math.max(maxPrimaryValue, point.primary);
+  }
+
+  var labels = Labels.createLabels(this._config, this._height, maxPrimaryValue);
+  if (labels.equals(this._steadyState.getYLabels())) {
+    return;
+  }
+  this._steadyState = this._steadyState.copyWithYLabels(labels);
 };
