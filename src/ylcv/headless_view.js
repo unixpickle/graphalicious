@@ -308,26 +308,7 @@ HeadlessView.prototype._updateLeftmostNeeds = function() {
 // _updateLeftmostNeeds determines the chunk that the current chunk view needs.
 // This returns true if the needs have changed.
 HeadlessView._updateCurrentChunkNeeds = function() {
-  var visibleRegion;
-  if (this._steadyState !== null) {
-    visibleRegion = {
-      left: this._steadyState.getScrollState().getScrolledPixels() -
-        this._steadyState.getLeftmostWidth(),
-      width: this._width
-    };
-  } else {
-    var totalWidth = this._config.dataSource.computeRegion({
-      startIndex: 0,
-      length: this._config.dataSource.getLength()
-    }, this._config.dataSource.getLength()).width;
-    visibleRegion = {
-      left: totalWidth - this._width,
-      width: this._width
-    };
-  }
-  if (visibleRegion.left < 0) {
-    visibleRegion.left = 0;
-  }
+  var visibleRegion = this._visibleRegion();
 
   var minimalRange = this._config.visualStyle.computeRange({
     left: visibleRegion.left - HeadlessView.MIN_CURRENT_BUFFER,
@@ -409,15 +390,7 @@ HeadlessView.prototype._updateYLabels = function() {
     length: chunk.getLength()
   };
 
-  visibleRegion = {
-    left: this._steadyState.getScrollState().getScrolledPixels() -
-      this._steadyState.getLeftmostWidth(),
-    width: this._width
-  };
-  if (visibleRegion.left < 0) {
-    visibleRegion.left = 0;
-  }
-  var visibleRange = this._config.visualStyle.computeRange(visibleRegion,
+  var visibleRange = this._config.visualStyle.computeRange(this._visibleRegion(),
     this._config.dataSource.getLength());
 
   // Don't change the labels as the user scrolls past the current chunk.
@@ -445,4 +418,34 @@ HeadlessView.prototype._updateYLabels = function() {
     return;
   }
   this._steadyState = this._steadyState.copyWithYLabels(labels);
+};
+
+// _visibleRegion computes the region (in the complete landscape) that is currently
+// visible according to the steady state.
+// If no steady state is available, this uses a default scroll position.
+HeadlessView.prototype._visibleRegion = function() {
+  var visibleRegion;
+  if (this._steadyState !== null) {
+    var leftmostWidth = 0;
+    if (this._steadyState.getLeftmostLabels() !== null) {
+      leftmostWidth = this._steadyState.getLeftmostLabels().totalWidth();
+    }
+    visibleRegion = {
+      width: this._width,
+      left: this._steadyState.getScrollState().getScrolledPixels() - leftmostWidth
+    };
+  } else {
+    var totalWidth = this._config.dataSource.computeRegion({
+      startIndex: 0,
+      length: this._config.dataSource.getLength()
+    }, this._config.dataSource.getLength()).width;
+    visibleRegion = {width: this._width, left: 0};
+    if (this._config.emphasizeRight) {
+      visibleRegion.left = totalWidth - this._width;
+    }
+  }
+  if (visibleRegion.left < 0) {
+    visibleRegion.left = 0;
+  }
+  return visibleRegion;
 };
