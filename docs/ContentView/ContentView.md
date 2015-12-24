@@ -19,7 +19,7 @@ A *ContentView* must implement the following methods:
  * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
  * *void* layout(width, height) - update the *ContentView*'s dimensions.
  * *void* setAnimate(flag) - enable or disable animations.
- * *void* dispose() - tell the *ContentView* to deregister all of its events and remove references to its resources (such as the [DataSource](../DataSource.md)).
+ * *void* dispose() - tell the *ContentView* to deregister all of its events and remove references to its resources (such as the DataSource, the VisualStyle, and its ChunkViews).
 
 # Events
 
