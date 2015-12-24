@@ -38,6 +38,8 @@ function BufferedView(config) {
 
   this._currentCursorPosition = null;
   this._registerPointerEvents();
+
+  this._boundDraw = this.draw.bind(this);
 }
 
 BufferedView.STATE_SPLASH = 0;
@@ -53,6 +55,13 @@ BufferedView.prototype = Object.create(EventEmitter.prototype);
 // element returns the root DOM element of the view.
 BufferedView.prototype.element = function() {
   return this._element;
+};
+
+// dispose removes any registered ChunkView event listeners.
+BufferedView.prototype.dispose = function() {
+  if (this._chunkView) {
+    this._chunkView.removeListener('redraw', this._boundDraw);
+  }
 };
 
 // context returns the 2D drawing context for the view's canvas.
@@ -126,13 +135,13 @@ BufferedView.prototype.getChunkView = function() {
 // You may pass null to indicate that there is no available ChunkView.
 //
 // You should manually call draw() after calling this.
-//
-// This may trigger a pointerMove() event on the new ChunkView, which may in
-// turn trigger a draw(). To avoid this, you can postpone on() calls on the
-// ChunkView until after setChunkView().
 BufferedView.prototype.setChunkView = function(cv) {
   if (this._chunkView === cv) {
     return;
+  }
+
+  if (this._chunkView !== null) {
+    this._chunkView.removeListener('redraw', this._boundDraw);
   }
 
   this._chunkView = cv;
@@ -155,11 +164,6 @@ BufferedView.prototype.setChunkView = function(cv) {
     }
   } else {
     switch (this._state) {
-    case BufferedView.STATE_CONTENT:
-      if (this._currentCursorPosition !== null) {
-        this._chunkView.pointerMove(this._currentCursorPosition);
-      }
-      break;
     case BufferedView.STATE_EPHEMERAL_SPLASH:
       break;
     case BufferedView.STATE_SPLASH:
@@ -176,8 +180,14 @@ BufferedView.prototype.setChunkView = function(cv) {
       this._state = BufferedView.STATE_CONTENT;
       clearTimeout(this._timeout);
       this._timeout = null;
+      /* falls through */
+    case BufferedView.STATE_CONTENT:
+      if (this._currentCursorPosition !== null) {
+        this._chunkView.pointerMove(this._currentCursorPosition);
+      }
       break;
     }
+    cv.on('redraw', this._boundDraw);
   }
 };
 
