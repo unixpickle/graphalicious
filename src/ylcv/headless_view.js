@@ -370,8 +370,11 @@ HeadlessView.prototype._updateScrollStateForWidthChange = function() {
       startIndex: 0,
       length: this._config.dataSource.getLength()
     }, this._config.dataSource.getLength()).width;
-    var scrollState = new window.scrollerjs.State(totalPixels, this._width,
-      totalPixels-this._width);
+    var scrollOffset = 0;
+    if (this._config.emphasizeRight) {
+      scrollOffset = totalPixels - this._width;
+    }
+    var scrollState = new window.scrollerjs.State(totalPixels, this._width, scrollOffset);
     this._steadyState = new InstantaneousState(null, scrollState, null);
   }
 };
