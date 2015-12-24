@@ -19,6 +19,10 @@ InstantaneousState.prototype.getLeftmostWidth = function() {
   return this._leftmostWidth;
 };
 
+InstantaneousState.prototype.copyWithScrollState = function(s) {
+  return new InstantaneousState(this._yLabels, s, this._leftmostWidth);
+};
+
 InstantaneousState.prototype.transitionFrame = function(end, progress, currentWidth) {
   var labels = this._yLabels.transitionFrame(end, progress);
   var leftmostWidth = progress*end.getLeftmostWidth() +

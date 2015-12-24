@@ -69,10 +69,11 @@ HeadlessView.prototype.layout = function(w, h) {
   this._height = h;
 
   if (this._animating) {
-    this._chunkView.finishAnimation();
+    this._cancelAnimation();
   }
 
-  // TODO: recompute the scroll state.
+  this._updateScrollStateForWidthChange();
+
   // TODO: recompute the y-axis labels and leftmost labels.
   // TODO: trigger potential reloads for the leftmost chunk and the content chunk.
 };
@@ -307,11 +308,23 @@ HeadlessView.prototype._updateLeftmostNeeds = function() {
 // _updateLeftmostNeeds determines the chunk that the current chunk view needs.
 // This returns true if the needs have changed.
 HeadlessView._updateCurrentChunkNeeds = function() {
-  var visibleRegion = {
-    left: this._steadyState.getScrollState().getScrolledPixels() -
-      this._steadyState.getLeftmostWidth(),
-    width: this._width
-  };
+  var visibleRegion;
+  if (this._steadyState !== null) {
+    visibleRegion = {
+      left: this._steadyState.getScrollState().getScrolledPixels() -
+        this._steadyState.getLeftmostWidth(),
+      width: this._width
+    };
+  } else {
+    var totalWidth = this._config.dataSource.computeRegion({
+      startIndex: 0,
+      length: this._config.dataSource.getLength()
+    }, this._config.dataSource.getLength()).width;
+    visibleRegion = {
+      left: totalWidth - this._width,
+      width: this._width
+    };
+  }
   if (visibleRegion.left < 0) {
     visibleRegion.left = 0;
   }
@@ -354,4 +367,30 @@ HeadlessView._updateCurrentChunkNeeds = function() {
   }
 
   return false;
+};
+
+HeadlessView.prototype._updateScrollStateForWidthChange = function() {
+  if (this._steadyState !== null) {
+    var keepRight = (this._steadyState.getScrollState().scrolledRatio() >= 0.5);
+    if (this._config.emphasizeRight &&
+        this._steadyState.getScrollState().maxScrolledPixels() === 0) {
+      keepRight = true;
+    }
+    var newScrollX = this._steadyState.getScrollState().getScrolledPixels();
+    if (keepRight) {
+      newScrollX += this._steadyState.getScrollState().getVisiblePixels() - this._width;
+    }
+    var totalPixels = this._steadyState.getScrollState().getTotalPixels();
+    this._steadyState = this._steadyState.copyWithScrollState(
+      new window.scrollerjs.State(totalPixels, this._width, newScrollX)
+    );
+  } else {
+    var totalPixels = this._config.visualStyle.computeRegion({
+      startIndex: 0,
+      length: this._config.dataSource.getLength()
+    }, this._config.dataSource.getLength()).width;
+    this._steadyState = this._steadyState.copyWithScrollState(
+      new window.scrollerjs.State(totalPixels, this._width, totalPixels-this._width)
+    );
+  }
 };
