@@ -36,7 +36,7 @@ BarChunkView.prototype.getWidth = function() {
   var landscape = this._morphingLandscape();
   var range = {
     startIndex: this._startIndex,
-    length: this._morphingPointCount
+    length: this._morphingPointCount()
   };
   return landscape.computeRegion(range).width;
 };

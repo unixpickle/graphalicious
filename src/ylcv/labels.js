@@ -104,6 +104,10 @@ Labels.prototype.getWidth = function() {
   return this._width;
 };
 
+Labels.prototype.getMaxValue = function() {
+  return this._maxValue;
+};
+
 Labels.prototype.equals = function(l) {
   for (var i = 0, len = Labels.KEYS.length; i < len; ++i) {
     var key = Labels.KEYS[i];

@@ -27,6 +27,7 @@ The *YLCVSettings* type stores all of the configuration parameters for a YLCV. I
  * *number* labelRightMargin - the space to the right of the text of any label.
  * *string* labelColor - a CSS color used for labels.
  * *string* labelFont - a CSS font used for labels.
+ * *string* separatorColor - a CSS color used for horizontal lines to the right of each label.
  * *function* formatValue - convert a primary value into a string for a label.
  * *function* roundValue - a function for rounding up primary values. The YLCV applies this to the lowest non-zero label value and uses integer multiples of the result for the rest of the labels.
  * *number* topLabelSpace - a pixel quantity which determines the minimum space between a value in the graph and the maximum label's value. Let `x` be the height of the YLCV, minus the top and bottom margins. Then `((maximalLabelValue-maximalValue)/maximalLabelValue)*x >= topLabelSpace`.

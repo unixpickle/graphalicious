@@ -52,6 +52,8 @@ BufferedView.STATE_EPHEMERAL_CONTENT = 3;
 BufferedView.EPHEMERAL_CONTENT_TIME = 100;
 BufferedView.EPHEMERAL_SPLASH_TIME = 300;
 
+BufferedView.ZIGZAG_WIDTH = 10;
+
 BufferedView.prototype = Object.create(EventEmitter.prototype);
 
 // element returns the root DOM element of the view.
@@ -230,11 +232,55 @@ BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
     return;
   }
+  assert(this._chunkView !== null);
+
   this._context.clearRect(0, 0, this._width, this._height);
-  if (this._yLabels !== null) {
-    this._yLabels.draw(this._context);
+
+  if (this._yLabels === null) {
+    // TODO: show a loader here.
+    return;
   }
-  // TODO: draw the content, the y-axis lines, and position the loaders.
+
+  var yLabelWidth = this._yLabels.totalWidth();
+  var labelsOffset = 0;
+
+  var chunkLeft = this._chunkView.getOffset() - this._chunkViewOffset - BufferedView.ZIGZAG_WIDTH;
+  var chunkRight = chunkLeft + this._chunkView.getWidth() + BufferedView.ZIGZAG_WIDTH*2;
+
+  if (chunkLeft > this._width-yLabelWidth) {
+    labelsOffset = chunkLeft - (this._width - yLabelWidth);
+  } else if (chunkRight < yLabelWidth) {
+    labelsOffset = yLabelWidth - chunkRight;
+  }
+
+  if (labelsOffset > yLabelWidth) {
+    labelsOffset = yLabelWidth;
+  }
+
+  this._context.save();
+  this._context.translate(-labelsOffset, 0);
+  this._yLabels.draw(this._context);
+  this._context.translate(labelsOffset, 0);
+
+  var viewport = {
+    x: yLabelWidth - labelsOffset,
+    y: 0,
+    width: this._width - yLabelWidth + labelsOffset,
+    height: this._height,
+    context: this._context
+  };
+
+  this._context.beginPath();
+  this._context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
+  this._context.clip();
+
+  // TODO: draw the y-label lines.
+
+  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
+  var offset = this._chunkViewOffset + viewport.x;
+  this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
+
+  this._context.restore();
 };
 
 BufferedView.prototype._updatePixelRatio = function(redraw) {
