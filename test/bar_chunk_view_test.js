@@ -8,7 +8,7 @@ var Canvas = require(__dirname + '/dummy_canvas.js');
 var currentAnimationFrameCb;
 
 var importRes = require('./importer')([
-  'base/color_scheme.js', 'styles/attrs.js', 'styles/bar_style.js',
+  'base/color_scheme.js', 'base/attrs.js', 'styles/bar_style.js',
   'styles/bar_morphing.js', 'styles/bar_chunk_view.js', 'styles/utilities.js'
 ], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
   window: {
@@ -27,6 +27,23 @@ var importRes = require('./importer')([
 var BarStyle = importRes.BarStyle;
 var ColorScheme = importRes.ColorScheme;
 var BarChunkView = importRes.BarChunkView;
+
+function testWidth() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40
+  });
+
+  var dataSource = DataSource.random(1000, 10, true);
+  dataSource.insert(3, {primary: 5, secondary: -1});
+  var chunk = dataSource.fetchChunkSync(0, 0, 100);
+  var chunkView = style.createChunkView(chunk, dataSource);
+
+  assert(chunkView.getWidth() === 10+40*100+5*100);
+}
 
 function testDrawBestCase() {
   var xLabelOffsets = [
@@ -570,6 +587,7 @@ function testDrawInserting() {
   }
 }
 
+testWidth();
 testDrawBestCase();
 testDrawBasicScrolling();
 testDrawEdgeCases();

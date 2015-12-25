@@ -3,7 +3,7 @@ var SMALL_NUM = 0.001;
 var assert = require('assert');
 
 var importRes = require('./importer')([
-  'base/color_scheme.js', 'styles/attrs.js',
+  'base/color_scheme.js', 'base/attrs.js',
   'styles/utilities.js', 'styles/full_curve_style.js'
 ], ['FullCurveStyle', 'ColorScheme'], {
   window: {

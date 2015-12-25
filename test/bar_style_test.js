@@ -4,7 +4,7 @@ var SMALL_NUM = 0.001;
 var assert = require('assert');
 
 var BarStyleAttrs = require('./importer')([
-  'styles/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'
+  'base/attrs.js', 'styles/bar_style.js', 'styles/utilities.js'
 ], ['BarStyleAttrs'], {
   window: {
     EventEmitter: require('events').EventEmitter

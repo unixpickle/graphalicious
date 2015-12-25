@@ -6,7 +6,7 @@ var DummyCanvas = require('./dummy_canvas.js');
 
 var importRes = require('./importer')([
   'base/color_scheme.js', 'styles/utilities.js',
-  'styles/smooth_path.js', 'styles/attrs.js', 'styles/full_curve_style.js',
+  'styles/smooth_path.js', 'base/attrs.js', 'styles/full_curve_style.js',
   'styles/full_curve_chunk_view.js'
 ], ['FullCurveStyle', 'ColorScheme'], {
   window: {
