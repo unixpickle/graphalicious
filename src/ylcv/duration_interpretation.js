@@ -33,6 +33,10 @@ DurationInterpretation.prototype.round = function(x) {
 };
 
 DurationInterpretation.prototype.format = function(value) {
+  if (value === 0) {
+    return '';
+  }
+
   var decimalSuffix = durationDecimals(value, this._decimals);
   if (/^.0*$/.test(decimalSuffix)) {
     decimalSuffix = '';
@@ -69,8 +73,8 @@ function durationDecimals(millis, digitCount) {
     return '';
   }
   var pow = Math.pow(10, digitCount);
-  var fractional = (millis / 1000).toFixed(digitCount + 1);
-  return fractional.substr(0, 1+digitCount);
+  var fractional = ((millis % 1000) / 1000).toFixed(digitCount + 1);
+  return fractional.substr(1, 1+digitCount);
 }
 
 exports.DurationInterpretation = DurationInterpretation;
