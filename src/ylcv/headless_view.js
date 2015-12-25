@@ -353,12 +353,12 @@ HeadlessView.prototype._updateCurrentChunkNeeds = function() {
   var minimalRange = this._config.visualStyle.computeRange({
     left: visibleRegion.left - HeadlessView.MIN_CURRENT_BUFFER,
     width: visibleRegion.width + HeadlessView.MIN_CURRENT_BUFFER*2,
-  }, this._config.dataSource.getLength()).length;
+  }, this._config.dataSource.getLength());
 
   var optimalRange = this._config.visualStyle.computeRange({
     left: visibleRegion.left - HeadlessView.CURRENT_BUFFER,
     width: visibleRegion.width + HeadlessView.CURRENT_BUFFER*2,
-  }, this._config.dataSource.getLength()).length;
+  }, this._config.dataSource.getLength());
 
   var currentRange = {startIndex: 0, length: 0};
   var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
@@ -452,7 +452,7 @@ HeadlessView.prototype._updateYLabels = function() {
 
   var maxPrimaryValue = 0;
   for (var i = 0, len = usableRange.length; i < len; ++i) {
-    var point = chunk.getDataPoint(i + usableRange.startIndex);
+    var point = chunk.getDataPoint(i + usableRange.startIndex - chunkRange.startIndex);
     maxPrimaryValue = Math.max(maxPrimaryValue, point.primary);
   }
 
