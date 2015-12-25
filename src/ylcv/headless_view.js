@@ -94,9 +94,18 @@ HeadlessView.prototype.dispose = function() {
 
 // setScrolledPixels updates the scroll state and may trigger a complex chain of events.
 HeadlessView.prototype.setScrolledPixels = function(p) {
-  // TODO: update the scroll state.
-  // TODO: recompute the y-axis labels.
-  // TODO: trigger potential reloads for the leftmost chunk and the content chunk.
+  assert(this._steadyState !== null);
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  var s = this._steadyState.getScrollState();
+  var newS = new window.scrollerjs.State(s.getTotalPixels(), s.getVisiblePixels(), p);
+  this._steadState = this._steadyState.copyWithScrollState(newS);
+
+  this._updateYLabels();
+  this._satisfyNeeds(this._updateCurrentChunkNeeds());
 };
 
 // getAnimate returns the animate flag.
