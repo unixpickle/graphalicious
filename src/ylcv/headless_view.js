@@ -55,6 +55,10 @@ HeadlessView.SMALL_GAP_WIDTH = 100;
 HeadlessView.LEFTMOST_CHUNK = 0;
 HeadlessView.CURRENT_CHUNK = 1;
 
+HeadlessView.NEED_CHANGE_NONE = 0;
+HeadlessView.NEED_CHANGE_RANGE = 1;
+HeadlessView.NEED_CHANGE_FLIP = 2;
+
 HeadlessView.prototype = Object.create(EventEmitter.prototype);
 
 // layout updates the state based on a new width and height.
@@ -75,7 +79,7 @@ HeadlessView.prototype.layout = function(w, h) {
   this._updateScrollStateForWidthChange();
   this._updateYLabels();
   this._updateLeftmostLabels();
-  // TODO: trigger potential reloads for the leftmost chunk and the content chunk.
+  this._satisfyNeeds(this._updateNeeds());
 };
 
 // dispose removes any registered event listeners.
@@ -213,7 +217,16 @@ HeadlessView.prototype._deregisterViewEvents = function() {
 };
 
 HeadlessView.prototype._retry = function() {
-  // TODO: retry any loads that failed in the past.
+  // We reset our needs before satisfying them for two reasons:
+  // - doing so ensures that optimal loads are used
+  // - if we did not do this, then failed loads would not be resumed since
+  //   this._satisfyNeeds() does not re-start loads that failed in the past.
+
+  this._needsLeftmostChunk = this._loadingLeftmostChunk;
+  this._needsCurrentChunk = this._loadingCurrentChunk;
+  this._satisfyNeeds(this._updateNeeds());
+
+  this.emit('change');
 };
 
 HeadlessView.prototype._registerVisualStyleEvents = function() {
@@ -257,8 +270,8 @@ HeadlessView.prototype._handleAnimationEnd = function() {
 };
 
 // _updateNeeds updates how much leftmost and current chunk data the view needs.
-// This returns an object with two boolean properties, 'leftmost' and 'current',
-// which indicate whether the needs changed for both kinds of chunk.
+// This returns an object with two properties, 'leftmost' and 'current', which
+// store a HeadlessView.NEED_CHANGE_ constant for each type of chunk.
 HeadlessView.prototype._updateNeeds = function() {
   return {
     leftmost: this._updateLeftmostNeeds(),
@@ -267,7 +280,7 @@ HeadlessView.prototype._updateNeeds = function() {
 };
 
 // _updateLeftmostNeeds determines how much leftmost data the leftmost labels need.
-// This returns true if the needs have changed.
+// This returns one of the HeadlessView.NEED_CHANGE_ constants.
 HeadlessView.prototype._updateLeftmostNeeds = function() {
   var currentLength = 0;
   var chunk = this._config.dataSource.getChunk(HeadlessView.LEFTMOST_CHUNK);
@@ -288,25 +301,25 @@ HeadlessView.prototype._updateLeftmostNeeds = function() {
   if (currentLength >= minimalLength) {
     var changed = this._needsLeftmostChunk;
     this._needsLeftmostChunk = false;
-    return changed;
+    return changed ? HeadlessView.NEED_CHANGE_FLIP : HeadlessView.NEED_CHANGE_NONE;
   } else if (!this._needsLeftmostChunk) {
     this._needsLeftmostChunk = true;
     this._requestedLeftmostChunkLength = optimalLength;
-    return true;
+    return HeadlessView.NEED_CHANGE_FLIP;
   }
 
   assert(this._needsLeftmostChunk);
 
   if (this._requestedLeftmostChunkLength < minimalLength) {
     this._requestedLeftmostChunkLength = optimalLength;
-    return true;
+    return HeadlessView.NEED_CHANGE_RANGE;
   }
 
-  return false;
+  return HeadlessView.NEED_CHANGE_NONE;
 };
 
-// _updateLeftmostNeeds determines the chunk that the current chunk view needs.
-// This returns true if the needs have changed.
+// _updateCurrentChunkNeeds determines the chunk that the current chunk view needs.
+// This returns one of the HeadlessView.NEED_CHANGE_ constants.
 HeadlessView._updateCurrentChunkNeeds = function() {
   var visibleRegion = this._visibleRegion();
 
@@ -331,11 +344,11 @@ HeadlessView._updateCurrentChunkNeeds = function() {
       minimalCurrentRange.length === minimalRange.length) {
     var changed = this._needsCurrentChunk;
     this._needsCurrentChunk = false;
-    return changed;
+    return changed ? HeadlessView.NEED_CHANGE_FLIP : HeadlessView.NEED_CHANGE_NONE;
   } else if (!this._needsCurrentChunk) {
     this._needsCurrentChunk = true;
     this._requestedCurrentChunkRange = optimalRange;
-    return true;
+    return HeadlessView.NEED_CHANGE_FLIP;
   }
 
   assert(this._needsCurrentChunk);
@@ -344,10 +357,10 @@ HeadlessView._updateCurrentChunkNeeds = function() {
   if (minimalRequestedRange.startIndex !== minimalRange.startIndex ||
       minimalRequestedRange.length !== minimalRange.length) {
     this._requestedCurrentChunkRange = optimalRange;
-    return true;
+    return HeadlessView.NEED_CHANGE_RANGE;
   }
 
-  return false;
+  return HeadlessView.NEED_CHANGE_NONE;
 };
 
 HeadlessView.prototype._updateScrollStateForWidthChange = function() {
@@ -481,6 +494,38 @@ HeadlessView.prototype._updateLeftmostLabels = function() {
 
   this._steadyState = new InstantaneousState(this._steadyState.getYLabels(),
     newScrollState, newLabels);
+};
+
+// _satisfyNeeds starts or stops loads based on the return value of this._updateNeeds().
+HeadlessView.prototype._satisfyNeeds = function(changes) {
+  // In general, after a load fails, we do not want to automatically retry it whenever
+  // the needed data changes; instead, the user must manually retry a load after the
+  // first failure.
+
+  if (changes.leftmost !== HeadlessView.NEED_CHANGE_NONE) {
+    if (this._needsLeftmostChunk &&
+        (this._loadingLeftmostChunk || changes.leftmost === HeadlessView.NEED_CHANGE_FLIP)) {
+      this._loadingLeftmostChunk = true;
+      this._config.dataSource.fetchChunk(HeadlessView.LEFTMOST_CHUNK, 0,
+        this._requestedLeftmostChunkLength);
+    } else if (!this._needsLeftmostChunk && this._loadingLeftmostChunk) {
+      this._loadingLeftmostChunk = false;
+      this._config.dataSource.cancel(HeadlessView.LEFTMOST_CHUNK);
+    }
+  }
+
+  if (changes.current !== HeadlessView.NEED_CHANGE_NONE) {
+    if (this._needsCurrentChunk &&
+        (this._loadingCurrentChunk || changes.current === HeadlessView.NEED_CHANGE_FLIP)) {
+      this._loadingCurrentChunk = true;
+      this._config.dataSource.fetchChunk(HeadlessView.CURRENT_CHUNK,
+        this._requestedCurrentChunkRange.startIndex,
+        this._requestedCurrentChunkRange.length);
+    } else if (!this._needsCurrentChunk && this._loadingCurrentChunk) {
+      this._loadingCurrentChunk = false;
+      this._config.dataSource.cancel(HeadlessView.CURRENT_CHUNK);
+    }
+  }
 };
 
 // _visibleRegion computes the region (in the complete landscape) that is currently
