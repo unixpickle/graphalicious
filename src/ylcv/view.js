@@ -40,7 +40,7 @@ View.prototype.getScrollState = function() {
 
 View.prototype.setScrolledPixels = function(p) {
   this._headlessView.setScrolledPixels(p);
-  this._updateView();
+  this._updateView(false);
 };
 
 View.prototype.setAnimate = function(a) {
@@ -48,7 +48,7 @@ View.prototype.setAnimate = function(a) {
   this._bufferedView.setAnimate(a);
 };
 
-View.prototype._updateView = function() {
+View.prototype._updateView = function(emitChange) {
   if (this._headlessView.shouldShowContent()) {
     this._lastScrollState = this._headlessView.instantaneousState().getScrollState();
     this._bufferedView.setChunkView(this._headlessView.chunkView());

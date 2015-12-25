@@ -264,14 +264,14 @@ BufferedView.prototype.draw = function() {
 
   var viewport = {
     x: yLabelWidth - labelsOffset,
-    y: 0,
+    y: this._yLabels.getTopY(),
     width: this._width - yLabelWidth + labelsOffset,
-    height: this._height,
+    height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
     context: this._context
   };
 
   this._context.beginPath();
-  this._context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
+  this._context.rect(viewport.x, 0, viewport.width, this._height);
   this._context.clip();
 
   // TODO: draw the y-label lines.

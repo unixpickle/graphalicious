@@ -5,6 +5,7 @@ function View() {
 
   this._scrollView.setDraggable(true);
   this._boundScrollStateChanged = this._handleScrollStateChanged.bind(this);
+  this._scrollView.on('scroll', this._handleScroll.bind(this));
 }
 
 View.prototype.element = function() {
@@ -61,6 +62,12 @@ View.prototype._handleScrollStateChanged = function() {
   assert(this._contentView !== null);
   var state = this._contentView.getScrollState();
   this._scrollView.setState(state);
+};
+
+View.prototype._handleScroll = function() {
+  if (this._contentView !== null) {
+    this._contentView.setScrolledPixels(this._scrollView.getState().getScrolledPixels());
+  }
 };
 
 exports.View = View;

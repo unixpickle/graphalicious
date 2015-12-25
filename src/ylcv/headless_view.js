@@ -102,7 +102,7 @@ HeadlessView.prototype.setScrolledPixels = function(p) {
 
   var s = this._steadyState.getScrollState();
   var newS = new window.scrollerjs.State(s.getTotalPixels(), s.getVisiblePixels(), p);
-  this._steadState = this._steadyState.copyWithScrollState(newS);
+  this._steadyState = this._steadyState.copyWithScrollState(newS);
 
   this._updateYLabels();
   this._satisfyNeeds(this._updateCurrentChunkNeeds());
