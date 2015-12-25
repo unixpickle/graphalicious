@@ -13,10 +13,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Rewrite YLCV and revise *View* architecture
-   * Implement HeadlessView._dataSourceLoad()
-     * This will assert that no animations are running, since animations will prevent loads.
-   * Implement HeadlessView._dataSourceError()
-     * This will have the same assertion as _dataSourceLoad()
    * Implement animations
      * When animations start, we reset our needs to indicate that we do not need anything.
      * When animations stop, we will update our needs because we stopped any loads when the animation began.

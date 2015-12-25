@@ -175,16 +175,30 @@ HeadlessView.prototype._deregisterDataSourceEvents = function() {
 };
 
 HeadlessView.prototype._dataSourceLoad = function(chunkIndex) {
-  // TODO: cancel the current animation.
-  // TODO: either create the chunk view or set the leftmost label width.
-  // TODO: recompute the scroll state (incase the leftmost width changed).
-  // TODO: recompute the current chunk view.
-  // TODO: recompute the current y-axis labels.
+  assert(!this._animating);
+  if (chunkIndex === HeadlessView.CURRENT_CHUNK) {
+    this._needsCurrentChunk = false;
+    this._loadingCurrentChunk = false;
+    var chunk = this._config.dataSource.getChunk(chunkIndex);
+    this._chunkView = this._config.visualStyle.createChunkView(chunk,
+      this._config.dataSource);
+    this._updateYLabels();
+  } else {
+    this._needsLeftmostChunk = false;
+    this._loadingLeftmostChunk = false;
+    this._updateLeftmostLabels();
+  }
+  this._satisfyNeeds(this._updateNeeds());
   this.emit('change');
 };
 
 HeadlessView.prototype._dataSourceError = function(chunkIndex) {
-  // TODO: reflect the error in our instance variables.
+  assert(!this._animating);
+  if (chunkIndex === HeadlessView.CURRENT_CHUNK) {
+    this._loadingCurrentChunk = false;
+  } else {
+    this._loadingLeftmostChunk = false;
+  }
   this.emit('change');
 };
 
