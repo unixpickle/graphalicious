@@ -105,7 +105,7 @@ HeadlessView.prototype.setScrolledPixels = function(p) {
   this._steadyState = this._steadyState.copyWithScrollState(newS);
 
   this._updateYLabels();
-  this._satisfyNeeds(this._updateCurrentChunkNeeds());
+  this._satisfyNeeds(this._updateNeeds());
 };
 
 // getAnimate returns the animate flag.
