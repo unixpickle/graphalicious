@@ -226,6 +226,10 @@ HeadlessView.prototype._deregisterViewEvents = function() {
 };
 
 HeadlessView.prototype._retry = function() {
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
   // We reset our needs before satisfying them for two reasons:
   // - doing so ensures that optimal loads are used
   // - if we did not do this, then failed loads would not be resumed since
