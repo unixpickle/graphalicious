@@ -13,8 +13,8 @@ A *SplashScreen* may use a canvas to render its animations. Therefore, it may (a
 * *DOMElement* element() - get the view's root DOM element. This element will automatically be sized by *layout()*. The user of the *SplashScreen* must position it.
 * *void* layout(width, height) - update the size of the view's element and adjust its graphics accordingly.
 * *void* setAnimate(flag) - enable or disable animations. While animations are disabled, the view should not consume any resources which cannot be garbage collected.
-* *void* showLoading() - show the loading animation.
-* *void* showError() - show the "retry" button which accompanies an error.
+* *void* showLoading() - show the loading animation. This may be called multiple times in succession.
+* *void* showError() - show the "retry" button which accompanies an error. This may be called multiple times in succession.
 
 # Events
 
