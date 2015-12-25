@@ -3,6 +3,7 @@ function View() {
   this._contentView = null;
   this._animate = false;
 
+  this._scrollView.setDraggable(true);
   this._boundScrollStateChanged = this._handleScrollStateChanged.bind(this);
 }
 
