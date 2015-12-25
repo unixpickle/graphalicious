@@ -132,7 +132,7 @@ Labels.prototype.draw = function(ctx) {
   var w = this.getWidth();
   for (var i = 0, len = this._labelList.length; i < len; ++i) {
     var label = this._labelList[i];
-    var x = this._leftMargin + (w-label.getWidth())/2;
+    var x = this._leftMargin + (w / 2);
     var y = this.yForLabel(i);
     label.draw(ctx, x, y);
   }

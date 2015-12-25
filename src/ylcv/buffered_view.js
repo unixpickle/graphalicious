@@ -230,7 +230,11 @@ BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
     return;
   }
-  // TODO: draw the y-axis labels, the content, the y-axis lines, and position the loaders.
+  this._context.clearRect(0, 0, this._width, this._height);
+  if (this._yLabels !== null) {
+    this._yLabels.draw(this._context);
+  }
+  // TODO: draw the content, the y-axis lines, and position the loaders.
 };
 
 BufferedView.prototype._updatePixelRatio = function(redraw) {
