@@ -1,0 +1,88 @@
+.scrollerjs-bar-useless {
+  display: none;
+}
+
+.scrollerjs-bar {
+  position: absolute;
+  opacity: 0;
+
+  transition: opacity 0.5s ease;
+  -webkit-transition: opacity 0.5s ease;
+}
+
+.scrollerjs-bar-flashing {
+  opacity: 1;
+}
+
+.scrollerjs-vertical-bar {
+  width: 14px;
+  height: calc(100% - 2px);
+  top: 1px;
+}
+
+.scrollerjs-horizontal-bar {
+  width: calc(100% - 2px);
+  left: 1px;
+  height: 14px;
+}
+
+.scrollerjs-thumb {
+  position: absolute;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 1);
+}
+
+.scrollerjs-horizontal-thumb {
+  height: 8px;
+  transition: height 0.5s ease, border-radius 0.5s ease;
+  -webkit-transition: height 0.5s ease, border-radius 0.5s ease;
+}
+
+.scrollerjs-vertical-thumb {
+  width: 8px;
+  transition: width 0.5s ease, border-radius 0.5s ease;
+  -webkit-transition: width 0.5s ease, border-radius 0.5s ease;
+}
+
+.scrollerjs-left-bar, .scrollerjs-top-bar {
+  top: 0;
+  left: 0;
+}
+
+.scrollerjs-right-bar, .scrollerjs-bottom-bar {
+  right: 0;
+  bottom: 0;
+}
+
+.scrollerjs-bottom-thumb {
+  bottom: 2px;
+}
+
+.scrollerjs-right-thumb {
+  right: 2px;
+}
+
+.scrollerjs-top-thumb {
+  top: 2px;
+}
+
+.scrollerjs-left-thumb {
+  left: 2px;
+}
+
+.scrollerjs-bar-focus {
+  opacity: 1;
+}
+
+.scrollerjs-bar-focus > .scrollerjs-thumb {
+  border-radius: 6px;
+}
+
+.scrollerjs-bar-focus > .scrollerjs-horizontal-thumb {
+  height: 12px;
+}
+
+.scrollerjs-bar-focus > .scrollerjs-vertical-thumb {
+  width: 12px;
+}

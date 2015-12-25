@@ -168,6 +168,15 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   return region;
 };
 
+BarChunkView.prototype.pointerLeave = function() {
+};
+
+BarChunkView.prototype.pointerMove = function() {
+};
+
+BarChunkView.prototype.pointerClick = function() {
+};
+
 BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) {
   var range = {startIndex: this._startIndex, length: this._morphingPointCount()};
   var stretchMode = this._attrs.getStretchMode();

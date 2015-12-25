@@ -11,7 +11,7 @@ function HeadlessView(config) {
   this._height = 0;
 
   this._chunkView = null;
-  this._steadyState = new InstantaneousState(null, new window.scrollerjs.State(0, 0, 0), 0);
+  this._steadyState = null;
 
   this._animate = false;
   this._animating = false;
@@ -347,7 +347,7 @@ HeadlessView.prototype._updateLeftmostNeeds = function() {
 
 // _updateCurrentChunkNeeds determines the chunk that the current chunk view needs.
 // This returns one of the HeadlessView.NEED_CHANGE_ constants.
-HeadlessView._updateCurrentChunkNeeds = function() {
+HeadlessView.prototype._updateCurrentChunkNeeds = function() {
   var visibleRegion = this._visibleRegion();
 
   var minimalRange = this._config.visualStyle.computeRange({

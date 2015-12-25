@@ -8,7 +8,7 @@ function View(config) {
   this._headlessView.on('change', this._updateView.bind(this));
   this._bufferedView.on('change', this._updateView.bind(this));
 
-  this._lastScrollingState = null;
+  this._lastScrollState = null;
 }
 
 View.prototype = Object.create(EventEmitter.prototype);
@@ -28,11 +28,11 @@ View.prototype.layout = function(w, h) {
   this._updateView();
 };
 
-View.prototype.getScrollingState = function() {
+View.prototype.getScrollState = function() {
   if (this._headlessView.shouldShowContent()) {
-    return this._headlessView.instantaneousState().getScrollingState();
-  } else if (this._lastScrollingState !== null && !this._bufferedView.showingSplash()) {
-    return this._lastScrollingState;
+    return this._headlessView.instantaneousState().getScrollState();
+  } else if (this._lastScrollState !== null && !this._bufferedView.showingSplash()) {
+    return this._lastScrollState;
   } else {
     return new window.scrollerjs.State(0, 0, 0);
   }
@@ -50,11 +50,11 @@ View.prototype.setAnimate = function(a) {
 
 View.prototype._updateView = function() {
   if (this._headlessView.shouldShowContent()) {
-    this._lastScrollingState = this._headlessView.instantaneousState().getScrollingState();
+    this._lastScrollState = this._headlessView.instantaneousState().getScrollState();
     this._bufferedView.setChunkView(this._headlessView.chunkView());
     this._bufferedView.setYLabels(this._headlessView.instantaneousState().getYLabels());
 
-    var cv = this._lastScrollingState.getScrolledPixels() -
+    var cv = this._lastScrollState.getScrolledPixels() -
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
     this._bufferedView.setChunkViewOffset(cv);
 
@@ -68,7 +68,8 @@ View.prototype._updateView = function() {
 
   // TODO: update the loaders and the splash screen.
 
-  this.emit('scrollingStateChange');
+  // TODO: check if the scroll state actually changed.
+  this.emit('scrollStateChange');
 };
 
 exports.View = View;

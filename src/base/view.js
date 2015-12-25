@@ -3,7 +3,7 @@ function View() {
   this._contentView = null;
   this._animate = false;
 
-  this._boundScrollingStateChanged = this._handleScrollingStateChanged.bind(this);
+  this._boundScrollStateChanged = this._handleScrollStateChanged.bind(this);
 }
 
 View.prototype.element = function() {
@@ -44,17 +44,22 @@ View.prototype.setContentView = function(cv) {
     if (this._animate) {
       this._contentView.setAnimate(false);
     }
-    this._contentView.removeListener('scrollingStateChange', this._boundScrollingStateChanged);
+    this._contentView.removeListener('scrollStateChange', this._boundScrollStateChanged);
   }
   this._contentView = cv;
-  this._contentView.on('scrollingStateChange', this._boundScrollingStateChanged);
-  this._scrollView.setContent(cv.element());
-  this._contentView.setAnimate(this._animate);
-  this._contentView.layout(this.element().offsetWidth, this.element().offsetHeight);
+  if (cv !== null) {
+    this._contentView.on('scrollStateChange', this._boundScrollStateChanged);
+    this._scrollView.setContent(cv.element());
+    this._contentView.setAnimate(this._animate);
+    this._contentView.layout(this.element().offsetWidth, this.element().offsetHeight);
+    this._handleScrollStateChanged();
+  }
 };
 
-View.prototype._handleScrollingStateChanged = function() {
+View.prototype._handleScrollStateChanged = function() {
   assert(this._contentView !== null);
-  var state = this._contentView.getScrollingState();
+  var state = this._contentView.getScrollState();
   this._scrollView.setState(state);
 };
+
+exports.View = View;

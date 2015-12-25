@@ -323,10 +323,10 @@ BufferedView.prototype._registerPointerEvents = function() {
 function makeElementsFillAndAbsolute(elements) {
   for (var i = 0, len = elements.length; i < len; ++i) {
     var s = elements[i].style;
-    s.style.position = 'absolute';
-    s.style.width = '100%';
-    s.style.height = '100%';
-    s.style.top = '0';
-    s.style.left = '0';
+    s.position = 'absolute';
+    s.width = '100%';
+    s.height = '100%';
+    s.top = '0';
+    s.left = '0';
   }
 }

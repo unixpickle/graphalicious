@@ -4,7 +4,7 @@ var RIGHT_MARGIN = 200;
 
 function loadHandler() {
   var colorScheme = new window.graphalicious.base.ColorScheme('#65bcd4', '#325e6a');
-  view = new window.graphalicious.base.View(colorScheme);
+  view = new window.graphalicious.base.View();
   document.getElementById('footer').appendChild(view.element());
   view.element().style.position = 'absolute';
   view.element().style.left = LEFT_MARGIN + 'px';

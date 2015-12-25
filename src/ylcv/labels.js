@@ -7,7 +7,7 @@ function Label(attrs) {
 Label.KEYS = ['text', 'value', 'opacity', 'font', 'color', 'width'];
 Label._widthContext = document.createElement('canvas').getContext('2d');
 
-defineAttributeGetters(this.prototype, Label.KEYS);
+defineAttributeGetters(Label.prototype, Label.KEYS);
 
 Label.prototype.getWidth = function() {
   if (this._width === null) {

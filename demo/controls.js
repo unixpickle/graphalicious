@@ -136,9 +136,9 @@
   };
 
   Controls.prototype._updateContent = function() {
-    if (this._view.getContent() !== null) {
-      var content = this._view.getContent();
-      this._view.setContent(null);
+    if (this._view.getContentView() !== null) {
+      var content = this._view.getContentView();
+      this._view.setContentView(null);
       content.dispose();
       this._dataSource.invalidate();
     }
@@ -157,19 +157,28 @@
       style = new window.graphalicious.styles.FullCurveStyle(this._graphStyles.full);
     }
     var colorScheme = this._graphStyles.bar.colorScheme;
+    var interpretation = new window.graphalicious.ylcv.DurationInterpretation({});
     var config = {
       splashScreen: new window.SplashScreen(colorScheme),
       dataSource: this._dataSource,
-      style: style,
+      visualStyle: style,
       loader1: new window.SplashScreen(colorScheme),
       loader2: new window.SplashScreen(colorScheme),
       topMargin: 20,
       bottomMargin: 5,
-      labelGenerator: new window.graphalicious.ylcv.DurationLabelGenerator({})
+      labelLeftMargin: 10,
+      labelRightMargin: 10,
+      labelColor: '#999',
+      labelFont: '16px sans-serif',
+      topLabelSpace: 10,
+      minSpacing: 30,
+      emphasizeRight: true,
+      formatValue: interpretation.format.bind(interpretation),
+      roundValue: interpretation.round.bind(interpretation)
     };
-    var content = new window.graphalicious.ylcv.ContentView(config);
+    var content = new window.graphalicious.ylcv.View(config);
     content.element().style.backgroundColor = 'white';
-    this._view.setContent(content);
+    this._view.setContentView(content);
   };
 
   function parseDataPoint(str) {

@@ -14,7 +14,7 @@ It would be silly for an off-screen *ContentView* to perform animations. Therefo
 
 A *ContentView* must implement the following methods:
 
- * [State](https://github.com/unixpickle/scroller.js#the-state-class)) getScrollingState() - get the *ContentView*'s current scrolling state.
+ * [State](https://github.com/unixpickle/scroller.js#the-state-class)) getScrollState() - get the *ContentView*'s current scroll state.
  * *void* setScrolledPixels(pixels) - update the scroll offset of the *ContentView*'s scrolling state.
  * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
  * *void* layout(width, height) - update the *ContentView*'s dimensions.

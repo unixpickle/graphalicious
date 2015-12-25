@@ -32,24 +32,24 @@ DurationInterpretation.prototype.round = function(x) {
   return value;
 };
 
-DurationInterpretation.format = function(value) {
+DurationInterpretation.prototype.format = function(value) {
   var decimalSuffix = durationDecimals(value, this._decimals);
   if (/^.0*$/.test(decimalSuffix)) {
     decimalSuffix = '';
   }
 
-  var seconds = '' + (Math.floor(millis/1000)%60);
-  var minutes = '' + (Math.floor(millis/60000)%60);
-  var hours = '' + (Math.floor(millis/3600000)%60);
+  var seconds = '' + (Math.floor(value/1000)%60);
+  var minutes = '' + (Math.floor(value/60000)%60);
+  var hours = '' + (Math.floor(value/3600000)%60);
 
   if (minutes === '0' && hours === '0') {
-    return seconds + fractional;
+    return seconds + decimalSuffix;
   } else if (hours === '0') {
-    return minutes + ':' + padZero(seconds) + fractional;
+    return minutes + ':' + padZero(seconds) + decimalSuffix;
   } else {
     seconds = padZero(seconds);
     minutes = padZero(minutes);
-    return hours + ':' + padZero(minutes) + ':' + padZero(seconds) + fractional;
+    return hours + ':' + padZero(minutes) + ':' + padZero(seconds) + decimalSuffix;
   }
 };
 
