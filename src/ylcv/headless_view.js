@@ -74,7 +74,7 @@ HeadlessView.prototype.layout = function(w, h) {
 
   this._updateScrollStateForWidthChange();
   this._updateYLabels();
-  // TODO: recompute the y-axis labels and leftmost labels.
+  this._updateLeftmostLabels();
   // TODO: trigger potential reloads for the leftmost chunk and the content chunk.
 };
 
@@ -422,6 +422,65 @@ HeadlessView.prototype._updateYLabels = function() {
     return;
   }
   this._steadyState = this._steadyState.copyWithYLabels(labels);
+};
+
+// _updateLeftmostLabels updates the leftmost labels of this._steadyState.
+//
+// If the labels cannot be computed, the old labels will be left untouched.
+// By preserving stale leftmost labels, we better maintain the scroll offset
+// when the leftmost labels need to be recomputed.
+HeadlessView.prototype._updateLeftmostLabels = function() {
+  assert(this._steadyState !== null);
+
+  var chunk = this._config.dataSource.getChunk(HeadlessView.LEFTMOST_CHUNK);
+  if (chunk === null) {
+    return;
+  }
+
+  var neededCount = this._config.visualStyle.computeRange({
+    left: 0,
+    width: this._width
+  }, this._config.dataSource.getLength()).length;
+
+  var newLeftmostWidth = 0;
+  if (neededCount > chunk.getLength() || neededCount === 0) {
+    return;
+  }
+
+  var maxValue = 0;
+  for (var i = 0; i < neededCount; ++i) {
+    var dataPoint = chunk.getDataPoint(i);
+    maxValue = Math.max(maxValue, dataPoint.primary);
+  }
+
+  var newLabels = Labels.createLabels(this._config, this._height, maxValue);
+  if (this._steadyState.getLeftmostLabels() !== null &&
+      newLabels.equals(this._steadyState.getLeftmostLabels())) {
+    return;
+  }
+
+  var oldLeftmostWidth = 0;
+  if (this._steadyState.getLeftmostLabels() !== null) {
+    oldLeftmostWidth = this._steadyState.getLeftmostLabels().totalWidth();
+  }
+
+  // Preserve this._visibleRegion(), ensuring that the left part of the content is
+  // still visible if the user was scrolled to the left.
+  var scrollOffset = this._steadyState.getScrollState().getScrolledPixels();
+  if (scrollOffset !== 0) {
+    scrollOffset += newLabels.totalWidth() - oldLeftmostWidth;
+  }
+
+  var contentWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  }, this._config.dataSource.getLength()).width;
+
+  var newScrollState = new window.scrollerjs.State(contentWidth+newLabels.totalWidth(),
+    this._width, scrollOffset);
+
+  this._steadyState = new InstantaneousState(this._steadyState.getYLabels(),
+    newScrollState, newLabels);
 };
 
 // _visibleRegion computes the region (in the complete landscape) that is currently
