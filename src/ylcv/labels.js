@@ -2,10 +2,6 @@
 
 function Label(attrs) {
   setPrivateAttributeVariables(this, attrs, Label.KEYS, {width: null});
-  if (this._width === null) {
-    Labels._widthContext.font = this.getFont();
-    this._width = Label._widthContext.measureText(this.getText()).width;
-  }
 }
 
 Label.KEYS = ['text', 'value', 'opacity', 'font', 'color', 'width'];
@@ -13,8 +9,20 @@ Label._widthContext = document.createElement('canvas').getContext('2d');
 
 defineAttributeGetters(this.prototype, Label.KEYS);
 
+Label.prototype.getWidth = function() {
+  if (this._width === null) {
+    Label._widthContext.font = this.getFont();
+    this._width = Label._widthContext.measureText(this.getText()).width;
+  }
+  return this._width;
+};
+
 Label.prototype.equals = function(l) {
   for (var i = 0, len = Label.KEYS.length; i < len; ++i) {
+    var key = Label.KEYS[i];
+    if (key === 'width') {
+      continue;
+    }
     if (this['_' + key] !== l['_' + key]) {
       return false;
     }
@@ -48,11 +56,6 @@ Label.prototype.copyWithOpacity = function(opacity) {
 
 function Labels(attrs) {
   setPrivateAttributeVariables(this, attrs, Labels.KEYS, {width: null});
-  if (this._width === null) {
-    for (var i = 0, len = this._labelList.length; i < len; ++i) {
-      this._width = Math.max(this._width, this._labelList[i].getWidth());
-    }
-  }
 }
 
 Labels.KEYS = ['labelList', 'maxValue', 'topY', 'bottomY', 'width', 'leftMargin',
@@ -93,10 +96,18 @@ Labels.createLabels = function(config, viewHeight, maxValue) {
   });
 };
 
+Labels.prototype.getWidth = function() {
+  this._width = 0;
+  for (var i = 0, len = this._labelList.length; i < len; ++i) {
+    this._width = Math.max(this._width, this._labelList[i].getWidth());
+  }
+  return this._width;
+};
+
 Labels.prototype.equals = function(l) {
   for (var i = 0, len = Labels.KEYS.length; i < len; ++i) {
     var key = Labels.KEYS[i];
-    if (key === 'labelList') {
+    if (key === 'labelList' || key === 'width') {
       continue;
     }
     if (this['_' + key] !== l['_' + key]) {
@@ -114,11 +125,11 @@ Labels.prototype.equals = function(l) {
 };
 
 Labels.prototype.totalWidth = function() {
-  return this._width + this._leftMargin + this._rightMargin;
+  return this.getWidth() + this._leftMargin + this._rightMargin;
 };
 
 Labels.prototype.draw = function(ctx) {
-  var w = this._width;
+  var w = this.getWidth();
   for (var i = 0, len = this._labelList.length; i < len; ++i) {
     var label = this._labelList[i];
     var x = this._leftMargin + (w-label.getWidth())/2;
@@ -134,8 +145,14 @@ Labels.prototype.transitionFrame = function(end, fractionDone) {
     'rightMargin', 'width'];
   for (var i = 0, len = numericalKeys.length; i < len; ++i) {
     var key = numericalKeys[i];
-    var oldVal = this['_' + key];
-    var newVal = end['_' + key];
+    var oldVal, newVal;
+    if (key === 'width') {
+      oldVal = this.getWidth();
+      newVal = end.getWidth();
+    } else {
+      oldVal = this['_' + key];
+      newVal = end['_' + key];
+    }
     var val = (1-fractionDone)*oldVal + fractionDone*newVal;
     attrs[key] = val;
   }
