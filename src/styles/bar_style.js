@@ -1,4 +1,4 @@
-//deps includes.js attrs.js
+//deps includes.js
 
 function BarStyleAttrs(attrs) {
   setPrivateAttributeVariables(this, attrs, BarStyleAttrs.ATTRIBUTES,

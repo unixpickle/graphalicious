@@ -1,4 +1,4 @@
-//deps includes.js attrs.js
+//deps includes.js
 
 function FullCurveStyleAttrs(attrs) {
   setPrivateAttributeVariables(this, attrs, FullCurveStyleAttrs.ATTRIBUTES,
