@@ -36,6 +36,7 @@ function BufferedView(config) {
 
   this._chunkViewOffset = 0;
   this._chunkView = null;
+  this._chunkViewMargins = null;
   this._yLabels = null;
 
   this._currentCursorPosition = null;
@@ -210,6 +211,19 @@ BufferedView.prototype.setChunkViewOffset = function(val) {
   this._chunkViewOffset = val;
 };
 
+// setChunkViewMargins tells the view how many data points are before
+// and after the current chunk.
+//
+// You should manually call draw() after calling this.
+BufferedView.prototype.setChunkViewMargins = function(val) {
+  this._chunkViewMargins = val;
+};
+
+// getChunkViewMargins returns the scroll offset minus the leftmost label width.
+BufferedView.prototype.getChunkViewMargins = function() {
+  return this._chunkViewMargins;
+};
+
 // getYLabels returns the current y labels, used for drawing.
 BufferedView.prototype.getYLabels = function() {
   return this._yLabels;
@@ -244,6 +258,12 @@ BufferedView.prototype.draw = function() {
   }
 
   var yLabelWidth = this._yLabels.totalWidth();
+
+  if (yLabelWidth+this._chunkView.getEncompassingWidth() <= this._width) {
+    this._drawStretched(yLabelWidth);
+    return;
+  }
+
   var labelsOffset = 0;
 
   var chunkLeft = this._chunkView.getOffset() - this._chunkViewOffset - BufferedView.ZIGZAG_WIDTH;
@@ -283,6 +303,45 @@ BufferedView.prototype.draw = function() {
   // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
   var offset = this._chunkViewOffset + viewport.x;
   this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
+
+  this._showLoaders(viewport.x, chunkLeft, chunkRight);
+
+  this._context.restore();
+};
+
+BufferedView.prototype._drawStretched = function(yLabelWidth) {
+  this._context.save();
+  this._yLabels.draw(this._context);
+
+  var viewport = {
+    x: yLabelWidth,
+    y: this._yLabels.getTopY(),
+    width: this._width - yLabelWidth,
+    height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
+    context: this._context
+  };
+
+  this._context.beginPath();
+  this._context.rect(viewport.x, 0, viewport.width, this._height);
+  this._context.clip();
+
+  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
+  var offset = this._chunkViewOffset + viewport.x;
+  var report = this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
+
+  var chunkLeft = report.left - BufferedView.ZIGZAG_WIDTH/2;
+  var chunkRight = report.left + report.width + BufferedView.ZIGZAG_WIDTH/2;
+
+  if (this._chunkViewMargins.before === 0) {
+    chunkLeft = 0;
+  }
+  if (this._chunkViewMargins.after === 0) {
+    chunkRight = this._width+BufferedView.ZIGZAG_WIDTH;
+  }
+
+  this._clipWithZigzag(chunkLeft, chunkRight);
+
+  // TODO: draw the y-label lines.
 
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 

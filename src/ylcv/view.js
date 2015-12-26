@@ -58,6 +58,7 @@ View.prototype._updateView = function(emitChange) {
     }
     this._bufferedView.setChunkView(this._headlessView.chunkView());
     this._bufferedView.setYLabels(this._headlessView.instantaneousState().getYLabels());
+    this._bufferedView.setChunkViewMargins(this._headlessView.chunkViewMargins());
 
     var cv = newScrollState.getScrolledPixels() -
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
@@ -68,6 +69,7 @@ View.prototype._updateView = function(emitChange) {
     this._bufferedView.setChunkView(null);
     this._bufferedView.setYLabels(null);
     this._bufferedView.setChunkViewOffset(0);
+    this._bufferedView.setChunkViewMargins(null);
     this._bufferedView.draw();
   }
 

@@ -137,6 +137,22 @@ HeadlessView.prototype.instantaneousState = function() {
   }
 };
 
+// chunkViewMargins returns an object with a `before` key and an `after` key.
+// These keys contain the number of data points before and after the current
+// chunk, respectively.
+//
+// If there is no ChunkView, this retuns null.
+HeadlessView.prototype.chunkViewMargins = function() {
+  if (this._chunkView === null) {
+    return null;
+  }
+  var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+  return {
+    before: chunk.getStartIndex(),
+    after: this._config.dataSource.getLength() - (chunk.getStartIndex() + chunk.getLength())
+  };
+};
+
 // shouldShowContent returns a boolean indicating whether or not the
 // view's state is sufficient for presenting data to the user.
 HeadlessView.prototype.shouldShowContent = function() {
