@@ -5,8 +5,8 @@ function View(config) {
   this._headlessView = new HeadlessView(config);
   this._bufferedView = new BufferedView(config);
 
-  this._headlessView.on('change', this._updateView.bind(this));
-  this._bufferedView.on('change', this._updateView.bind(this));
+  this._headlessView.on('change', this._updateView.bind(this, true));
+  this._bufferedView.on('change', this._updateView.bind(this, true));
 
   this._lastScrollState = null;
 }
@@ -25,7 +25,7 @@ View.prototype.dispose = function() {
 View.prototype.layout = function(w, h) {
   this._headlessView.layout(w, h);
   this._bufferedView.layout(w, h);
-  this._updateView();
+  this._updateView(true);
 };
 
 View.prototype.getScrollState = function() {
@@ -49,12 +49,17 @@ View.prototype.setAnimate = function(a) {
 };
 
 View.prototype._updateView = function(emitChange) {
+  var scrollStateChange = false;
   if (this._headlessView.shouldShowContent()) {
-    this._lastScrollState = this._headlessView.instantaneousState().getScrollState();
+    var newScrollState = this._headlessView.instantaneousState().getScrollState();
+    if (this._lastScrollState === null || !newScrollState.equals(this._lastScrollState)) {
+      this._lastScrollState = newScrollState;
+      scrollStateChange = true;
+    }
     this._bufferedView.setChunkView(this._headlessView.chunkView());
     this._bufferedView.setYLabels(this._headlessView.instantaneousState().getYLabels());
 
-    var cv = this._lastScrollState.getScrolledPixels() -
+    var cv = newScrollState.getScrolledPixels() -
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
     this._bufferedView.setChunkViewOffset(cv);
 
@@ -68,8 +73,9 @@ View.prototype._updateView = function(emitChange) {
 
   // TODO: update the loaders and the splash screen.
 
-  // TODO: check if the scroll state actually changed.
-  this.emit('scrollStateChange');
+  if (emitChange && scrollStateChange) {
+    this.emit('scrollStateChange');
+  }
 };
 
 exports.View = View;
