@@ -42,6 +42,12 @@ InstantaneousState.prototype.transitionFrame = function(end, progress, currentWi
     leftmost = this._leftmostLabels.transitionFrame(end._leftmostLabels, progress);
   }
 
+  var leftmostWidth = 0;
+  if (leftmost) {
+    leftmostWidth = leftmost.totalWidth();
+  }
+  var currentContentWidth = currentWidth + leftmostWidth;
+
   var scrollProg = progress;
 
   // NOTE: if the content is changing widths, we should use this
@@ -49,7 +55,8 @@ InstantaneousState.prototype.transitionFrame = function(end, progress, currentWi
   if (end.getScrollState().getTotalPixels() !== this.getScrollState().getTotalPixels()) {
     var totalWidthDiff = end.getScrollState().getTotalPixels() -
       this.getScrollState().getTotalPixels();
-    scrollProg = (currentWidth - this.getScrollState().getTotalPixels()) / totalWidthDiff;
+    scrollProg = (currentContentWidth - this.getScrollState().getTotalPixels()) /
+      totalWidthDiff;
   }
 
   var visible = scrollProg*end.getScrollState().getVisiblePixels() +
@@ -57,7 +64,7 @@ InstantaneousState.prototype.transitionFrame = function(end, progress, currentWi
   var scrolled = scrollProg*end.getScrollState().getScrolledPixels() +
     (1-scrollProg)*this.getScrollState().getScrolledPixels();
 
-  var scrollState = new window.scrollerjs.State(currentWidth, visible, scrolled);
+  var scrollState = new window.scrollerjs.State(currentContentWidth, visible, scrolled);
 
   return new InstantaneousState(labels, scrollState, leftmost);
 };
