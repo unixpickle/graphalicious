@@ -234,7 +234,29 @@ HeadlessView.prototype._dataSourceModify = function(index) {
 };
 
 HeadlessView.prototype._dataSourceInvalidate = function() {
-  // TODO: start reloading everything and scroll to the far right.
+  if (this._steadyState === null) {
+    return;
+  }
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  if (this._config.emphasizeRight) {
+    var state = new window.scrollerjs.State(totalWidth, this._width, totalWidth-this._width);
+    this._steadyState = new InstantaneousState(null, state, null);
+  } else {
+    var state = new window.scrollerjs.State(totalWidth, this._width, 0);
+    this._steadyState = new InstantaneousState(null, state, null);
+  }
+
+  this._chunkView = null;
+
+  // NOTE: this is necessary to force reloads after loading failures.
+  this._suppressNeeds();
+
+  this._satisfyNeeds(this._updateNeeds());
+
   this.emit('change');
 };
 
