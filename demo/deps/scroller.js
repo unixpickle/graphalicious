@@ -1,4 +1,4 @@
-// scrollerjs version 0.0.2
+// scrollerjs version 0.0.3
 //
 // Copyright (c) 2015, Alex Nichol and Jonathan Loeb.
 // All rights reserved.
@@ -128,7 +128,7 @@
 
   View.prototype._handleBarScroll = function() {
     this._stopEasing();
-    this.emit('scroll');
+    this._emitScroll();
   };
 
   View.prototype._registerMouseEvents = function() {
@@ -272,7 +272,7 @@
 
     var s = this.getState();
     this.setState(new State(s.getTotalPixels(), s.getVisiblePixels(), newScrollX));
-    this.emit('scroll');
+    this._emitScroll();
 
     this.flash();
     return true;
@@ -308,7 +308,7 @@
       }
       var s = this.getState();
       this._bar.setState(new State(s.getTotalPixels(), s.getVisiblePixels(), x));
-      this.emit('scroll');
+      this._emitScroll();
     }.bind(this));
     this._ease.on('done', function() {
       this._ease = null;
@@ -346,7 +346,7 @@
           var state = this.getState();
           this.setState(new State(state.getTotalPixels(), state.getVisiblePixels(),
             state.getScrolledPixels() + pendingDelta));
-          this.emit('scroll');
+          this._emitScroll();
 
           pendingDelta = 0;
           secondaryDelta = 0;
@@ -363,6 +363,12 @@
       }
       e.preventDefault();
     }.bind(this));
+  };
+
+  View.prototype._emitScroll = function() {
+    if (this.getState().maxScrolledPixels() !== 0) {
+      this.emit('scroll');
+    }
   };
 
   exports.View = View;
