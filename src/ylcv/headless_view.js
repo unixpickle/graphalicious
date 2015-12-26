@@ -266,9 +266,41 @@ HeadlessView.prototype._deregisterVisualStyleEvents = function() {
 };
 
 HeadlessView.prototype._handleMetricChange = function() {
-  // TODO: scroll to the right.
-  // TODO: update the leftmost labels and y-axis labels.
-  // TODO: trigger potential reloads.
+  if (this._steadyState === null) {
+    return;
+  }
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  var totalWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  }, this._Config.dataSource.getLength()).width;
+
+  if (this._steadyState.getLeftmostLabels() !== null) {
+    totalWidth += this._steadyState.getLeftmostLabels().totalWidth();
+  }
+
+  if (this._config.emphasizeRight) {
+    var state = new window.scrollerjs.State(totalWidth, this._width, totalWidth-this._width);
+    this._steadyState = this._steadyState.copyWithScrollState(state);
+  } else {
+    var state = new window.scrollerjs.State(totalWidth, this._width, 0);
+    this._steadyState = this._steadyState.copyWithScrollState(state);
+  }
+
+  if (this._chunkView !== null) {
+    var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+    this._chunkView = this._config.visualStyle.createChunkView(chunk,
+      this._config.dataSource);
+  }
+
+  this._updateYLabels();
+  this._updateLeftmostLabels();
+  this._satisfyNeeds(this._updateNeeds());
+
   this.emit('change');
 };
 
