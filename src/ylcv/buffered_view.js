@@ -237,7 +237,7 @@ BufferedView.prototype.draw = function() {
   this._context.clearRect(0, 0, this._width, this._height);
 
   if (this._yLabels === null) {
-    // TODO: show a loader here.
+    this._showFullscreenLoader();
     return;
   }
 
@@ -280,7 +280,50 @@ BufferedView.prototype.draw = function() {
   var offset = this._chunkViewOffset + viewport.x;
   this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
 
+  this._showLoaders(viewport.x, chunkLeft, chunkRight);
+
   this._context.restore();
+};
+
+BufferedView.prototype._showFullscreenLoader = function() {
+  this._showLoaders(0, this._width, this._width);
+};
+
+BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRight) {
+  contentLeft = Math.min(this._width, contentLeft);
+  contentRight = Math.max(viewportX, contentRight);
+
+  if (contentLeft <= viewportX) {
+    if (this._leftLoader.element().parentNode !== null) {
+      this._element.removeChild(this._leftLoader.element());
+      this._leftLoader.setAnimate(false);
+    }
+  } else {
+    var e = this._leftLoader.element();
+    if (e.parentNode === null) {
+      this._element.appendChild(e);
+    }
+    e.style.left = Math.round(viewportX) + 'px';
+    e.style.top = '0';
+    this._leftLoader.setAnimate(this._animate);
+    this._leftLoader.layout(contentLeft-viewportX, this._height);
+  }
+
+  if (contentRight >= this._width) {
+    if (this._rightLoader.element().parentNode !== null) {
+      this._element.removeChild(this._rightLoader.element());
+      this._rightLoader.setAnimate(false);
+    }
+  } else {
+    var e = this._rightLoader.element();
+    if (e.parentNode === null) {
+      this._element.appendChild(e);
+    }
+    e.style.left = Math.ceil(contentRight) + 'px';
+    e.style.top = '0';
+    this._rightLoader.setAnimate(this._animate);
+    this._rightLoader.layout(this._width-contentRight, this._height);
+  }
 };
 
 BufferedView.prototype._updatePixelRatio = function(redraw) {
