@@ -216,9 +216,51 @@ HeadlessView.prototype._dataSourceDelete = function(oldIndex) {
 
   this._suppressNeeds();
 
-  // TODO: recompute the new state using the style, scrolling in the appropriate direction.
-  // TODO: tell the ChunkView about the change, and perhaps animate.
-  // TODO: if animating, register animation events on the ChunkView.
+  var oldVisibleChunk = this._config.visualStyle.computeRange(this._visibleRegion(),
+    this._config.dataSource.getLength()+1);
+
+  var keepRight = false;
+  var pointVisible = false;
+  if (oldIndex >= oldVisibleChunk.startIndex &&
+      oldIndex < oldVisibleChunk.startIndex+oldVisibleChunk.length) {
+    pointVisible = true;
+    keepRight = this._keepRightOnVisibleDataSourceChange();
+  } else {
+    keepRight = oldIndex < oldVisibleChunk.startIndex;
+  }
+
+  var newScrollPixels = this._steadyState.getScrollState().getScrolledPixels();
+
+  var totalWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  }, this._config.dataSource.getLength()).width;
+
+  if (this._steadyState.getLeftmostLabels() !== null) {
+    totalWidth += this._steadyState.getLeftmostLabels().totalWidth();
+  }
+
+  if (keepRight) {
+    var widthDiff = this._steadyState.getScrollState().getTotalPixels() - totalWidth;
+    newScrollPixels -= widthDiff;
+  }
+
+  var state = new window.scrollerjs.State(totalWidth, this._width, newScrollPixels);
+  this._steadyState = this._steadyState.copyWithScrollState(state);
+  this._updateYLabels();
+  this._updateLeftmostLabels();
+
+  if (this._chunkView !== null) {
+    var canAnimate = this._animate || pointVisible;
+    this._animating = this._chunkView.deletion(oldIndex, canAnimate);
+    if (this._animating) {
+      this._registerChunkViewEvents();
+    }
+  }
+
+  if (!this._animating) {
+    this._satisfyNeeds(this._updateNeeds());
+  }
 
   this.emit('change');
 };
@@ -242,6 +284,11 @@ HeadlessView.prototype._dataSourceInvalidate = function() {
     this._cancelAnimation();
   }
 
+  var totalWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  }, this._config.dataSource.getLength()).width;
+
   if (this._config.emphasizeRight) {
     var state = new window.scrollerjs.State(totalWidth, this._width, totalWidth-this._width);
     this._steadyState = new InstantaneousState(null, state, null);
@@ -258,6 +305,16 @@ HeadlessView.prototype._dataSourceInvalidate = function() {
   this._satisfyNeeds(this._updateNeeds());
 
   this.emit('change');
+};
+
+HeadlessView.prototype._keepRightOnVisibleDataSourceChange = function() {
+  if (this._steadyState.getScrollState().scrolledRatio() > 0.5 ||
+      (this._steadyState.getScrollState().maxScrolledPixels() === 0 &&
+       this._config.emphasizeRight)) {
+    return true;
+  } else {
+    return false;
+  }
 };
 
 HeadlessView.prototype._registerViewEvents = function() {
@@ -344,7 +401,6 @@ HeadlessView.prototype._registerChunkViewEvents = function() {
 };
 
 HeadlessView.prototype._deregisterAnimationEvents = function() {
-  assert(this._animating);
   this._chunkView.removeListener('animationFrame', this._boundAnimationFrame);
   this._chunkView.removeListener('animationEnd', this._boundAnimationEnd);
 };
