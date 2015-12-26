@@ -203,11 +203,23 @@ HeadlessView.prototype._dataSourceError = function(chunkIndex) {
 };
 
 HeadlessView.prototype._dataSourceDelete = function(oldIndex) {
-  // TODO: cancel current animation.
-  // TODO: save the current state as the animation start.
-  // TODO: recompute the new state using the style.
+  if (this._steadyState === null) {
+    return;
+  }
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  this._animationStartState = this._steadyState;
+  this._animationCurrentState = this._steadyState;
+
+  this._suppressNeeds();
+
+  // TODO: recompute the new state using the style, scrolling in the appropriate direction.
   // TODO: tell the ChunkView about the change, and perhaps animate.
   // TODO: if animating, register animation events on the ChunkView.
+
   this.emit('change');
 };
 
@@ -584,6 +596,25 @@ HeadlessView.prototype._satisfyNeeds = function(changes) {
       this._loadingCurrentChunk = false;
       this._config.dataSource.cancel(HeadlessView.CURRENT_CHUNK);
     }
+  }
+};
+
+// _suppressNeeds cancels any need-based loads and resets our needs.
+HeadlessView.prototype._suppressNeeds = function() {
+  if (this._needsLeftmostChunk) {
+    if (this._loadingLeftmostChunk) {
+      this._config.dataSource.cancel(HeadlessView.LEFTMOST_CHUNK);
+      this._loadingCurrentChunk = false;
+    }
+    this._needsLeftmostChunk = false;
+  }
+
+  if (this._needsCurrentChunk) {
+    if (this._loadingCurrentChunk) {
+      this._config.dataSource.cancel(HeadlessView.CURRENT_CHUNK);
+      this._loadingCurrentChunk = false;
+    }
+    this._needsCurrentChunk = false;
   }
 };
 
