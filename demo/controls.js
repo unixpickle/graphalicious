@@ -170,6 +170,7 @@
       labelRightMargin: 10,
       labelColor: '#999',
       labelFont: '16px sans-serif',
+      separatorColor: '#d5d5d5',
       topLabelSpace: 10,
       minSpacing: 30,
       emphasizeRight: true,

@@ -8,6 +8,7 @@
 function BufferedView(config) {
   EventEmitter.call(this);
 
+  this._separatorColor = config.separatorColor;
   this._splashScreen = config.splashScreen;
   this._leftLoader = config.loader1;
   this._rightLoader = config.loader2;
@@ -52,7 +53,8 @@ BufferedView.STATE_EPHEMERAL_CONTENT = 3;
 BufferedView.EPHEMERAL_CONTENT_TIME = 100;
 BufferedView.EPHEMERAL_SPLASH_TIME = 300;
 
-BufferedView.ZIGZAG_WIDTH = 10;
+BufferedView.ZIGZAG_WIDTH = 8;
+BufferedView.LINE_WIDTH = 2;
 
 BufferedView.prototype = Object.create(EventEmitter.prototype);
 
@@ -274,6 +276,8 @@ BufferedView.prototype.draw = function() {
   this._context.rect(viewport.x, 0, viewport.width, this._height);
   this._context.clip();
 
+  this._clipWithZigzag(chunkLeft, chunkRight);
+
   // TODO: draw the y-label lines.
 
   // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
@@ -323,6 +327,43 @@ BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRi
     e.style.top = '0';
     this._rightLoader.setAnimate(this._animate);
     this._rightLoader.layout(this._width-contentRight, this._height);
+  }
+};
+
+BufferedView.prototype._clipWithZigzag = function(left, right) {
+  this._context.beginPath();
+  this._strokeZigzag(left+BufferedView.ZIGZAG_WIDTH/2, true, true);
+  this._strokeZigzag(right-BufferedView.ZIGZAG_WIDTH/2, false, false);
+  this._context.closePath();
+
+  this._context.strokeStyle = this._separatorColor;
+  this._context.lineWidth = BufferedView.LINE_WIDTH;
+  this._context.stroke();
+
+  this._context.clip();
+};
+
+BufferedView.prototype._strokeZigzag = function(x, startTop, moveToFirst) {
+  var zigSize = BufferedView.ZIGZAG_WIDTH - Math.sqrt(2)*BufferedView.LINE_WIDTH;
+
+  var maxY = this._height + BufferedView.LINE_WIDTH;
+  var minY = -BufferedView.LINE_WIDTH;
+
+  var y = startTop ? minY : maxY;
+  var step = startTop ? zigSize : -zigSize;
+  while (true) {
+    if (moveToFirst) {
+      moveToFirst = false;
+      this._context.moveTo(x-zigSize/2, y);
+    } else {
+      this._context.lineTo(x-zigSize/2, y);
+    }
+    y += step;
+    this._context.lineTo(x+zigSize/2, y);
+    if (y < minY || y > maxY) {
+      break;
+    }
+    y += step;
   }
 };
 
