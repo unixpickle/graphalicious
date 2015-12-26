@@ -416,6 +416,10 @@ HeadlessView.prototype._handleAnimationEnd = function() {
   this._animationStartState = null;
   this._animationCurrentState = null;
   this._deregisterAnimationEvents();
+
+  // NOTE: this compensates for this._suppressNeeds() when animations start.
+  this._satisfyNeeds(this._updateNeeds());
+  this.emit('change');
 };
 
 // _updateNeeds updates how much leftmost and current chunk data the view needs.
