@@ -251,7 +251,7 @@ HeadlessView.prototype._dataSourceDelete = function(oldIndex) {
   this._updateLeftmostLabels();
 
   if (this._chunkView !== null) {
-    var canAnimate = this._animate || pointVisible;
+    var canAnimate = this._animate && pointVisible;
     this._animating = this._chunkView.deletion(oldIndex, canAnimate);
     if (this._animating) {
       this._registerChunkViewEvents();
