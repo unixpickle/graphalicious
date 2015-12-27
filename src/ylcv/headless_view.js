@@ -282,7 +282,59 @@ HeadlessView.prototype._dataSourceDelete = function(oldIndex) {
 };
 
 HeadlessView.prototype._dataSourceInsert = function(index) {
-  // TODO: see _dataSourceDelete() for basic steps.
+  if (this._steadyState === null) {
+    return;
+  }
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  this._animationStartState = this._steadyState;
+  this._animationCurrentState = this._steadyState;
+
+  this._suppressNeeds();
+
+  var oldWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength() - 1
+  },this._config.dataSource.getLength()-1).width;
+  var newWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  },this._config.dataSource.getLength()).width;
+
+  var totalPixels = this._steadyState.getScrollState().getTotalPixels() + newWidth - oldWidth;
+  var newScrollState = null;
+  if (this._keepRightOnVisibleDataSourceChange()) {
+    newScrollState = new window.scrollerjs.State(totalPixels, this._width,
+      this._steadyState.getScrollState().getScrolledPixels() + newWidth - oldWidth);
+  } else {
+    newScrollState = new window.scrollerjs.State(totalPixels, this._width,
+      this._steadyState.getScrollState().getScrolledPixels());
+  }
+
+  this._steadyState = this._steadyState.copyWithScrollState(newScrollState);
+  this._updateYLabels();
+  this._updateLeftmostLabels();
+
+  var newVisibleRange = this._config.visualStyle.computeRange(this._visibleRegion(),
+    this._config.dataSource.getLength());
+  var pointVisible = (index >= newVisibleRange.startIndex &&
+    index < newVisibleRange.startIndex+newVisibleRange.length);
+
+  if (this._chunkView !== null) {
+    var canAnimate = this._animate && pointVisible;
+    this._animating = this._chunkView.insertion(index, canAnimate);
+    if (this._animating) {
+      this._registerChunkViewEvents();
+    }
+  }
+
+  if (!this._animating) {
+    this._satisfyNeeds(this._updateNeeds());
+  }
+
   this.emit('change');
 };
 
