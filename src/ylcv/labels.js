@@ -99,9 +99,11 @@ Labels.createLabels = function(config, viewHeight, maxValue) {
 defineAttributeGetters(Labels.prototype, Labels.KEYS);
 
 Labels.prototype.getWidth = function() {
-  this._width = 0;
-  for (var i = 0, len = this._labelList.length; i < len; ++i) {
-    this._width = Math.max(this._width, this._labelList[i].getWidth());
+  if (this._width === null) {
+    this._width = 0;
+    for (var i = 0, len = this._labelList.length; i < len; ++i) {
+      this._width = Math.max(this._width, this._labelList[i].getWidth());
+    }
   }
   return this._width;
 };
