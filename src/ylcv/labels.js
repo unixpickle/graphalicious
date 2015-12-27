@@ -141,6 +141,10 @@ Labels.prototype.draw = function(ctx) {
 };
 
 Labels.prototype.transitionFrame = function(end, fractionDone) {
+  if (this.equals(end)) {
+    return this;
+  }
+
   var attrs = {};
 
   var numericalKeys = ['maxValue', 'topY', 'bottomY', 'leftMargin',
