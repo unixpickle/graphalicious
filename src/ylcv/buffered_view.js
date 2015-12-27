@@ -388,6 +388,8 @@ BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRi
 };
 
 BufferedView.prototype._drawLines = function() {
+  var oldComp = this._context.globalCompositeOperation;
+  this._context.globalCompositeOperation = 'destination-over';
   this._context.strokeStyle = this._separatorColor;
   this._context.lineWidth = BufferedView.LINE_WIDTH;
   for (var i = 0, len = this._yLabels.getCount(); i < len; ++i) {
@@ -398,6 +400,7 @@ BufferedView.prototype._drawLines = function() {
     this._context.lineTo(this._width, yValue);
     this._context.stroke();
   }
+  this._context.globalCompositeOperation = oldComp;
 };
 
 BufferedView.prototype._clipWithZigzag = function(left, right) {
