@@ -129,7 +129,7 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   assert(range.length <= totalCount && range.startIndex < totalCount);
   assert(range.length > 0 || range.startIndex === 0);
 
-  if (range.length === totalCount) {
+  if (this.getEncompassingWidth() <= viewport.width) {
     assert(range.startIndex === 0);
     return this._drawStretched(landscape, viewport, maxValue);
   }
