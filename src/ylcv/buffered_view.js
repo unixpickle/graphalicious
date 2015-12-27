@@ -298,7 +298,7 @@ BufferedView.prototype.draw = function() {
 
   this._clipWithZigzag(chunkLeft, chunkRight);
 
-  // TODO: draw the y-label lines.
+  this._drawLines();
 
   // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
   var offset = this._chunkViewOffset + viewport.x;
@@ -340,9 +340,7 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
   }
 
   this._clipWithZigzag(chunkLeft, chunkRight);
-
-  // TODO: draw the y-label lines.
-
+  this._drawLines();
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
   this._context.restore();
@@ -386,6 +384,19 @@ BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRi
     e.style.top = '0';
     this._rightLoader.setAnimate(this._animate);
     this._rightLoader.layout(this._width-contentRight, this._height);
+  }
+};
+
+BufferedView.prototype._drawLines = function() {
+  this._context.strokeStyle = this._separatorColor;
+  this._context.lineWidth = BufferedView.LINE_WIDTH;
+  for (var i = 0, len = this._yLabels.getCount(); i < len; ++i) {
+    var yValue = this._yLabels.yForLabel(i);
+    var opacity = this._yLabels.opacityForLabel(i);
+    this._context.beginPath();
+    this._context.moveTo(0, yValue);
+    this._context.lineTo(this._width, yValue);
+    this._context.stroke();
   }
 };
 
