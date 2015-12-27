@@ -391,7 +391,7 @@ BufferedView.prototype._drawLines = function() {
   this._context.strokeStyle = this._separatorColor;
   this._context.lineWidth = BufferedView.LINE_WIDTH;
   for (var i = 0, len = this._yLabels.getCount(); i < len; ++i) {
-    var yValue = this._yLabels.yForLabel(i);
+    var yValue = Math.round(this._yLabels.yForLabel(i));
     var opacity = this._yLabels.opacityForLabel(i);
     this._context.beginPath();
     this._context.moveTo(0, yValue);
