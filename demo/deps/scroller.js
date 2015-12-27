@@ -1,4 +1,4 @@
-// scrollerjs version 0.0.3
+// scrollerjs version 0.0.4
 //
 // Copyright (c) 2015, Alex Nichol and Jonathan Loeb.
 // All rights reserved.
@@ -65,6 +65,7 @@
     this._mouseListenersBound = false;
     this._boundMouseUp = this._handleMouseUp.bind(this);
     this._boundMouseMove = this._handleMouseMove.bind(this);
+    this._boundMouseClick = this._handleMouseClick.bind(this);
 
     this._registerMouseEvents();
     this._registerWheelEvents();
@@ -135,20 +136,18 @@
     this._element.addEventListener('mouseenter', function() {
       this.flash();
     }.bind(this));
-    this._element.addEventListener('mousedown', this._handleMouseDown.bind(this), true);
-    this._element.addEventListener('click', this._handleMouseClick.bind(this), true);
+
+    // NOTE: having two event listeners allows sub-elements to prevent dragging
+    // by stopping mousedown events.
+    this._element.addEventListener('mousedown', function() {
+      this._setCancelMouseClick(false);
+    }.bind(this), true);
+    this._element.addEventListener('mousedown', this._handleMouseDown.bind(this));
   };
 
   View.prototype._handleMouseDown = function(e) {
-    var rect = this._bar.element().getBoundingClientRect();
-    if (e.clientX >= rect.left && e.clientY >= rect.top &&
-        e.clientX < rect.left+this._bar.element().offsetWidth &&
-        e.clientY < rect.top+this._bar.element().offsetHeight) {
-      return;
-    }
-
     // NOTE: the user can't simultaneously click and stop easing.
-    this._cancelMouseClick = (this._ease !== null);
+    this._setCancelMouseClick(this._ease !== null);
 
     if (this._draggingStart(this._mouseEventCoordinate(e))) {
       e.stopPropagation();
@@ -160,7 +159,7 @@
 
   View.prototype._handleMouseMove = function(e) {
     if (this._draggingMove(this._mouseEventCoordinate(e))) {
-      this._cancelMouseClick = true;
+      this._setCancelMouseClick(true);
       e.stopPropagation();
     }
   };
@@ -172,9 +171,7 @@
   };
 
   View.prototype._handleMouseClick = function(e) {
-    if (this._cancelMouseClick) {
-      e.stopPropagation();
-    }
+    e.stopPropagation();
   };
 
   View.prototype._mouseEventCoordinate = function(e) {
@@ -183,6 +180,18 @@
     } else {
       return e.clientY;
     }
+  };
+
+  View.prototype._setCancelMouseClick = function(flag) {
+    if (flag === this._cancelMouseClick) {
+      return;
+    }
+    if (flag) {
+      this._element.addEventListener('click', this._boundMouseClick, true);
+    } else {
+      this._element.removeEventListener('click', this._boundMouseClick, true);
+    }
+    this._cancelMouseClick = flag;
   };
 
   View.prototype._registerTouchEvents = function() {
