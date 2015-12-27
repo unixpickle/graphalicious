@@ -12,6 +12,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
+ * Use `HeadlessView.SMALL_GAP_WIDTH` in YLCV
  * Implement pointer events (blurbs) in the bar style
  * Implement pointer events in the other styles
  * Figure out how alternating x-axis labels will work
