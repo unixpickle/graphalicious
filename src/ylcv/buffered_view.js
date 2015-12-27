@@ -333,7 +333,7 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
   var chunkRight = report.left + report.width + BufferedView.ZIGZAG_WIDTH/2;
 
   if (this._chunkViewMargins.before === 0) {
-    chunkLeft = 0;
+    chunkLeft = -BufferedView.ZIGZAG_WIDTH;
   }
   if (this._chunkViewMargins.after === 0) {
     chunkRight = this._width+BufferedView.ZIGZAG_WIDTH;
