@@ -173,6 +173,7 @@
       separatorColor: '#f0f0f0',
       topLabelSpace: 10,
       minSpacing: 30,
+      maxSpacing: 70,
       emphasizeRight: true,
       formatValue: interpretation.format.bind(interpretation),
       roundValue: interpretation.round.bind(interpretation)

@@ -72,6 +72,11 @@ Labels.createLabels = function(config, viewHeight, maxValue) {
   var count = Math.floor(usableHeight / config.minSpacing);
 
   var division = config.roundValue(realMax / count);
+  while (count > 2 && division*(count-1) >= realMax &&
+         usableHeight/(count-2) <= config.maxSpacing) {
+    --count;
+  }
+
   var labelList = [];
   for (var i = 0; i <= count; ++i) {
     var labelValue = division * i;
