@@ -287,7 +287,39 @@ HeadlessView.prototype._dataSourceInsert = function(index) {
 };
 
 HeadlessView.prototype._dataSourceModify = function(index) {
-  // TODO: see _dataSourceDelete() for basic steps.
+  if (this._steadyState === null) {
+    return;
+  }
+
+  if (this._animating) {
+    this._cancelAnimation();
+  }
+
+  this._animationStartState = this._steadyState;
+  this._animationCurrentState = this._steadyState;
+
+  this._suppressNeeds();
+
+  var visibleRange = this._config.visualStyle.computeRange(this._visibleRegion(),
+    this._config.dataSource.getLength());
+  var pointVisible = (index >= visibleRange.startIndex &&
+    index < visibleRange.startIndex+visibleRange.length);
+
+  this._updateYLabels();
+  this._updateLeftmostLabels();
+
+  if (this._chunkView !== null) {
+    var canAnimate = this._animate && pointVisible;
+    this._animating = this._chunkView.modification(index, canAnimate);
+    if (this._animating) {
+      this._registerChunkViewEvents();
+    }
+  }
+
+  if (!this._animating) {
+    this._satisfyNeeds(this._updateNeeds());
+  }
+
   this.emit('change');
 };
 
