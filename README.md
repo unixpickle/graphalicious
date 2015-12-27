@@ -17,7 +17,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
    * Implement animations
      * When animations start, we reset our needs to indicate that we do not need anything.
      * When animations stop, we will update our needs because we stopped any loads when the animation began.
-   * Prevent DOM selection of canvas in graph
  * Implement pointer events (blurbs) in the bar style
  * Implement pointer events in the other styles
  * Figure out how alternating x-axis labels will work

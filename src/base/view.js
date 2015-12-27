@@ -6,6 +6,8 @@ function View() {
   this._scrollView.setDraggable(true);
   this._boundScrollStateChanged = this._handleScrollStateChanged.bind(this);
   this._scrollView.on('scroll', this._handleScroll.bind(this));
+
+  preventSelection(this._scrollView.element());
 }
 
 View.prototype.element = function() {
@@ -69,5 +71,14 @@ View.prototype._handleScroll = function() {
     this._contentView.setScrolledPixels(this._scrollView.getState().getScrolledPixels());
   }
 };
+
+function preventSelection(element) {
+  var s = element.style;
+  s.webkitTouchCallout = 'none';
+  s.webkitUserSelect = 'none';
+  s.MozUserSelect = 'none';
+  s.msUserSelect = 'none';
+  s.userSelect = 'none';
+}
 
 exports.View = View;
