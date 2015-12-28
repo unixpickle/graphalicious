@@ -59,9 +59,7 @@ View.prototype.layout = function(w, h) {
 };
 
 View.prototype.getScrollState = function() {
-  if (this._headlessView.shouldShowContent()) {
-    return this._headlessView.instantaneousState().getScrollState();
-  } else if (this._lastScrollState !== null && !this._bufferedView.showingSplash()) {
+  if (this._lastScrollState !== null) {
     return this._lastScrollState;
   } else {
     return new window.scrollerjs.State(0, 0, 0);
@@ -69,6 +67,10 @@ View.prototype.getScrollState = function() {
 };
 
 View.prototype.setScrolledPixels = function(p) {
+  if (!this._headlessView.shouldShowContent()) {
+    this.emit('scrollStateChange');
+    return;
+  }
   this._headlessView.setScrolledPixels(p);
   this._updateView(false);
 };
@@ -96,6 +98,10 @@ View.prototype._updateView = function(emitChange) {
 
     this._bufferedView.draw();
   } else {
+    if (this._bufferedView.showingSplash() && this._lastScrollState) {
+      this._lastScrollState = null;
+      scrollStateChange = true;
+    }
     this._bufferedView.setChunkView(null);
     this._bufferedView.setYLabels(null);
     this._bufferedView.setChunkViewOffset(0);
