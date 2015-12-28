@@ -2,15 +2,44 @@
 
 function View(config) {
   EventEmitter.call(this);
-  this._config = config;
-  this._headlessView = new HeadlessView(config);
-  this._bufferedView = new BufferedView(config);
+  this._config = {};
+  for (var i = 0, len = View.CONFIG_ATTRS.length; i < len; ++i) {
+    var attr = View.CONFIG_ATTRS[i];
+    if (config.hasOwnProperty(attr)) {
+      this._config[attr] = config[attr];
+    } else if (View.DEFAULTS.hasOwnProperty(attr)) {
+      this._config[attr] = View.DEFAULTS[attr];
+    } else {
+      throw new Error('missing configuration attribute: ' + attr);
+    }
+  }
+  this._headlessView = new HeadlessView(this._config);
+  this._bufferedView = new BufferedView(this._config);
 
   this._headlessView.on('change', this._updateView.bind(this, true));
   this._bufferedView.on('change', this._updateView.bind(this, true));
 
   this._lastScrollState = null;
 }
+
+View.CONFIG_ATTRS = ['visualStyle', 'dataSource', 'splashScreen', 'loader1', 'loader2',
+  'topMargin', 'bottomMargin', 'labelLeftMargin', 'labelRightMargin', 'labelColor',
+  'labelFont', 'separatorColor', 'formatValue', 'roundValue', 'topLabelSpace',
+  'minSpacing', 'maxSpacing', 'emphasizeRight'];
+
+View.DEFAULTS = {
+  topMargin: 20,
+  bottomMargin: 5,
+  labelLeftMargin: 10,
+  labelRightMargin: 10,
+  labelColor: '#999',
+  labelFont: '16px sans-serif',
+  separatorColor: '#f0f0f0',
+  topLabelSpace: 0,
+  minSpacing: 30,
+  maxSpacing: 70,
+  emphasizeRight: true
+};
 
 View.prototype = Object.create(EventEmitter.prototype);
 

@@ -164,17 +164,7 @@
       visualStyle: style,
       loader1: new window.SplashScreen(colorScheme),
       loader2: new window.SplashScreen(colorScheme),
-      topMargin: 20,
-      bottomMargin: 5,
-      labelLeftMargin: 10,
-      labelRightMargin: 10,
-      labelColor: '#999',
-      labelFont: '16px sans-serif',
-      separatorColor: '#f0f0f0',
       topLabelSpace: 10,
-      minSpacing: 30,
-      maxSpacing: 70,
-      emphasizeRight: true,
       formatValue: interpretation.format.bind(interpretation),
       roundValue: interpretation.round.bind(interpretation)
     };
