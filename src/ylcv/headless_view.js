@@ -50,7 +50,7 @@ HeadlessView.MIN_CURRENT_BUFFER = 1000;
 // chunk.
 // If the chunk view would be within SMALL_GAP_WIDTH of the left or right of the
 // content, it will be extended to go all the way.
-HeadlessView.SMALL_GAP_WIDTH = 100;
+HeadlessView.SMALL_GAP_WIDTH = 250;
 
 HeadlessView.LEFTMOST_CHUNK = 0;
 HeadlessView.CURRENT_CHUNK = 1;
@@ -581,10 +581,26 @@ HeadlessView.prototype._updateCurrentChunkNeeds = function() {
     width: visibleRegion.width + HeadlessView.MIN_CURRENT_BUFFER*2,
   }, this._config.dataSource.getLength());
 
-  var optimalRange = this._config.visualStyle.computeRange({
+  var optimalRegion = {
     left: visibleRegion.left - HeadlessView.CURRENT_BUFFER,
     width: visibleRegion.width + HeadlessView.CURRENT_BUFFER*2,
-  }, this._config.dataSource.getLength());
+  };
+  if (optimalRegion.left <= HeadlessView.SMALL_GAP_WIDTH) {
+    optimalRegion.width += optimalRegion.left;
+    optimalRegion.left = 0;
+  }
+
+  var totalWidth = this._config.visualStyle.computeRegion({
+    startIndex: 0,
+    length: this._config.dataSource.getLength()
+  }, this._config.dataSource.getLength()).width;
+  if (optimalRegion.left+optimalRegion.width > totalWidth - HeadlessView.SMALL_GAP_WIDTH) {
+    var diff = totalWidth - (optimalRegion.left + optimalRegion.width);
+    optimalRegion.width += diff;
+  }
+
+  var optimalRange = this._config.visualStyle.computeRange(optimalRegion,
+    this._config.dataSource.getLength());
 
   var currentRange = {startIndex: 0, length: 0};
   var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
