@@ -5,8 +5,8 @@ function Blurb() {
   this.opacity = 1;
 }
 
-Blurb.prototype.RIGHT = 0;
-Blurb.prototype.LEFT = 1;
+Blurb.RIGHT = 0;
+Blurb.LEFT = 1;
 Blurb.ARROW_SIZE = 7;
 
 Blurb.prototype.draw = function() {
