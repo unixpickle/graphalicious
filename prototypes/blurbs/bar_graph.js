@@ -1,8 +1,9 @@
 function BarGraph() {
   this._points = [];
   this._secondary = [];
+  seed(123);
   for (var i = 0; i < 100; ++i) {
-    this._points.push(Math.random());
+    this._points.push(random());
     this._secondary.push(this._points[i] / 2);
   }
 }
