@@ -1,4 +1,4 @@
-// scrollerjs version 0.0.4
+// scrollerjs version 0.0.5
 //
 // Copyright (c) 2015, Alex Nichol and Jonathan Loeb.
 // All rights reserved.
@@ -83,6 +83,7 @@
   View.BAR_POSITION_BOTTOM = 3;
 
   View.prototype = Object.create(window.EventEmitter.prototype);
+  View.prototype.constructor = View;
 
   View.prototype.element = function() {
     return this._element;
@@ -522,6 +523,7 @@
   Ease.DURATION = 1000;
 
   Ease.prototype = Object.create(window.EventEmitter.prototype);
+  Ease.prototype.constructor = Ease;
 
   Ease.prototype.start = function() {
     this._req = window.requestAnimationFrame(this._boundTick);
@@ -626,6 +628,7 @@
   Bar.MIN_THUMB_SIZE = 30;
 
   Bar.prototype = Object.create(window.EventEmitter.prototype);
+  Bar.prototype.constructor = Bar;
 
   Bar.prototype.element = function() {
     return this._element;
