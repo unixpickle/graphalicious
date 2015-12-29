@@ -103,6 +103,7 @@ function BarStyle(attrs) {
 }
 
 BarStyle.prototype = Object.create(EventEmitter.prototype);
+BarStyle.prototype.constructor = BarStyle;
 
 // Inheret from BarStyleAttrs as well as EventEmitter.
 for (var attr in BarStyleAttrs.prototype) {

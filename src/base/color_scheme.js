@@ -7,6 +7,7 @@ function ColorScheme(primary, secondary) {
 }
 
 ColorScheme.prototype = Object.create(window.EventEmitter.prototype);
+ColorScheme.prototype.constructor = ColorScheme;
 
 ColorScheme.prototype.getPrimary = function() {
   return this._primary;

@@ -37,6 +37,7 @@
   };
 
   TestDataSource.prototype = Object.create(EventEmitter.prototype);
+  TestDataSource.prototype.constructor = TestDataSource;
 
   TestDataSource.prototype.getLength = function() {
     return this._dataPoints.length;

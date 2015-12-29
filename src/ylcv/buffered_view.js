@@ -58,6 +58,7 @@ BufferedView.ZIGZAG_WIDTH = 8;
 BufferedView.LINE_WIDTH = 2;
 
 BufferedView.prototype = Object.create(EventEmitter.prototype);
+BufferedView.prototype.constructor = BufferedView;
 
 // element returns the root DOM element of the view.
 BufferedView.prototype.element = function() {

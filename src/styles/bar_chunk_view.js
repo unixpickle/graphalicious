@@ -31,6 +31,7 @@ BarChunkView.ANIMATION_MODIFY = 3;
 BarChunkView.ANIMATION_DURATION = 300;
 
 BarChunkView.prototype = Object.create(EventEmitter.prototype);
+BarChunkView.prototype.constructor = BarChunkView;
 
 BarChunkView.prototype.getWidth = function() {
   var landscape = this._morphingLandscape();

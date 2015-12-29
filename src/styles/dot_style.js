@@ -24,6 +24,7 @@ function DotStyle(attrs) {
 }
 
 DotStyle.prototype = Object.create(BarStyle.prototype);
+DotStyle.prototype.constructor = DotStyle;
 
 DotStyle.prototype.setAttributes = function(attrs) {
   this._dotAttrs.setAttributes(attrs);

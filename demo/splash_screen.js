@@ -45,6 +45,7 @@
   }
 
   SplashScreen.prototype = Object.create(EventEmitter.prototype);
+  SplashScreen.prototype.constructor = SplashScreen;
 
   SplashScreen.prototype.element = function() {
     return this._element;

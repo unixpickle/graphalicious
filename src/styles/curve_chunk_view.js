@@ -8,6 +8,7 @@ function CurveChunkView(dotAttrs, attrs, chunk, dataSource) {
 }
 
 CurveChunkView.prototype = Object.create(DotChunkView.prototype);
+CurveChunkView.prototype.constructor = CurveChunkView;
 
 CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewport, maxValue) {
   var params = {

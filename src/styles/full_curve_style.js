@@ -98,6 +98,7 @@ function FullCurveStyle(attrs) {
 }
 
 FullCurveStyle.prototype = Object.create(EventEmitter.prototype);
+FullCurveStyle.prototype.constructor = FullCurveStyle;
 
 FullCurveStyle.prototype.setAttributes = function(attrs) {
   this._attrs.setAttributes(attrs);

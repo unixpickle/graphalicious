@@ -6,6 +6,7 @@ function DotChunkView(dotAttrs, attrs, chunk, dataSource) {
 }
 
 DotChunkView.prototype = Object.create(BarChunkView.prototype);
+DotChunkView.prototype.constructor = DotChunkView;
 
 DotChunkView.prototype._drawValue = function(params) {
   var radius = this._radiusForDot(params);

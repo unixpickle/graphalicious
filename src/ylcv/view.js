@@ -42,6 +42,7 @@ View.DEFAULTS = {
 };
 
 View.prototype = Object.create(EventEmitter.prototype);
+View.prototype.constructor = View;
 
 View.prototype.element = function() {
   return this._bufferedView.element();

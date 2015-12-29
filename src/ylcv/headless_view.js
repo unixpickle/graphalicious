@@ -60,6 +60,7 @@ HeadlessView.NEED_CHANGE_RANGE = 1;
 HeadlessView.NEED_CHANGE_FLIP = 2;
 
 HeadlessView.prototype = Object.create(EventEmitter.prototype);
+HeadlessView.prototype.constructor = HeadlessView;
 
 // layout updates the state based on a new width and height.
 HeadlessView.prototype.layout = function(w, h) {
