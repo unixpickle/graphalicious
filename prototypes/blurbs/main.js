@@ -77,6 +77,6 @@ window.addEventListener('mouseleave', function(e) {
 function switchGraph(g) {
   currentGraph = g;
   if (scrollView !== null) {
-    g.draw();
+    g.resize();
   }
 }
