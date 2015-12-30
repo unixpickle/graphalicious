@@ -6,7 +6,8 @@ function BarGraphFadingHarp() {
   this._fadeFrame = null;
 }
 
-BarGraphFadingHarp.DURATION = 150;
+BarGraphFadingHarp.IN_DURATION = 90;
+BarGraphFadingHarp.OUT_DURATION = 150;
 
 BarGraphFadingHarp.prototype = Object.create(BarGraph.prototype);
 BarGraphFadingHarp.prototype.constructor = BarGraphFadingHarp;
@@ -44,7 +45,12 @@ BarGraphFadingHarp.prototype._drawBlurb = function() {
       this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
     }
   }
-  var fadeTime = (new Date().getTime() - this._fadeStart) / BarGraphFadingHarp.DURATION;
+  var fadeTime = (new Date().getTime() - this._fadeStart);
+  if (this._fadeOut) {
+    fadeTime /= BarGraphFadingHarp.OUT_DURATION;
+  } else {
+    fadeTime /= BarGraphFadingHarp.IN_DURATION;
+  }
   fadeTime = Math.min(fadeTime, 1);
   if (this._fadeOut) {
     fadeTime = 1 - fadeTime;
@@ -93,7 +99,12 @@ BarGraphFadingHarp.prototype._currentBar = function() {
 };
 
 BarGraphFadingHarp.prototype._fadeTick = function() {
-  var fadeTime = (new Date().getTime() - this._fadeStart) / BarGraphFadingHarp.DURATION;
+  var fadeTime = (new Date().getTime() - this._fadeStart);
+  if (this._fadeOut) {
+    fadeTime /= BarGraphFadingHarp.OUT_DURATION;
+  } else {
+    fadeTime /= BarGraphFadingHarp.IN_DURATION;
+  }
   if (fadeTime >= 1) {
     this._fadeFrame = null;
     if (this._fadeOut) {
