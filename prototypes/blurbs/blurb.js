@@ -22,46 +22,52 @@ Blurb.intermediate = function(one, two, frac) {
 };
 
 Blurb.prototype.draw = function() {
-  drawingContext.font = '18px sans-serif';
-  var oldAlpha = drawingContext.globalAlpha;
-  drawingContext.globalAlpha = this.opacity;
+  var targetCanvas = document.createElement('canvas');
+  targetCanvas.width = mainCanvas.width;
+  targetCanvas.height = mainCanvas.height;
 
-  drawingContext.save();
-  drawingContext.shadowBlur = 5;
-  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  var contentWidth = drawingContext.measureText(this.text).width + 20;
+  var ctx = targetCanvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  ctx.font = '18px sans-serif';
+  ctx.save();
+  ctx.shadowBlur = 5;
+  ctx.shadowColor = 'rgba(0, 0, 0, ' + (this.opacity*0.5).toFixed(2) + ')';
+  var contentWidth = ctx.measureText(this.text).width + 20;
   var contentHeight = 30;
-  drawingContext.beginPath();
+  ctx.beginPath();
   if (this.side === Blurb.RIGHT) {
-    drawingContext.moveTo(this.point.x, this.point.y);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-contentHeight/2);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE+contentWidth, this.point.y-contentHeight/2);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE+contentWidth, this.point.y+contentHeight/2);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
-    drawingContext.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
+    ctx.moveTo(this.point.x, this.point.y);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-contentHeight/2);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE+contentWidth, this.point.y-contentHeight/2);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE+contentWidth, this.point.y+contentHeight/2);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
+    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
   } else {
-    drawingContext.moveTo(this.point.x, this.point.y);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-contentHeight/2);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE-contentWidth, this.point.y-contentHeight/2);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE-contentWidth, this.point.y+contentHeight/2);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
-    drawingContext.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
+    ctx.moveTo(this.point.x, this.point.y);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-contentHeight/2);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE-contentWidth, this.point.y-contentHeight/2);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE-contentWidth, this.point.y+contentHeight/2);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
+    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
   }
-  drawingContext.closePath();
-  drawingContext.fillStyle = 'white';
-  drawingContext.fill();
-  drawingContext.restore();
+  ctx.closePath();
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.restore();
 
-  drawingContext.fillStyle = '#999';
-  drawingContext.textBaseline = 'middle';
-  drawingContext.textAlign = 'center';
+  ctx.fillStyle = '#999';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
   if (this.side === Blurb.RIGHT) {
-    drawingContext.fillText(this.text, this.point.x+Blurb.ARROW_SIZE+contentWidth/2, this.point.y);
+    ctx.fillText(this.text, this.point.x+Blurb.ARROW_SIZE+contentWidth/2, this.point.y);
   } else {
-    drawingContext.fillText(this.text, this.point.x-Blurb.ARROW_SIZE-contentWidth/2, this.point.y);
+    ctx.fillText(this.text, this.point.x-Blurb.ARROW_SIZE-contentWidth/2, this.point.y);
   }
 
-  drawingContext.globalAlpha = oldAlpha;
+  drawingContext.globalAlpha = this.opacity;
+  drawingContext.drawImage(targetCanvas, 0, 0, targetCanvas.width/2, targetCanvas.height/2);
+  drawingContext.globalAlpha = 1;
 };
