@@ -11,6 +11,7 @@ BarGraphFadingHarp2.IN_DELAY = 200;
 BarGraphFadingHarp2.IN_DURATION = 90;
 BarGraphFadingHarp2.OUT_DURATION = 150;
 BarGraphFadingHarp2.SCROLL_DISABLE_TIME = 500;
+BarGraphFadingHarp2.SHORT_BAR = 15;
 
 BarGraphFadingHarp2.prototype = Object.create(BarGraph.prototype);
 BarGraphFadingHarp2.prototype.constructor = BarGraphFadingHarp2;
@@ -44,7 +45,7 @@ BarGraphFadingHarp2.prototype._drawBlurb = function() {
   } else if (this._currentBlurb === null) {
     this._currentBlurb = new Blurb();
     this._currentBlurb.text = current.text;
-    this._currentBlurb.side = (current.x >= this._viewportSize().width/2 ? Blurb.LEFT : Blurb.RIGHT);
+    this._currentBlurb.side = this._sideForCurrent(current);
     this._currentBlurb.point = {x: current.x, y: current.y};
     if (this._fadeFrame === null) {
       this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
@@ -141,4 +142,11 @@ BarGraphFadingHarp2.prototype._fadeTick = function() {
     this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
   }
   this.draw();
+};
+
+BarGraphFadingHarp2.prototype._sideForCurrent = function(current) {
+  if (current.y >= this._viewportSize().height-BarGraphFadingHarp2.SHORT_BAR) {
+    return Blurb.UP;
+  }
+  return (current.x >= this._viewportSize().width/2 ? Blurb.LEFT : Blurb.RIGHT);
 };
