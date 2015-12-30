@@ -9,6 +9,18 @@ Blurb.RIGHT = 0;
 Blurb.LEFT = 1;
 Blurb.ARROW_SIZE = 7;
 
+Blurb.intermediate = function(one, two, frac) {
+  var res = new Blurb();
+  res.text = two.text;
+  res.point = {
+    x: frac*two.point.x + (1-frac)*one.point.x,
+    y: frac*two.point.y + (1-frac)*one.point.y
+  };
+  res.side = two.side;
+  res.opacity = frac*two.opacity + (1-frac)*one.opacity;
+  return res;
+};
+
 Blurb.prototype.draw = function() {
   drawingContext.font = '18px sans-serif';
   var oldAlpha = drawingContext.globalAlpha;
