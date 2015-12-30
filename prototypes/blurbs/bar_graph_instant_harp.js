@@ -1,21 +1,48 @@
 function BarGraphInstantHarp() {
   BarGraph.call(this);
+  this._currentIndex = -1;
+  this._currentPrimary = false;
+  this._currentTimeout = null;
 }
+
+BarGraphInstantHarp.DELAY = 250;
 
 BarGraphInstantHarp.prototype = Object.create(BarGraph.prototype);
 BarGraphInstantHarp.prototype.constructor = BarGraphInstantHarp;
 
 BarGraphInstantHarp.prototype.draw = function() {
   BarGraph.prototype.draw.call(this);
+  this._drawBlurb();
+};
+
+BarGraphInstantHarp.prototype._drawBlurb = function() {
   var current = this._currentBar();
   if (current === null) {
+    this._currentIndex = -1;
+    if (this._currentTimeout !== null) {
+      clearTimeout(this._currentTimeout);
+      this._currentTimeout = null;
+    }
+    return;
+  } else if (current.index !== this._currentIndex ||
+             current.primary !== this._currentPrimary) {
+    if (this._currentTimeout !== null) {
+      clearTimeout(this._currentTimeout);
+    }
+    this._currentIndex = current.index;
+    this._currentPrimary = current.primary;
+    this._currentTimeout = setTimeout(function() {
+      this._currentTimeout = null;
+      this.draw();
+    }.bind(this), BarGraphInstantHarp.DELAY);
+    return;
+  } else if (this._currentTimeout !== null) {
     return;
   }
   var blurb = new Blurb();
   blurb.point = current;
   blurb.text = current.text;
   blurb.side = (current.x >= this._viewportSize().width/2 ? Blurb.LEFT : Blurb.RIGHT);
-  console.log(blurb);
   blurb.draw();
 };
 
@@ -41,12 +68,16 @@ BarGraphInstantHarp.prototype._currentBar = function() {
 
   if (mousePosition.y >= viewport.height-secondaryHeight) {
     return {
+      index: pointIndex,
+      primary: false,
       x: (10 + pointIndex*45) + 20 - offset,
       y: viewport.height - secondaryHeight,
       text: 'Secondary Value'
     };
   } else {
     return {
+      index: pointIndex,
+      primary: true,
       x: (10 + pointIndex*45) + 20 - offset,
       y: viewport.height - height,
       text: 'Primary Value'
