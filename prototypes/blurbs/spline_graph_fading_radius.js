@@ -12,7 +12,7 @@ SplineGraphFadingRadius.IN_DURATION = 90;
 SplineGraphFadingRadius.OUT_DURATION = 150;
 SplineGraphFadingRadius.SCROLL_DISABLE_TIME = 500;
 SplineGraphFadingRadius.DOT_RADIUS = 30;
-SplineGraphFadingRadius.LOW_POINT = 15;
+SplineGraphFadingRadius.LOW_POINT = 30;
 
 SplineGraphFadingRadius.prototype = Object.create(SplineGraph.prototype);
 SplineGraphFadingRadius.prototype.constructor = SplineGraphFadingRadius;

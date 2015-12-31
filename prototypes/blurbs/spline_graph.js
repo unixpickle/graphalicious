@@ -34,7 +34,7 @@ SplineGraph.prototype.draw = function() {
 
   for (var i = 0, len = this._points.length; i < len; ++i) {
     var x = 10 + 50*i - offset;
-    if (x >= -50 && x <= viewport.width+50) {
+    if (x >= -100 && x <= viewport.width+100) {
       var height = this._points[i]*(viewport.height-15) + 5;
       primaryPoints.push({x: x + 5, y: viewport.height-height});
       height = this._secondary[i]*(viewport.height-15) + 5;

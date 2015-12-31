@@ -8,6 +8,7 @@ function Blurb() {
 Blurb.RIGHT = 0;
 Blurb.LEFT = 1;
 Blurb.ARROW_SIZE = 7;
+Blurb.MIN_ARROW_EDGE_DIST = 2;
 Blurb.MIN_EDGE_DISTANCE = 2;
 
 Blurb.intermediate = function(one, two, frac) {
@@ -69,13 +70,19 @@ Blurb.prototype.draw = function() {
       x: blurbLeft + contentWidth/2,
       y: this.point.y - Blurb.ARROW_SIZE - contentHeight/2
     };
-    ctx.moveTo(this.point.x, this.point.y);
-    ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
-    ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE);
-    ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE-contentHeight);
-    ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE-contentHeight);
-    ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE);
-    ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+    if (this.point.x+Blurb.ARROW_SIZE+Blurb.MIN_ARROW_EDGE_DIST >= blurbLeft+contentWidth ||
+        this.point.x-Blurb.ARROW_SIZE-Blurb.MIN_ARROW_EDGE_DIST < blurbLeft) {
+      ctx.rect(contentCenter.x-contentWidth/2, contentCenter.y-contentHeight/2, contentWidth,
+        contentHeight);
+    } else {
+      ctx.moveTo(this.point.x, this.point.y);
+      ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+      ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE);
+      ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE-contentHeight);
+      ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE-contentHeight);
+      ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE);
+      ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+    }
   }
 
   ctx.closePath();
