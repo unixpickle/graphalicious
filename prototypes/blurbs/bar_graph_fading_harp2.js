@@ -43,10 +43,7 @@ BarGraphFadingHarp2.prototype._drawBlurb = function() {
       return;
     }
   } else if (this._currentBlurb === null) {
-    this._currentBlurb = new Blurb();
-    this._currentBlurb.text = current.text;
-    this._currentBlurb.side = this._sideForCurrent(current);
-    this._currentBlurb.point = {x: current.x, y: current.y};
+    this._currentBlurb = Blurb.create(current, current.text);
     if (this._fadeFrame === null) {
       this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
     }
@@ -142,11 +139,4 @@ BarGraphFadingHarp2.prototype._fadeTick = function() {
     this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
   }
   this.draw();
-};
-
-BarGraphFadingHarp2.prototype._sideForCurrent = function(current) {
-  if (current.y >= this._viewportSize().height-BarGraphFadingHarp2.SHORT_BAR) {
-    return Blurb.UP;
-  }
-  return (current.x >= this._viewportSize().width/2 ? Blurb.LEFT : Blurb.RIGHT);
 };

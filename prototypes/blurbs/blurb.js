@@ -23,6 +23,18 @@ Blurb.intermediate = function(one, two, frac) {
   return res;
 };
 
+Blurb.create = function(point, text) {
+  var res = new Blurb();
+  res.text = text;
+  res.point = point;
+  if (point.y >= mainCanvas.height/2-30) {
+    res.side = Blurb.UP;
+  } else {
+    res.side = (point.x >= mainCanvas.width/4 ? Blurb.LEFT : Blurb.RIGHT);
+  }
+  return res;
+};
+
 Blurb.prototype.draw = function() {
   var targetCanvas = document.createElement('canvas');
   targetCanvas.width = mainCanvas.width;
