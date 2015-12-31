@@ -10,6 +10,7 @@ Blurb.LEFT = 1;
 Blurb.ARROW_SIZE = 7;
 Blurb.MIN_ARROW_EDGE_DIST = 2;
 Blurb.MIN_EDGE_DISTANCE = 2;
+Blurb.BOTTOM_USED_HEIGHT = 14;
 
 Blurb.intermediate = function(one, two, frac) {
   var res = new Blurb();
@@ -72,6 +73,8 @@ Blurb.prototype.draw = function() {
     ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
     ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
   } else {
+    var pointY = Math.min(mainCanvas.height/2-Blurb.BOTTOM_USED_HEIGHT+Blurb.ARROW_SIZE,
+      this.point.y);
     var blurbLeft = this.point.x - contentWidth/2;
     if (blurbLeft < Blurb.MIN_EDGE_DISTANCE) {
       blurbLeft = Blurb.MIN_EDGE_DISTANCE;
@@ -80,20 +83,21 @@ Blurb.prototype.draw = function() {
     }
     contentCenter = {
       x: blurbLeft + contentWidth/2,
-      y: this.point.y - Blurb.ARROW_SIZE - contentHeight/2
+      y: pointY - Blurb.ARROW_SIZE - contentHeight/2
     };
     if (this.point.x+Blurb.ARROW_SIZE+Blurb.MIN_ARROW_EDGE_DIST >= blurbLeft+contentWidth ||
-        this.point.x-Blurb.ARROW_SIZE-Blurb.MIN_ARROW_EDGE_DIST < blurbLeft) {
+        this.point.x-Blurb.ARROW_SIZE-Blurb.MIN_ARROW_EDGE_DIST < blurbLeft ||
+        pointY >= mainCanvas.height/2 - Blurb.BOTTOM_USED_HEIGHT) {
       ctx.rect(contentCenter.x-contentWidth/2, contentCenter.y-contentHeight/2, contentWidth,
         contentHeight);
     } else {
-      ctx.moveTo(this.point.x, this.point.y);
-      ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
-      ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE);
-      ctx.lineTo(blurbLeft+contentWidth, this.point.y-Blurb.ARROW_SIZE-contentHeight);
-      ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE-contentHeight);
-      ctx.lineTo(blurbLeft, this.point.y-Blurb.ARROW_SIZE);
-      ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y-Blurb.ARROW_SIZE);
+      ctx.moveTo(this.point.x, pointY);
+      ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, pointY-Blurb.ARROW_SIZE);
+      ctx.lineTo(blurbLeft+contentWidth, pointY-Blurb.ARROW_SIZE);
+      ctx.lineTo(blurbLeft+contentWidth, pointY-Blurb.ARROW_SIZE-contentHeight);
+      ctx.lineTo(blurbLeft, pointY-Blurb.ARROW_SIZE-contentHeight);
+      ctx.lineTo(blurbLeft, pointY-Blurb.ARROW_SIZE);
+      ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, pointY-Blurb.ARROW_SIZE);
     }
   }
 
