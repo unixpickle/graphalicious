@@ -73,24 +73,20 @@ Blurb.prototype.draw = function() {
     ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+contentHeight/2);
     ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, this.point.y+Blurb.ARROW_SIZE);
   } else {
-    var pointY = Math.min(mainCanvas.height/2-Blurb.BOTTOM_USED_HEIGHT+Blurb.ARROW_SIZE,
-      this.point.y);
     var blurbLeft = this.point.x - contentWidth/2;
     if (blurbLeft < Blurb.MIN_EDGE_DISTANCE) {
       blurbLeft = Blurb.MIN_EDGE_DISTANCE;
     } else if (blurbLeft+contentWidth > mainCanvas.width/2-Blurb.MIN_EDGE_DISTANCE) {
       blurbLeft = mainCanvas.width/2 - Blurb.MIN_EDGE_DISTANCE - contentWidth;
     }
-    contentCenter = {
-      x: blurbLeft + contentWidth/2,
-      y: pointY - Blurb.ARROW_SIZE - contentHeight/2
-    };
+    var pointY;
     if (this.point.x+Blurb.ARROW_SIZE+Blurb.MIN_ARROW_EDGE_DIST >= blurbLeft+contentWidth ||
-        this.point.x-Blurb.ARROW_SIZE-Blurb.MIN_ARROW_EDGE_DIST < blurbLeft ||
-        pointY >= mainCanvas.height/2 - Blurb.BOTTOM_USED_HEIGHT) {
-      ctx.rect(contentCenter.x-contentWidth/2, contentCenter.y-contentHeight/2, contentWidth,
-        contentHeight);
+        this.point.x-Blurb.ARROW_SIZE-Blurb.MIN_ARROW_EDGE_DIST < blurbLeft) {
+      pointY = Math.min(mainCanvas.height/2-Blurb.BOTTOM_USED_HEIGHT+Blurb.ARROW_SIZE,
+        this.point.y);
+      ctx.rect(blurbLeft, pointY-Blurb.ARROW_SIZE-contentHeight, contentWidth, contentHeight);
     } else {
+      pointY = Math.min(mainCanvas.height/2-Blurb.BOTTOM_USED_HEIGHT, this.point.y);
       ctx.moveTo(this.point.x, pointY);
       ctx.lineTo(this.point.x+Blurb.ARROW_SIZE, pointY-Blurb.ARROW_SIZE);
       ctx.lineTo(blurbLeft+contentWidth, pointY-Blurb.ARROW_SIZE);
@@ -99,6 +95,10 @@ Blurb.prototype.draw = function() {
       ctx.lineTo(blurbLeft, pointY-Blurb.ARROW_SIZE);
       ctx.lineTo(this.point.x-Blurb.ARROW_SIZE, pointY-Blurb.ARROW_SIZE);
     }
+    contentCenter = {
+      x: blurbLeft + contentWidth/2,
+      y: pointY - Blurb.ARROW_SIZE - contentHeight/2
+    };
   }
 
   ctx.closePath();
