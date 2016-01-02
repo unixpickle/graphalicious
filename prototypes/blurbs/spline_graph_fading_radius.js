@@ -36,10 +36,8 @@ SplineGraphFadingRadius.prototype.scroll = function() {
 SplineGraphFadingRadius.prototype._drawBlurb = function() {
   var current = this._currentDot();
   if (current === null) {
-    if (this._fadeFrame === null && this._currentBlurb !== null) {
-      this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
-      this._fadeOut = true;
-      this._fadeStart = new Date().getTime();
+    if (this._currentBlurb !== null) {
+      this._startFadeOut();
     } else if (this._currentBlurb === null) {
       return;
     }
@@ -52,11 +50,7 @@ SplineGraphFadingRadius.prototype._drawBlurb = function() {
     this._fadeStart = new Date().getTime();
   } else if (current.x !== this._currentBlurb.point.x ||
              current.y !== this._currentBlurb.point.y) {
-    if (this._fadeFrame === null || !this._fadeOut) {
-      this._fadeOut = true;
-      this._fadeStart = new Date().getTime();
-      this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
-    }
+    this._startFadeOut();
   }
   var fadeTime = (new Date().getTime() - this._fadeStart);
   if (this._fadeOut) {
@@ -119,6 +113,29 @@ SplineGraphFadingRadius.prototype._currentDot = function() {
   }
 
   return currentInfo;
+};
+
+SplineGraphFadingRadius.prototype._startFadeOut = function() {
+  if (this._fadeFrame === null || !this._fadeOut) {
+    if (this._fadeFrame !== null && !this._fadeOut) {
+      var fadeTime = new Date().getTime() - this._fadeStart;
+      var currentOpacity = 0;
+      if (fadeTime >= SplineGraphFadingRadius.IN_DELAY) {
+        currentOpacity = fadeTime;
+        currentOpacity -= SplineGraphFadingRadius.IN_DELAY;
+        currentOpacity /= SplineGraphFadingRadius.IN_DURATION;
+        currentOpacity = Math.min(1, currentOpacity);
+      }
+      var timeElapsed = (1 - currentOpacity) * SplineGraphFadingRadius.OUT_DURATION;
+      this._fadeStart = new Date().getTime() - timeElapsed;
+    } else {
+      this._fadeStart = new Date().getTime();
+    }
+    this._fadeOut = true;
+  }
+  if (this._fadeFrame === null) {
+    this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
+  }
 };
 
 SplineGraphFadingRadius.prototype._fadeTick = function() {

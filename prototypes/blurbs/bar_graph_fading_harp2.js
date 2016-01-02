@@ -35,10 +35,8 @@ BarGraphFadingHarp2.prototype.scroll = function() {
 BarGraphFadingHarp2.prototype._drawBlurb = function() {
   var current = this._currentBar();
   if (current === null) {
-    if (this._fadeFrame === null && this._currentBlurb !== null) {
-      this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
-      this._fadeOut = true;
-      this._fadeStart = new Date().getTime();
+    if (this._currentBlurb !== null) {
+      this._startFadeOut();
     } else if (this._currentBlurb === null) {
       return;
     }
@@ -51,11 +49,7 @@ BarGraphFadingHarp2.prototype._drawBlurb = function() {
     this._fadeStart = new Date().getTime();
   } else if (current.x !== this._currentBlurb.point.x ||
              current.y !== this._currentBlurb.point.y) {
-    if (this._fadeFrame === null || !this._fadeOut) {
-      this._fadeOut = true;
-      this._fadeStart = new Date().getTime();
-      this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
-    }
+    this._startFadeOut();
   }
   var fadeTime = (new Date().getTime() - this._fadeStart);
   if (this._fadeOut) {
@@ -115,6 +109,29 @@ BarGraphFadingHarp2.prototype._currentBar = function() {
       y: viewport.height - height,
       text: 'Primary Value'
     };
+  }
+};
+
+BarGraphFadingHarp2.prototype._startFadeOut = function() {
+  if (this._fadeFrame === null || !this._fadeOut) {
+    if (this._fadeFrame !== null && !this._fadeOut) {
+      var fadeTime = new Date().getTime() - this._fadeStart;
+      var currentOpacity = 0;
+      if (fadeTime >= BarGraphFadingHarp2.IN_DELAY) {
+        currentOpacity = fadeTime;
+        currentOpacity -= BarGraphFadingHarp2.IN_DELAY;
+        currentOpacity /= BarGraphFadingHarp2.IN_DURATION;
+        currentOpacity = Math.min(1, currentOpacity);
+      }
+      var timeElapsed = (1 - currentOpacity) * BarGraphFadingHarp2.OUT_DURATION;
+      this._fadeStart = new Date().getTime() - timeElapsed;
+    } else {
+      this._fadeStart = new Date().getTime();
+    }
+    this._fadeOut = true;
+  }
+  if (this._fadeFrame === null) {
+    this._fadeFrame = window.requestAnimationFrame(this._fadeTick.bind(this));
   }
 };
 
