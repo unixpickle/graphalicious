@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     version="1.1" viewBox="0 0 2318 1708">
+  <defs>
+    <rect id="graph-rect" x="272" y="1016" width="1396" height="532" />
+    <clipPath id="graph-clip">
+      <use xlink:href="#graph-rect" />
+    </clipPath>
+    <filter id="graph-blur" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" />
+    </filter>
+  </defs>
+  <image width="2318" height="1708" xlink:href="bg.png" />
+  <g clip-path="url(#graph-clip)">
+    <g transform="translate(252, 1558) scale(1, -1)" fill="#65bcd4"
+       fill-opacity="0.5" filter="url(#graph-blur)">
+      <rect x="5" width="80" height="212" />
+      <rect x="95" width="80" height="76" />
+      <rect x="185" width="80" height="262" />
+      <rect x="275" width="80" height="240" />
+      <rect x="365" width="80" height="301" />
+      <rect x="455" width="80" height="49" />
+      <rect x="545" width="80" height="166" />
+      <rect x="635" width="80" height="280" />
+      <rect x="725" width="80" height="283" />
+      <rect x="815" width="80" height="326" />
+      <rect x="905" width="80" height="133" />
+      <rect x="995" width="80" height="116" />
+      <rect x="1085" width="80" height="300" />
+      <rect x="1175" width="80" height="194" />
+      <rect x="1265" width="80" height="216" />
+      <rect x="1355" width="80" height="99" />
+    </g>
+  </g>
+  <text x="970" y="1130" text-anchor="middle"
+        font-family="Verdana"
+        font-size="55" fill="#999">Not enough solves</text>
+</svg>
