@@ -16,6 +16,7 @@ function BufferedView(config) {
 
   this._element = document.createElement('div');
   this._canvas = document.createElement('canvas');
+  this._canvas.style.pointerEvents = 'none';
 
   this._element.appendChild(this._splashScreen.element());
 
@@ -290,20 +291,23 @@ BufferedView.prototype.draw = function() {
     y: this._yLabels.getTopY(),
     width: this._width - yLabelWidth + labelsOffset,
     height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
+    fullX: 0,
+    fullY: 0,
+    fullWidth: this._width,
+    fullHeight: this._height,
     context: this._context
   };
+
+  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
+  var offset = this._chunkViewOffset + viewport.x;
+  this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
 
   this._context.beginPath();
   this._context.rect(viewport.x, 0, viewport.width, this._height);
   this._context.clip();
 
   this._clipWithZigzag(chunkLeft, chunkRight);
-
   this._drawLines();
-
-  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
-  var offset = this._chunkViewOffset + viewport.x;
-  this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
 
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
@@ -322,13 +326,13 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
     context: this._context
   };
 
+  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
+  assert(Math.abs(this._chunkViewOffset + viewport.x) < 0.001);
+  var report = this._chunkView.draw(viewport, 0, this._yLabels.getMaxValue());
+
   this._context.beginPath();
   this._context.rect(viewport.x, 0, viewport.width, this._height);
   this._context.clip();
-
-  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
-  var offset = this._chunkViewOffset + viewport.x;
-  var report = this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
 
   var chunkLeft = report.left - BufferedView.ZIGZAG_WIDTH/2;
   var chunkRight = report.left + report.width + BufferedView.ZIGZAG_WIDTH/2;
@@ -363,7 +367,7 @@ BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRi
   } else {
     var e = this._leftLoader.element();
     if (e.parentNode === null) {
-      this._element.appendChild(e);
+      this._element.insertBefore(e, this._canvas);
     }
     e.style.left = Math.round(viewportX) + 'px';
     e.style.top = '0';
@@ -379,7 +383,7 @@ BufferedView.prototype._showLoaders = function(viewportX, contentLeft, contentRi
   } else {
     var e = this._rightLoader.element();
     if (e.parentNode === null) {
-      this._element.appendChild(e);
+      this._element.insertBefore(e, this._canvas);
     }
     e.style.left = Math.ceil(contentRight) + 'px';
     e.style.top = '0';
@@ -410,9 +414,12 @@ BufferedView.prototype._clipWithZigzag = function(left, right) {
   this._strokeZigzag(right-BufferedView.ZIGZAG_WIDTH/2, false, false);
   this._context.closePath();
 
+  var oldComp = this._context.globalCompositeOperation;
+  this._context.globalCompositeOperation = 'destination-over';
   this._context.strokeStyle = this._separatorColor;
   this._context.lineWidth = BufferedView.LINE_WIDTH;
   this._context.stroke();
+  this._context.globalCompositeOperation = oldComp;
 
   this._context.clip();
 };

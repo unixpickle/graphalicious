@@ -56,7 +56,13 @@ The *CanvasViewport* type represents a rectangular region inside a canvas. It ha
  * *number* y - the y offset of the top left corner of the region.
  * *number* width - the width of the region.
  * *number* height - the height of the region.
+ * *number* fullX - the x offset of the top left corner of the total usable canvas.
+ * *number* fullY - the y offset of the top left corner of the total usable canvas.
+ * *number* fullWidth - the width of the total usable canvas.
+ * *number* fullHeight - the width of the total usable canvas.
  * *Context2D* context - the 2D drawing context.
+
+Note that the four coordinate values (e.g., x, width) have "full" analogs (e.g., fullX, fullWidth). These coordinate values tell the *ChunkView* how much space it can draw things like tooltips or other out-of-content displays.
 
 # Methods
 
@@ -84,7 +90,7 @@ A *ContentView* should notify a *ChunkView* of any pointer events. These events 
 
 Drawing can be performed with these methods:
 
- * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport.
+ * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport. The *ChunkView* is responsible for clipping itself inside of the specified viewport.
 
 # Events
 

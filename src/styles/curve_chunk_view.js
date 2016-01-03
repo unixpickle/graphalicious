@@ -19,8 +19,13 @@ CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, vie
     maxValue: maxValue
   };
 
+  viewport.context.save();
+  viewport.context.beginPath();
+  viewport.context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
+  viewport.context.clip();
   this._newMorphingPrimaryY = this._strokePrimaryPath(range, params);
   this._newMorphingSecondaryY = this._strokeSecondaryPath(range, params);
+  viewport.context.restore();
 
   return DotChunkView.prototype._drawRange.call(this, drawOffset, landscape, range, viewport,
     maxValue);

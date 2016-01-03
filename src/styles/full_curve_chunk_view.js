@@ -83,11 +83,16 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   var startX = viewport.x - scrollX + this._chunk.getStartIndex()*pointSpacing +
     this._attrs.getLeftMargin();
 
+  viewport.context.save();
+  viewport.context.beginPath();
+  viewport.context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
+  viewport.context.clip();
   if (pointSpacing > FullCurveChunkView.MIN_SPACING_FOR_SMOOTH) {
     this._drawSmooth(startX, pointSpacing, viewport, maxValue);
   } else {
     this._drawStraight(startX, pointSpacing, viewport, maxValue);
   }
+  viewport.context.restore();
 
   var markers = [];
   for (var i = 0, len = this._chunk.getLength(); i < len; ++i) {

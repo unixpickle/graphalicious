@@ -222,6 +222,11 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
 };
 
 BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewport, maxValue) {
+  viewport.context.save();
+  viewport.context.beginPath();
+  viewport.context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
+  viewport.context.clip();
+
   var pointCount = this._morphingPointCount();
 
   var colorScheme = this._attrs.getColorScheme();
@@ -270,6 +275,7 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
     }
   }
 
+  viewport.context.restore();
   return xmarkers;
 };
 
