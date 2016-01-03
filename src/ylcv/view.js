@@ -131,6 +131,7 @@ View.prototype._updateLoaderStates = function() {
   // since the SplashScreen might stay visible for a moment in the
   // BufferedView.
   if (dataSource.isLoadingChunk(HeadlessView.LEFTMOST_CHUNK) ||
+      dataSource.isLoadingChunk(HeadlessView.CURRENT_CHUNK) ||
       this._headlessView.shouldShowContent()) {
     this._config.splashScreen.showLoading();
   } else {

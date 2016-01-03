@@ -157,6 +157,11 @@ HeadlessView.prototype.chunkViewMargins = function() {
 // shouldShowContent returns a boolean indicating whether or not the
 // view's state is sufficient for presenting data to the user.
 HeadlessView.prototype.shouldShowContent = function() {
+  var visibleChunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+  if (visibleChunk !== null && visibleChunk.getLength() === 0) {
+    return false;
+  }
+
   return this._chunkView !== null && !this._needsLeftmostChunk;
 };
 
@@ -269,6 +274,14 @@ HeadlessView.prototype._dataSourceDelete = function(oldIndex) {
 
   if (this._chunkView !== null) {
     var canAnimate = this._animate && pointVisible;
+
+    // NOTE: we do not show the content when the current chunk is empty, so
+    // it is pointless to animate the deletion.
+    var visibleChunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
+    if (visibleChunk.getLength() === 0) {
+      canAnimate = false;
+    }
+
     this._animating = this._chunkView.deletion(oldIndex, canAnimate);
     if (this._animating) {
       this._registerChunkViewEvents();
