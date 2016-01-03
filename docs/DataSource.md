@@ -21,6 +21,7 @@ Every data point has three fields:
  * *number* primary - the primary value of the data point.
  * *number* secondary - the secondary value of the data point, or -1 if no secondary value exists.
  * *boolean* proper - the data point is "proper".
+ * *string* tooltip - the tooltip text for the data point.
 
 # The Chunk type
 
