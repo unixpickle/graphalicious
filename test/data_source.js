@@ -133,6 +133,8 @@
   TestDataSource.prototype.invalidate = function() {
     // TODO: set some kind of 'invalid' flag on the chunks
     this._chunks = [null, null];
+    this.cancel(0);
+    this.cancel(1);
     this.emit('invalidate');
   };
 
@@ -147,8 +149,8 @@
 
   function StaticChunk(points, start, len) {
     this._points = points;
-    this._start = start;
-    this._len = len;
+    this._start = Math.max(0, Math.min(this._points.length, start));
+    this._len = Math.max(0, Math.min(this._points.length-this._start, len));
   }
 
   StaticChunk.prototype.getStartIndex = function() {

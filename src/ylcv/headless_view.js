@@ -412,9 +412,10 @@ HeadlessView.prototype._dataSourceInvalidate = function() {
   }
 
   this._chunkView = null;
-
-  // NOTE: this is necessary to force reloads after loading failures.
-  this._suppressNeeds();
+  this._needsLeftmostChunk = false;
+  this._loadingLeftmostChunk = false;
+  this._needsCurrentChunk = false;
+  this._loadingCurrentChunk = false;
 
   this._satisfyNeeds(this._updateNeeds());
 
