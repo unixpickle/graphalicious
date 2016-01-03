@@ -107,13 +107,17 @@ CurveChunkView.prototype._strokePath = function(range, params, getter) {
   var startIndex = range.startIndex;
   var length = range.length;
 
-  if (getter(startIndex - 1) >= 0) {
-    --startIndex;
-    ++length;
-  }
-
-  if (getter(startIndex + length) >= 0) {
-    ++length;
+  // NOTE: we need two points offscreen:
+  // - one so that there is somewhere for the line to go offscreen
+  // - one so that the line going offscreen is the right shape; thanks, spline.
+  for (var i = 0; i < 2; ++i) {
+    if (getter(startIndex - 1) >= 0) {
+      --startIndex;
+      ++length;
+    }
+    if (getter(startIndex + length) >= 0) {
+      ++length;
+    }
   }
 
   if (this._animationType === BarChunkView.ANIMATION_INSERT ||
