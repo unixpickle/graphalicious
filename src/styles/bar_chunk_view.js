@@ -33,6 +33,10 @@ BarChunkView.ANIMATION_DURATION = 300;
 BarChunkView.prototype = Object.create(EventEmitter.prototype);
 BarChunkView.prototype.constructor = BarChunkView;
 
+BarChunkView.prototype.handoff = function(oldChunkView) {
+  // TODO: handoff the Blurb (tooltip).
+};
+
 BarChunkView.prototype.getWidth = function() {
   var landscape = this._morphingLandscape();
   var range = {

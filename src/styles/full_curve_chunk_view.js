@@ -13,6 +13,9 @@ FullCurveChunkView.MIN_SPACING_FOR_SMOOTH = 5;
 FullCurveChunkView.prototype = Object.create(EventEmitter.prototype);
 FullCurveChunkView.prototype.constructor = FullCurveChunkView;
 
+FullCurveChunkView.prototype.handoff = function(oldChunkView) {
+};
+
 FullCurveChunkView.prototype.getWidth = function() {
   return this._attrs.computeRegion({
     startIndex: this._chunk.getStartIndex(),

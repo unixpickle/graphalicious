@@ -98,7 +98,7 @@ Drawing can be performed with these methods:
 
 The handoff mechanism is implemented through the following method:
 
- * *void* handoff(lastChunkView) - tell the *ChunkView* about the previous *ChunkView* to be drawn in the calling *ContentView*. If a *ContentView* intends to call this, it should do so before drawing the *ChunkView* for the first time.
+ * *void* handoff(lastChunkView) - tell the *ChunkView* about the previous *ChunkView*. If a *ContentView* intends to call this, it should do so before drawing the *ChunkView* for the first time.
 
 # Events
 

@@ -152,6 +152,9 @@ BufferedView.prototype.setChunkView = function(cv) {
 
   if (this._chunkView !== null) {
     this._chunkView.removeListener('redraw', this._boundDraw);
+    if (cv) {
+      cv.handoff(this._chunkView);
+    }
   }
 
   this._chunkView = cv;
@@ -245,7 +248,7 @@ BufferedView.prototype.showingSplash = function() {
     this._state === BufferedView.STATE_SPLASH;
 };
 
-// draw draws the ContentView and the labels and positions the loaders.
+// draw draws the ChunkView and the labels and positions the loaders.
 BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
     return;
