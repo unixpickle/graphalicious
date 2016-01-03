@@ -1,12 +1,12 @@
 # Abstract
 
-While having a [DataSource](../DataSource.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DataSource.md) using a [VisualStyle](#../VisualStyle/VisualStyle.md).
+While having a [DataSource](../DataSource.md) is nice, data is only half the story. The other half is how the data is displayed. A *ContentView* is responsible for rendering a [DataSource](../DataSource.md) using a [VisualStyle](../VisualStyle/VisualStyle.md).
 
 # Overview & Terminology
 
 A *ContentView* manages a **scrolling state** (as documented [in scroller.js](https://github.com/unixpickle/scroller.js#the-state-class)). Both the user and the *ContentView* itself can modify the scrolling state. If the user (or some external agent) scrolls, the offset of the scrolling state will change. If the *ContentView* needs to display more or less content, or if its underlying style changes metrically, it will update its scrolling state as well.
 
-A *ContentView* does not determine its own size. An external agent (usually a [View](#../View.md)) determines the *ContentView*'s size. In turn, the *ContentView* is responsible for dealing with size changes and updating its scrolling state accordingly.
+A *ContentView* does not determine its own size. An external agent (usually a [View](../View.md)) determines the *ContentView*'s size. In turn, the *ContentView* is responsible for dealing with size changes and updating its scrolling state accordingly.
 
 It would be silly for an off-screen *ContentView* to perform animations. Therefore, it is possible to tell a *ContentView* whether or not it should show animations.
 
@@ -14,7 +14,7 @@ It would be silly for an off-screen *ContentView* to perform animations. Therefo
 
 A *ContentView* must implement the following methods:
 
- * [State](https://github.com/unixpickle/scroller.js#the-state-class)) getScrollState() - get the *ContentView*'s current scroll state.
+ * [State](https://github.com/unixpickle/scroller.js#the-state-class) getScrollState() - get the *ContentView*'s current scroll state.
  * *void* setScrolledPixels(pixels) - update the scroll offset of the *ContentView*'s scrolling state.
  * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
  * *void* layout(width, height) - update the *ContentView*'s dimensions.
