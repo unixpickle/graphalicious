@@ -49,6 +49,15 @@ FullCurveChunkView.prototype.modification = function(index, animate) {
   return false;
 };
 
+FullCurveChunkView.prototype.pointerLeave = function() {
+};
+
+FullCurveChunkView.prototype.pointerMove = function() {
+};
+
+FullCurveChunkView.prototype.pointerClick = function() {
+};
+
 FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   if (this._dataSource.getLength() < 2) {
     var res = {
