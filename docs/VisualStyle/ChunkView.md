@@ -22,6 +22,10 @@ After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. The events themselves specify coordinates relative to the canvas. As a result, the *ChunkView* will need to request a re-draw in order to utilize the coordinates in any meaningful way.
 
+Since *ChunkView*s only draw partial landscapes, *ChunkView*s have to create and draw new *ChunkView*s as the user demands to look at different parts of the data. As a consequence, animations get "cut off" when the user demands new parts of the data, since newly created *ChunkView*s do not know the animation state of their predecessors. However, this is not as big a problem as it may seem. All a *ContentView* needs to do is ensure that new *ChunkView*s are not created or drawn while their current *ChunkView* is animating. While this seems like a decent answer to the problem, there are other cases where this argument is unacceptable.
+
+Sometimes, a *ChunkView* may wish to **handoff** data to the next *ChunkView*. Handoff is useful for things like fading tooltips: if the user hovers over a point to see more information about it, the tooltip should not vanish and then fade back in when the *ChunkView* is replaced. Handoff is not intended to apply to animations; *ContentView*s should not expect *ChunkView*s to handoff their animation states. Nevertheless, *ContentView*s should implement the handoff facility, telling each *ChunkView* about its predecessor (if applicable).
+
 # The PointerPosition type
 
 The *PointerPosition* type expresses the coordinates of a pointer (e.g., the mouse or the users finger) in an HTML5 canvas's coordinate system. A *PointerPosition* object has the following fields:
@@ -91,6 +95,10 @@ A *ContentView* should notify a *ChunkView* of any pointer events. These events 
 Drawing can be performed with these methods:
 
  * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport. The *ChunkView* is responsible for clipping itself inside of the specified viewport.
+
+The handoff mechanism is implemented through the following method:
+
+ * *void* handoff(lastChunkView) - tell the *ChunkView* about the previous *ChunkView* to be drawn in the calling *ContentView*. If a *ContentView* intends to call this, it should do so before drawing the *ChunkView* for the first time.
 
 # Events
 

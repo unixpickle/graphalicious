@@ -13,6 +13,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Fix CurveChunkView spline straightening when edge points go completely out of the viewport.
+ * Make sure YLCV shows splash screen when the current chunk is emptied entirely.
  * Implement pointer events (blurbs) in the bar style
  * Implement pointer events in the other styles
  * Figure out how alternating x-axis labels will work
