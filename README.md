@@ -15,7 +15,6 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 # TODO
 
  * Implement blurbs
-   * Prevent right-opening blurbs from going slightly over the y-axis labels
    * Test blurbs with stretching
    * Implement blurbs for dot graphs
    * Fix upward opening blurbs; they never seem to have an arrow

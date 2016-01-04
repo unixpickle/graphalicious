@@ -9,9 +9,6 @@
 function Blurb(viewport, config, point, text) {
   EventEmitter.call(this);
 
-  // TODO: clip the point to make sure it is not going off the left or right of the
-  // full viewport.
-
   this._viewport = viewport;
   this._config = config;
   this._point = point;
