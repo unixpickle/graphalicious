@@ -5,7 +5,7 @@
 //
 // Blurbs can be animated in and out.
 // While a blurb is animating, it will emit 'redraw' events periodically.
-// When a Blurb is fully faded out, it will emit a 'hidden' event.
+// When a Blurb is fully faded out, it will emit a 'hidden' event instead of a 'redraw' event.
 function Blurb(viewport, config, point, text) {
   EventEmitter.call(this);
 
@@ -74,6 +74,10 @@ Blurb.OUT_DURATION = 150;
 Blurb.prototype = Object.create(EventEmitter.prototype);
 
 Blurb.prototype.fadeIn = function() {
+  if (this._fadeIn && this._animationStartTime !== null) {
+    return;
+  }
+
   var alpha = this._currentAlpha();
   if (alpha > 0) {
     this._animationStartTimeOffset = Blurb.IN_DELAY + Blurb.IN_DURATION*alpha;
@@ -91,6 +95,10 @@ Blurb.prototype.fadeIn = function() {
 };
 
 Blurb.prototype.fadeOut = function() {
+  if (!this._fadeIn) {
+    return;
+  }
+
   var alpha = this._currentAlpha();
   if (alpha < 1) {
     this._animationStartTimeOffset = Blurb.OUT_DURATION*(1-alpha);
@@ -264,12 +272,13 @@ Blurb.prototype._animationFrame = function(time) {
     return;
   }
 
-  this.emit('redraw');
-
   var alpha = this._currentAlpha();
   if ((alpha < 1 && this._fadeIn) || (alpha > 0 && this._fadeOut)) {
     window.requestAnimationFrame(this._boundAnimationFrame);
   } else if (!this._fadeIn) {
     this.emit('hidden');
+    return;
   }
+
+  this.emit('redraw');
 };

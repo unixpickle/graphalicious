@@ -390,7 +390,6 @@ BarChunkView.prototype._computeXMarkerData = function(idx) {
 //
 // The returned object will either be null (no value is hovered) or be an object
 // with the following keys:
-// - primary: a boolean indicating if this is a primary or secondary value
 // - tooltip: the tooltip text
 // - position: the complete landscape coordinates to which the corresponding blurb should point
 BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue) {
@@ -414,7 +413,6 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
     var secondaryHeight = (point.secondary / maxValue) * viewport.height;
     if (point.y >= viewport.y+viewport.height-secondaryHeight) {
       return {
-        primary: false,
         tooltip: point.secondaryTooltip,
         position: {
           x: region.left + region.width/2,
@@ -429,7 +427,6 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
     var usePrimaryHeight = Math.max(primaryHeight, BarChunkView.HOVER_MIN_BAR_HEIGHT);
     if (point.y >= viewport.y+viewport.height-usePrimaryHeight) {
       return {
-        primary: false,
         tooltip: point.secondaryTooltip,
         position: {
           x: region.left + region.width/2,
