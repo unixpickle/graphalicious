@@ -350,6 +350,10 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
     y: this._yLabels.getTopY(),
     width: this._width - yLabelWidth,
     height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
+    fullX: 0,
+    fullY: 0,
+    fullWidth: this._width,
+    fullHeight: this._height,
     context: this._context
   };
 
