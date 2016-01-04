@@ -108,8 +108,21 @@ Blurb.prototype.fadeOut = function() {
 };
 
 Blurb.prototype.draw = function(context) {
+  var alpha = this._currentAlpha();
+  if (alpha === 0) {
+    return;
+  }
+
   this._updateCachedCanvas();
-  // TODO: draw the cached canvas at the correct alpha.
+
+  var oldAlpha = context.globalAlpha;
+  context.globalAlpha *= alpha;
+
+  context.drawImage(this._cachedCanvas, this._cachedCanvasDrawRect.x,
+    this._cachedCanvasDrawRect.y, this._cachedCanvasDrawRect.width,
+    this._cachedCanvasDrawRect.height);
+
+  context.globalAlpha = oldAlpha;
 };
 
 Blurb.prototype._updateCachedCanvas = function() {
