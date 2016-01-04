@@ -16,14 +16,16 @@ BarStyleAttrs.X_LABELS_RIGHT = 2;
 
 BarStyleAttrs.ATTRIBUTES = ['colorScheme', 'leftMargin', 'rightMargin', 'barSpacing', 'barWidth',
   'stretchMode', 'xLabelAlignment', 'animateDeletions', 'animateInsertions',
-  'animateModifications'];
+  'animateModifications', 'blurbTextColor', 'blurbFont'];
 
 BarStyleAttrs.DEFAULTS = {
   stretchMode: BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT,
   xLabelAlignment: BarStyleAttrs.X_LABELS_LEFT,
   animateDeletions: true,
   animateInsertions: true,
-  animateModifications: true
+  animateModifications: true,
+  blurbTextColor: '#999',
+  blurbFont: '18px sans-serif'
 };
 
 defineAttributeMethods(BarStyleAttrs, BarStyleAttrs.ATTRIBUTES);
