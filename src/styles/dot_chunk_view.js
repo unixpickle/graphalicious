@@ -84,7 +84,8 @@ DotChunkView.prototype._drawCircle = function(params, x, y, radius) {
   ctx.fillStyle = oldFill;
 };
 
-DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue) {
+DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue,
+                                                           visibleRegion) {
   var landscape = this._morphingLandscape();
   var maxRadius = DotChunkView.HOVER_NEAR_RADIUS + this._attrs.getBarWidth()/2;
   var range = landscape.computeRange({left: pointerPos.x-maxRadius, width: maxRadius*2});
@@ -93,7 +94,7 @@ DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   var closestResult = null;
 
   for (var i = range.startIndex-1; i <= range.startIndex+range.length; ++i) {
-    var points = this._hoverInfosForPointIndex(i, viewport, maxValue, landscape);
+    var points = this._hoverInfosForPointIndex(i, viewport, maxValue, landscape, visibleRegion);
     for (var j = 0, len = points.length; j < len; ++j) {
       var point = points[j];
       var dist = Math.sqrt(Math.pow(point.position.x-pointerPos.x, 2) +
@@ -108,7 +109,8 @@ DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   return closestResult;
 };
 
-DotChunkView.prototype._hoverInfosForPointIndex = function(index, viewport, maxValue, landscape) {
+DotChunkView.prototype._hoverInfosForPointIndex = function(index, viewport, maxValue, landscape,
+                                                           visibleRegion) {
   if (index < this._startIndex || index >= this._startIndex+this._morphingPointCount()) {
     return [];
   }
@@ -138,6 +140,11 @@ DotChunkView.prototype._hoverInfosForPointIndex = function(index, viewport, maxV
       centerX = region.left + radius;
     } else if (index === this._morphingEncompassingCount()-1) {
       centerX = region.left + region.width - radius;
+    }
+
+    if (centerX+radius < visibleRegion.left ||
+        centerX-radius > visibleRegion.left+visibleRegion.width) {
+      continue;
     }
 
     res.push({

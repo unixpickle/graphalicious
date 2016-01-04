@@ -437,7 +437,12 @@ BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValu
     y: this._pointerPosition.y
   };
 
-  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue);
+  var visibleRegion = {
+    left: scrollX,
+    width: viewport.width
+  };
+
+  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue, visibleRegion);
   if (info === null) {
     this._blurbManager.update(animating, viewport, scrollX, null, null);
   } else {
@@ -467,7 +472,12 @@ BarChunkView.prototype._updateBlurbManagerElongated = function(viewport, factor,
     y: this._pointerPosition.y
   };
 
-  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue);
+  var visibleRegion = {
+    left: 0,
+    width: viewport.width
+  };
+
+  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue, visibleRegion);
   if (info === null) {
     this._blurbManager.update(animating, viewport, 0, null, null);
   } else {
@@ -485,11 +495,15 @@ BarChunkView.prototype._updateBlurbManagerElongated = function(viewport, factor,
 // viewport coordinates. In other words, the x-value of the position is translated and
 // scaled so as not to change as the user scrolls or stretches the graph.
 //
+// The visibleRegion argument hints at what parts of the complete landscape are visible to
+// the user. This can prevent blurbs from appearing next to completely hidden points.
+//
 // The returned object will either be null (no value is hovered) or be an object
 // with the following keys:
 // - text: the tooltip text
 // - position: the complete landscape coordinates to which the corresponding blurb should point
-BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue) {
+BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue,
+                                                           visibleRegion) {
   var landscape = this._morphingLandscape();
   var range = landscape.computeRange({left: pointerPos.x, width: 1});
   var index = range.startIndex;
