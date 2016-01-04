@@ -5,6 +5,7 @@
 //
 // Blurbs can be animated in and out.
 // While a blurb is animating, it will emit 'redraw' events periodically.
+// When a Blurb is fully faded out, it will emit a 'hidden' event.
 function Blurb(viewport, point, text) {
   EventEmitter.call(this);
 
@@ -23,6 +24,9 @@ function Blurb(viewport, point, text) {
   this._animationFrame = null;
   this._lastDrawTime = null;
   this._animationStartTime = null;
+  this._animationStartTimeOffset = 0;
+
+  this._boundAnimationFrame = this._animationFrame.bind(this);
 }
 
 Blurb.LEFT = 0;
@@ -50,14 +54,45 @@ Blurb.UP_DOWN_THRESHOLD = 30;
 // which should be considered off-limits to the Blurb.
 Blurb.SCROLLBAR_HEIGHT = 14;
 
+// These constants control fade animation timing.
+Blurb.IN_DELAY = 200;
+Blurb.IN_DURATION = 90;
+Blurb.OUT_DURATION = 150;
+
 Blurb.prototype = Object.create(EventEmitter.prototype);
 
 Blurb.prototype.fadeIn = function() {
-  // TODO: start an animation here.
+  var alpha = this._currentAlpha();
+  if (alpha > 0) {
+    this._animationStartTimeOffset = Blurb.IN_DELAY + Blurb.IN_DURATION*alpha;
+  } else {
+    this._animationStartTimeOffset = 0;
+  }
+
+  this._lastDrawTime = null;
+  this._animationStartTime = null;
+  this._fadeIn = true;
+
+  if (this._animationFrame === null) {
+    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
+  }
 };
 
 Blurb.prototype.fadeOut = function() {
-  // TODO: start an animation here.
+  var alpha = this._currentAlpha();
+  if (alpha < 1) {
+    this._animationStartTimeOffset = Blurb.OUT_DURATION*(1-alpha);
+  } else {
+    this._animationStartTimeOffset = 0;
+  }
+
+  this._lastDrawTime = null;
+  this._animationStartTime = null;
+  this._fadeIn = false;
+
+  if (this._animationFrame === null) {
+    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
+  }
 };
 
 Blurb.prototype.draw = function(context) {
@@ -66,6 +101,31 @@ Blurb.prototype.draw = function(context) {
 };
 
 Blurb.prototype._currentAlpha = function() {
-  // TODO: use the animation information here to determine our current opacity.
-  return 0;
+  var elapsedTime = this._animationStartTimeOffset;
+  if (this._animationStartTime !== null) {
+    elapsedTime += this._lastDrawTime - this._animationStartTime;
+  }
+  if (this._fadeIn) {
+    return Math.max(0, Math.min(1, (elapsedTime-Blurb.IN_DELAY)/Blurb.IN_DURATION));
+  } else {
+    return 1 - Math.max(0, Math.min(1, elapsedTime/Blurb.OUT_DURATION));
+  }
+};
+
+Blurb.prototype._animationFrame = function(time) {
+  this._lastDrawTime = time;
+  if (this._animationStartTime === null) {
+    this._animationStartTime = time;
+    window.requestAnimationFrame(this._boundAnimationFrame);
+    return;
+  }
+
+  this.emit('redraw');
+
+  var alpha = this._currentAlpha();
+  if ((alpha < 1 && this._fadeIn) || (alpha > 0 && this._fadeOut)) {
+    window.requestAnimationFrame(this._boundAnimationFrame);
+  } else if (!this._fadeIn) {
+    this.emit('hidden');
+  }
 };
