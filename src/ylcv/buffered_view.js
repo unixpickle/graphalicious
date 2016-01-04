@@ -506,24 +506,41 @@ BufferedView.prototype._showContent = function() {
 };
 
 BufferedView.prototype._registerPointerEvents = function() {
-  this._element.addEventListener('mousemove', function(e) {
-    var rect = this._element.getBoundingClientRect();
-    this._currentCursorPosition = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-    if (this._chunkView !== null) {
-      this._chunkView.pointerMove(this._currentCursorPosition);
-    }
-  }.bind(this));
+  // We use window.requestAnimationFrame() to buffer cursor movements.
+  var mousePosition = null;
+  var animationFrame = null;
 
-  this._element.addEventListener('mouseleave', function(e) {
-    if (this._currentCursorPosition !== null) {
-      this._currentCursorPosition = null;
-      if (this._chunkView !== null) {
+  var updateMousePosition = function() {
+    animationFrame = null;
+    if (mousePosition === null && this._currentCursorPosition === null) {
+      return;
+    }
+    this._currentCursorPosition = mousePosition;
+    if (this._chunkView !== null) {
+      if (mousePosition !== null) {
+        this._chunkView.pointerMove(this._currentCursorPosition);
+      } else {
         this._chunkView.pointerLeave();
       }
     }
+  }.bind(this);
+
+  this._element.addEventListener('mousemove', function(e) {
+    if (animationFrame === null) {
+      animationFrame = window.requestAnimationFrame(updateMousePosition);
+    }
+    var rect = this._element.getBoundingClientRect();
+    mousePosition = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }.bind(this));
+
+  this._element.addEventListener('mouseleave', function(e) {
+    if (animationFrame === null) {
+      animationFrame = window.requestAnimationFrame(updateMousePosition);
+    }
+    mousePosition = null;
   }.bind(this));
 
   this._element.addEventListener('click', function(e) {
