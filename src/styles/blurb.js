@@ -219,7 +219,7 @@ Blurb.prototype._updateCachedCanvas = function() {
     } else if (leftOffset > viewportRight-Blurb.MIN_EDGE_DISTANCE-contentWidth) {
       leftOffset = viewportRight-Blurb.MIN_EDGE_DISTANCE-contentWidth;
     }
-    var arrowOffset = this._point.x - Blurb.ARROW_SIZE;
+    var arrowOffset = this._point.x - leftOffset;
     var maxY = viewportBottom - (Blurb.CACHE_INSET + contentHeight);
     if (arrowOffset+Blurb.ARROW_SIZE >= contentWidth-Blurb.MIN_ARROW_EDGE_DIST ||
         arrowOffset-Blurb.ARROW_SIZE < Blurb.MIN_ARROW_EDGE_DIST) {
@@ -228,12 +228,12 @@ Blurb.prototype._updateCachedCanvas = function() {
     } else {
       maxY -= Blurb.ARROW_SIZE;
       ctx.moveTo(0, 0);
-      ctx.lineTo(contentWidth, 0);
-      ctx.lineTo(contentWidth, contentHeight);
-      ctx.lineTo(contentWidth-arrowOffset+Blurb.ARROW_SIZE, contentHeight);
-      ctx.lineTo(contentWidth-arrowOffset, contentHeight+Blurb.ARROW_SIZE);
-      ctx.lineTo(contentWidth-arrowOffset-Blurb.ARROW_SIZE, contentHeight);
       ctx.lineTo(0, contentHeight);
+      ctx.lineTo(arrowOffset-Blurb.ARROW_SIZE, contentHeight);
+      ctx.lineTo(arrowOffset, contentHeight+Blurb.ARROW_SIZE);
+      ctx.lineTo(arrowOffset+Blurb.ARROW_SIZE, contentHeight);
+      ctx.lineTo(contentWidth, contentHeight);
+      ctx.lineTo(contentWidth, 0);
     }
     textPosition = {x: contentWidth/2, y: contentHeight/2};
     this._cachedCanvasDrawRect = {
