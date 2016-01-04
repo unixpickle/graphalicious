@@ -16,7 +16,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
  * Implement blurbs
    * Test blurbs with stretching
-   * Implement blurbs for dot graphs
+   * Fix issue where arrow of upward facing blurb goes under scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
 
