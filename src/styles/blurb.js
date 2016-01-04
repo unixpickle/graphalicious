@@ -246,8 +246,8 @@ Blurb.prototype._updateCachedCanvas = function() {
   }
 
   ctx.closePath();
-  ctx.shadowBlur = 5;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 4;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
   ctx.fill();
   ctx.shadowColor = 'transparent';
 
