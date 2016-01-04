@@ -30,6 +30,11 @@ BarChunkView.ANIMATION_MODIFY = 3;
 
 BarChunkView.ANIMATION_DURATION = 300;
 
+// BarChunkView.BLURB_MIN_BAR_HEIGHT is a threshold below which a bar cannot appear any shorter
+// in the eyes of this._computeHoverInformation().
+// This makes it possible to hover over very short bars.
+BarChunkView.HOVER_MIN_BAR_HEIGHT = 30;
+
 BarChunkView.prototype = Object.create(EventEmitter.prototype);
 BarChunkView.prototype.constructor = BarChunkView;
 
@@ -378,6 +383,65 @@ BarChunkView.prototype._computeXMarkerData = function(idx) {
   return result;
 };
 
+// _computeHoverInformation figures out what value the user is hovering over.
+// It takes the pointer position in complete landscape coordinates rather than in
+// viewport coordinates. In other words, the x-value of the position is translated and
+// scaled so as not to change as the user scrolls or stretches the graph.
+//
+// The returned object will either be null (no value is hovered) or be an object
+// with the following keys:
+// - primary: a boolean indicating if this is a primary or secondary value
+// - tooltip: the tooltip text
+// - position: the complete landscape coordinates to which the corresponding blurb should point
+BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue) {
+  if (pointerPos.y >= viewport.y+viewport.height) {
+    return null;
+  }
+
+  var landscape = this._morphingLandscape();
+  var range = landscape.computeRange({left: pointerPos.x, width: 1});
+  var index = range.startIndex;
+  if (index < this._startIndex || index >= this._startIndex+this._morphingPointCount()) {
+    return null;
+  }
+  var region = landscape.computeBarRegion(index);
+  if (pointerPos.x < region.left || pointerPos.x >= region.left+region.width) {
+    return null;
+  }
+  var point = this._morphingGetPoint(index);
+
+  if (point.hasOwnProperty('secondaryTooltip') && point.secondary >= 0) {
+    var secondaryHeight = (point.secondary / maxValue) * viewport.height;
+    if (point.y >= viewport.y+viewport.height-secondaryHeight) {
+      return {
+        primary: false,
+        tooltip: point.secondaryTooltip,
+        position: {
+          x: region.left + region.width/2,
+          y: viewport.y + viewport.height - secondaryHeight
+        }
+      };
+    }
+  }
+
+  if (point.hasOwnProperty('primaryTooltip')) {
+    var primaryHeight = (point.primary / maxValue) * viewport.height;
+    var usePrimaryHeight = Math.max(primaryHeight, BarChunkView.HOVER_MIN_BAR_HEIGHT);
+    if (point.y >= viewport.y+viewport.height-usePrimaryHeight) {
+      return {
+        primary: false,
+        tooltip: point.secondaryTooltip,
+        position: {
+          x: region.left + region.width/2,
+          y: viewport.y + viewport.height - primaryHeight
+        }
+      };
+    }
+  }
+
+  return null;
+};
+
 BarChunkView.prototype._animate = function(time) {
   if (this._animationStartTime < 0) {
     this._animationStartTime = time;
@@ -479,6 +543,13 @@ BarChunkView.prototype._morphingGetPoint = function(idx) {
       secondary: -1,
       proper: newPoint.proper
     };
+
+    if (newPoint.hasOwnProperty('primaryTooltip')) {
+      intermediatePoint.primaryTooltip = newPoint.primaryTooltip;
+    }
+    if (newPoint.hasOwnProperty('secondaryTooltip')) {
+      intermediatePoint.secondaryTooltip = newPoint.secondaryTooltip;
+    }
 
     if (newPoint.secondary < 0 && oldPoint.secondary >= 0) {
       intermediatePoint.secondary = np * oldPoint.secondary;
