@@ -162,7 +162,10 @@
   };
 
   StaticChunk.prototype.getDataPoint = function(relIdx) {
-    return this._points[this._start+relIdx];
+    var point = this._points[this._start+relIdx];
+    point.primaryTooltip = point.primary + '';
+    point.secondaryTooltip = point.secondary + '';
+    return point;
   };
 
   if ('undefined' !== typeof window) {

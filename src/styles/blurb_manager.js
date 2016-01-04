@@ -33,19 +33,23 @@ BlurbManager.areValuesClose = function(v1, v2) {
 };
 
 BlurbManager.numericalViewportsEqual = function(v1, v2) {
-  for (var i = 0, len = BlurbManager.VIEWPORT_NUMERICAL_KEYS.length; i < len; ++i) {
-    var key = BlurbManager.VIEWPORT_NUMERICAL_KEYS[i];
-    if (!BlurbManager.areValuesClose(v1[i], v2[i])) {
+  for (var i = 0, len = BlurbManager.NUMERICAL_VIEWPORT_KEYS.length; i < len; ++i) {
+    var key = BlurbManager.NUMERICAL_VIEWPORT_KEYS[i];
+    if (!BlurbManager.areValuesClose(v1[key], v2[key])) {
       return false;
     }
   }
   return true;
 };
 
+BlurbManager.arePointsComparable = function(p1, p2) {
+  return BlurbManager.areValuesClose(p1.x, p2.x) && BlurbManager.areValuesClose(p1.y, p2.y);
+};
+
 BlurbManager.copyNumericalViewport = function(v) {
   var res = {};
-  for (var i = 0, len = BlurbManager.VIEWPORT_NUMERICAL_KEYS.length; i < len; ++i) {
-    var key = BlurbManager.VIEWPORT_NUMERICAL_KEYS[i];
+  for (var i = 0, len = BlurbManager.NUMERICAL_VIEWPORT_KEYS.length; i < len; ++i) {
+    var key = BlurbManager.NUMERICAL_VIEWPORT_KEYS[i];
     res[key] = v[key];
   }
   return res;
@@ -82,6 +86,7 @@ BlurbManager.prototype.update = function(animating, viewport, scrollX, point, te
 
   if (this._currentBlurb === null) {
     this._currentBlurb = new Blurb(viewport, this._config, point, text);
+    this._currentBlurb.fadeIn();
     this._currentBlurbScrollX = scrollX;
     this._currentBlurbViewport = this._lastViewport;
     this._currentBlurb.on('redraw', this._boundBlurbRedraw);
@@ -89,8 +94,10 @@ BlurbManager.prototype.update = function(animating, viewport, scrollX, point, te
     return;
   }
 
-  if (BlurbManager.areValuesClose(this._currentBlurbScrollX) &&
-      BlurbManager.numericalViewportsEqual(this._currentBlurbViewport, viewport)) {
+  if (BlurbManager.areValuesClose(this._currentBlurbScrollX, scrollX) &&
+      BlurbManager.numericalViewportsEqual(this._currentBlurbViewport, viewport) &&
+      BlurbManager.arePointsComparable(this._currentBlurb.getPoint(), point) &&
+      this._currentBlurb.getText() === text) {
     this._currentBlurb.fadeIn();
   } else {
     this._currentBlurb.fadeOut();

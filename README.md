@@ -14,8 +14,12 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Implement pointer events (blurbs) in the bar style
- * Implement pointer events in the other styles
+ * Implement blurbs
+   * Prevent right-opening blurbs from going slightly over the y-axis labels
+   * Test blurbs with stretching
+   * Implement blurbs for dot graphs
+   * Fix upward opening blurbs; they never seem to have an arrow
+   * Fix hover when over the scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
 

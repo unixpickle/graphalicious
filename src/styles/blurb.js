@@ -9,6 +9,9 @@
 function Blurb(viewport, config, point, text) {
   EventEmitter.call(this);
 
+  // TODO: clip the point to make sure it is not going off the left or right of the
+  // full viewport.
+
   this._viewport = viewport;
   this._config = config;
   this._point = point;
@@ -27,7 +30,7 @@ function Blurb(viewport, config, point, text) {
   this._lastDrawTime = null;
   this._animationStartTime = null;
   this._animationStartTimeOffset = 0;
-  this._boundAnimationFrame = this._animationFrame.bind(this);
+  this._boundAnimationFrame = this._handleAnimationFrame.bind(this);
 
   this._cachedCanvas = null;
   this._cachedCanvasDrawRect = null;
@@ -73,8 +76,16 @@ Blurb.OUT_DURATION = 150;
 
 Blurb.prototype = Object.create(EventEmitter.prototype);
 
+Blurb.prototype.getPoint = function() {
+  return this._point;
+};
+
+Blurb.prototype.getText = function() {
+  return this._text;
+};
+
 Blurb.prototype.fadeIn = function() {
-  if (this._fadeIn && this._animationStartTime !== null) {
+  if (this._fadingIn && this._animationFrame !== null) {
     return;
   }
 
@@ -87,7 +98,7 @@ Blurb.prototype.fadeIn = function() {
 
   this._lastDrawTime = null;
   this._animationStartTime = null;
-  this._fadeIn = true;
+  this._fadingIn = true;
 
   if (this._animationFrame === null) {
     this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
@@ -95,7 +106,7 @@ Blurb.prototype.fadeIn = function() {
 };
 
 Blurb.prototype.fadeOut = function() {
-  if (!this._fadeIn) {
+  if (!this._fadingIn) {
     return;
   }
 
@@ -108,7 +119,7 @@ Blurb.prototype.fadeOut = function() {
 
   this._lastDrawTime = null;
   this._animationStartTime = null;
-  this._fadeIn = false;
+  this._fadingIn = false;
 
   if (this._animationFrame === null) {
     this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
@@ -142,11 +153,11 @@ Blurb.prototype._updateCachedCanvas = function() {
   this._cachedCanvas = document.createElement('canvas');
 
   var ctx = this._cachedCanvas.getContext('2d');
-  ctx.font = this._config.blurbFont;
+  ctx.font = this._config.getBlurbFont();
   var contentWidth = ctx.measureText(this._text).width + Blurb.SIDE_MARGINS;
   // TODO: figure out a real way to compute the contentHeight. This may require
   // some DOM voodoo--oh my.
-  var contentHeight = 15;
+  var contentHeight = 30;
 
   switch (this._side) {
   case Blurb.LEFT:
@@ -164,7 +175,7 @@ Blurb.prototype._updateCachedCanvas = function() {
   }
 
   var ctx = this._cachedCanvas.getContext('2d');
-  ctx.font = this._config.blurbFont;
+  ctx.font = this._config.getBlurbFont();
   ctx.scale(pixelRatio, pixelRatio);
   ctx.translate(Blurb.CACHE_INSET, Blurb.CACHE_INSET);
 
@@ -239,14 +250,15 @@ Blurb.prototype._updateCachedCanvas = function() {
 
   ctx.closePath();
   ctx.shadowBlur = 5;
-  ctx.shadowColor = 'rgba(0, 0, 0, ' + (this.opacity*0.5).toFixed(2) + ')';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
   ctx.fill();
   ctx.shadowColor = 'transparent';
 
   this._cachedCanvasDrawRect.width = this._cachedCanvas.width / pixelRatio;
   this._cachedCanvasDrawRect.height = this._cachedCanvas.height / pixelRatio;
 
-  ctx.fillStyle = this._config.blurbTextColor;
+  ctx.fillStyle = this._config.getBlurbTextColor();
+  ctx.font = this._config.getBlurbFont();
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   ctx.fillText(this._text, textPosition.x, textPosition.y);
@@ -257,25 +269,27 @@ Blurb.prototype._currentAlpha = function() {
   if (this._animationStartTime !== null) {
     elapsedTime += this._lastDrawTime - this._animationStartTime;
   }
-  if (this._fadeIn) {
+  if (this._fadingIn) {
     return Math.max(0, Math.min(1, (elapsedTime-Blurb.IN_DELAY)/Blurb.IN_DURATION));
   } else {
     return 1 - Math.max(0, Math.min(1, elapsedTime/Blurb.OUT_DURATION));
   }
 };
 
-Blurb.prototype._animationFrame = function(time) {
+Blurb.prototype._handleAnimationFrame = function(time) {
+  this._animationFrame = null;
+
   this._lastDrawTime = time;
   if (this._animationStartTime === null) {
     this._animationStartTime = time;
-    window.requestAnimationFrame(this._boundAnimationFrame);
+    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
     return;
   }
 
   var alpha = this._currentAlpha();
-  if ((alpha < 1 && this._fadeIn) || (alpha > 0 && this._fadeOut)) {
-    window.requestAnimationFrame(this._boundAnimationFrame);
-  } else if (!this._fadeIn) {
+  if ((alpha < 1 && this._fadingIn) || (alpha > 0 && !this._fadingIn)) {
+    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
+  } else if (!this._fadingIn) {
     this.emit('hidden');
     return;
   }

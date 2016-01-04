@@ -21,6 +21,10 @@ function BarChunkView(attrs, chunk, dataSource) {
   this._animationPointIndex = 0;
   this._animationInitialStartIndex = 0;
   this._animationInitialCount = 0;
+
+  this._pointerPosition = null;
+  this._blurbManager = new BlurbManager(attrs);
+  this._registerBlurbManagerEvents();
 }
 
 BarChunkView.ANIMATION_NONE = 0;
@@ -39,7 +43,10 @@ BarChunkView.prototype = Object.create(EventEmitter.prototype);
 BarChunkView.prototype.constructor = BarChunkView;
 
 BarChunkView.prototype.handoff = function(oldChunkView) {
-  // TODO: handoff the Blurb (tooltip).
+  oldChunkView._blurbManager.removeAllListeners();
+  this._blurbManager.removeAllListeners();
+  this._blurbManager = oldChunkView._blurbManager;
+  this._registerBlurbManagerEvents();
 };
 
 BarChunkView.prototype.getWidth = function() {
@@ -129,6 +136,19 @@ BarChunkView.prototype.finishAnimation = function() {
   }
 };
 
+BarChunkView.prototype.pointerLeave = function() {
+  this._pointerPosition = null;
+  this.emit('redraw');
+};
+
+BarChunkView.prototype.pointerMove = function(pos) {
+  this._pointerPosition = pos;
+  this.emit('redraw');
+};
+
+BarChunkView.prototype.pointerClick = function() {
+};
+
 BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   var totalCount = this._morphingEncompassingCount();
   var pointCount = this._morphingPointCount();
@@ -175,16 +195,12 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     region.width = 0;
   }
 
+  this._updateBlurbManager(viewport, scrollX, maxValue);
+  if (this._blurbManager.blurb() !== null) {
+    this._blurbManager.blurb().draw(viewport.context);
+  }
+
   return region;
-};
-
-BarChunkView.prototype.pointerLeave = function() {
-};
-
-BarChunkView.prototype.pointerMove = function() {
-};
-
-BarChunkView.prototype.pointerClick = function() {
 };
 
 BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) {
@@ -211,6 +227,12 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     result.width *= stretchFactor;
     result.left *= stretchFactor;
     result.left += viewport.x;
+
+    this._updateBlurbManagerElongated(viewport, stretchFactor, maxValue);
+    if (this._blurbManager.blurb() !== null) {
+      this._blurbManager.blurb().draw(viewport.context);
+    }
+
     return result;
   }
 
@@ -222,6 +244,21 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   }
 
   var markers = this._drawRange(left, landscape, range, viewport, maxValue);
+
+  this._updateBlurbManager({
+    x: left,
+    y: viewport.y,
+    width: viewport.width - (left - viewport.x),
+    height: viewport.height,
+    fullX: viewport.fullX,
+    fullY: viewport.fullY,
+    fullWidth: viewport.fullWidth,
+    fullHeight: viewport.fullHeight
+  }, 0, maxValue);
+  if (this._blurbManager.blurb() !== null) {
+    this._blurbManager.blurb().draw(viewport.context);
+  }
+
   var region = landscape.computeRegion(range);
   return {
     left: region.left + left,
@@ -383,6 +420,56 @@ BarChunkView.prototype._computeXMarkerData = function(idx) {
   return result;
 };
 
+BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValue) {
+  var animating = (this._animationType !== BarChunkView.ANIMATION_NONE);
+
+  if (this._pointerPosition === null) {
+    this._blurbManager.update(animating, viewport, scrollX, null, null);
+    return;
+  }
+
+  var landscapeCoords = {
+    x: this._pointerPosition.x + scrollX - viewport.x,
+    y: this._pointerPosition.y
+  };
+
+  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue);
+  if (info === null) {
+    this._blurbManager.update(animating, viewport, scrollX, null, null);
+  } else {
+    var vpPoint = {
+      x: info.position.x - scrollX + viewport.x,
+      y: info.position.y
+    };
+    this._blurbManager.update(animating, viewport, scrollX, vpPoint, info.text);
+  }
+};
+
+BarChunkView.prototype._updateBlurbManagerElongated = function(viewport, factor, maxValue) {
+  var animating = (this._animationType !== BarChunkView.ANIMATION_NONE);
+
+  if (this._pointerPosition === null) {
+    this._blurbManager.update(animating, viewport, scrollX, null, null);
+    return;
+  }
+
+  var landscapeCoords = {
+    x: (this._pointerPosition.x - viewport.x) * factor,
+    y: this._pointerPosition.y
+  };
+
+  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue);
+  if (info === null) {
+    this._blurbManager.update(animating, viewport, scrollX, null, null);
+  } else {
+    var vpPoint = {
+      x: (info.position.x / factor) + viewport.x,
+      y: info.position.y
+    };
+    this._blurbManager.update(animating, viewport, scrollX, vpPoint, info.text);
+  }
+};
+
 // _computeHoverInformation figures out what value the user is hovering over.
 // It takes the pointer position in complete landscape coordinates rather than in
 // viewport coordinates. In other words, the x-value of the position is translated and
@@ -390,7 +477,7 @@ BarChunkView.prototype._computeXMarkerData = function(idx) {
 //
 // The returned object will either be null (no value is hovered) or be an object
 // with the following keys:
-// - tooltip: the tooltip text
+// - text: the tooltip text
 // - position: the complete landscape coordinates to which the corresponding blurb should point
 BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue) {
   if (pointerPos.y >= viewport.y+viewport.height) {
@@ -407,13 +494,13 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   if (pointerPos.x < region.left || pointerPos.x >= region.left+region.width) {
     return null;
   }
-  var point = this._morphingGetPoint(index);
+  var point = this._morphingGetPoint(index - this._startIndex);
 
   if (point.hasOwnProperty('secondaryTooltip') && point.secondary >= 0) {
     var secondaryHeight = (point.secondary / maxValue) * viewport.height;
-    if (point.y >= viewport.y+viewport.height-secondaryHeight) {
+    if (pointerPos.y >= viewport.y+viewport.height-secondaryHeight) {
       return {
-        tooltip: point.secondaryTooltip,
+        text: point.secondaryTooltip,
         position: {
           x: region.left + region.width/2,
           y: viewport.y + viewport.height - secondaryHeight
@@ -425,9 +512,9 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   if (point.hasOwnProperty('primaryTooltip')) {
     var primaryHeight = (point.primary / maxValue) * viewport.height;
     var usePrimaryHeight = Math.max(primaryHeight, BarChunkView.HOVER_MIN_BAR_HEIGHT);
-    if (point.y >= viewport.y+viewport.height-usePrimaryHeight) {
+    if (pointerPos.y >= viewport.y+viewport.height-usePrimaryHeight) {
       return {
-        tooltip: point.secondaryTooltip,
+        text: point.primaryTooltip,
         position: {
           x: region.left + region.width/2,
           y: viewport.y + viewport.height - primaryHeight
@@ -586,4 +673,9 @@ BarChunkView.prototype._morphingGetPointProperness = function(idx) {
   }
 
   return amountProper;
+};
+
+BarChunkView.prototype._registerBlurbManagerEvents = function() {
+  // TODO: prevent duplicate redraw emissions when the BarChunkView is already animating.
+  this._blurbManager.on('redraw', this.emit.bind(this, 'redraw'));
 };
