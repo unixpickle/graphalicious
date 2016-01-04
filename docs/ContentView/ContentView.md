@@ -10,6 +10,8 @@ A *ContentView* does not determine its own size. An external agent (usually a [V
 
 It would be silly for an off-screen *ContentView* to perform animations. Therefore, it is possible to tell a *ContentView* whether or not it should show animations.
 
+The *ContentView* is also responsible for passing pointer events from its parent *View* to its child *ChunkView*.
+
 # Methods
 
 A *ContentView* must implement the following methods:
@@ -20,6 +22,9 @@ A *ContentView* must implement the following methods:
  * *void* layout(width, height) - update the *ContentView*'s dimensions.
  * *void* setAnimate(flag) - enable or disable animations.
  * *void* dispose() - tell the *ContentView* to deregister all of its events and remove references to its resources (such as the DataSource, the VisualStyle, and its ChunkViews).
+ * *void* pointerMove(pos) - this is a pointer event which the *ContentView* should faithfully pass along to its current *ChunkView*, if it has one. If not, it should pass the movement along to the next *ChunkView* it gets. In addition, if the *ChunkView* is replaced, the *ContentView* should make the same call to the new *ChunkView*, essentially handing off the current cursor position.
+ * *void* pointerClick(pos) - this is a pointer event intended for the *ChunkView*.
+ * *void* pointerLeave() - this is a pointer event intended for the *ChunkView*.
 
 # Events
 

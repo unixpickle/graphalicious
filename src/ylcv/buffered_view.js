@@ -41,7 +41,6 @@ function BufferedView(config) {
   this._yLabels = null;
 
   this._currentCursorPosition = null;
-  this._registerPointerEvents();
 
   this._boundDraw = this.draw.bind(this);
   this._visualStyle.on('superficialChange', this._boundDraw);
@@ -246,6 +245,31 @@ BufferedView.prototype.setYLabels = function(labels) {
 BufferedView.prototype.showingSplash = function() {
   return this._state === BufferedView.STATE_EPHEMERAL_SPLASH ||
     this._state === BufferedView.STATE_SPLASH;
+};
+
+// pointerMove forwards pointer movements to the ChunkView.
+BufferedView.prototype.pointerMove = function(pos) {
+  this._currentCursorPosition = pos;
+  if (this._chunkView !== null) {
+    this._chunkView.pointerMove(this._currentCursorPosition);
+  }
+};
+
+// pointerLeave forwards pointer leave events to the ChunkView.
+BufferedView.prototype.pointerLeave = function() {
+  if (this._currentCursorPosition !== null) {
+    this._currentCursorPosition = null;
+    if (this._chunkView !== null) {
+      this._chunkView.pointerLeave();
+    }
+  }
+};
+
+// pointerClick forwards click events to the ChunkView.
+BufferedView.prototype.pointerClick = function(pos) {
+  if (this._chunkView !== null) {
+    this._chunkView.pointerClick(pos);
+  }
 };
 
 // draw draws the ChunkView and the labels and positions the loaders.
@@ -503,56 +527,6 @@ BufferedView.prototype._showContent = function() {
   this.draw();
 
   this.emit('change');
-};
-
-BufferedView.prototype._registerPointerEvents = function() {
-  // We use window.requestAnimationFrame() to buffer cursor movements.
-  var mousePosition = null;
-  var animationFrame = null;
-
-  var updateMousePosition = function() {
-    animationFrame = null;
-    if (mousePosition === null && this._currentCursorPosition === null) {
-      return;
-    }
-    this._currentCursorPosition = mousePosition;
-    if (this._chunkView !== null) {
-      if (mousePosition !== null) {
-        this._chunkView.pointerMove(this._currentCursorPosition);
-      } else {
-        this._chunkView.pointerLeave();
-      }
-    }
-  }.bind(this);
-
-  this._element.addEventListener('mousemove', function(e) {
-    if (animationFrame === null) {
-      animationFrame = window.requestAnimationFrame(updateMousePosition);
-    }
-    var rect = this._element.getBoundingClientRect();
-    mousePosition = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-  }.bind(this));
-
-  this._element.addEventListener('mouseleave', function(e) {
-    if (animationFrame === null) {
-      animationFrame = window.requestAnimationFrame(updateMousePosition);
-    }
-    mousePosition = null;
-  }.bind(this));
-
-  this._element.addEventListener('click', function(e) {
-    if (this._chunkView !== null) {
-      var rect = this._element.getBoundingClientRect();
-      var pos = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-      this._chunkView.pointerClick(pos);
-    }
-  }.bind(this));
 };
 
 function makeElementsFillAndAbsolute(elements) {

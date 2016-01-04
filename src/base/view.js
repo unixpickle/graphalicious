@@ -8,6 +8,7 @@ function View() {
   this._scrollView.on('scroll', this._handleScroll.bind(this));
 
   preventSelection(this._scrollView.element());
+  this._registerMouseEvents();
 }
 
 View.prototype.element = function() {
@@ -70,6 +71,52 @@ View.prototype._handleScroll = function() {
   if (this._contentView !== null) {
     this._contentView.setScrolledPixels(this._scrollView.getState().getScrolledPixels());
   }
+};
+
+View.prototype._registerMouseEvents = function() {
+  // We use window.requestAnimationFrame() to buffer cursor movements.
+  var mousePosition = null;
+  var animationFrame = null;
+
+  var updateMousePosition = function() {
+    animationFrame = null;
+    if (this._contentView !== null) {
+      if (mousePosition !== null) {
+        this._contentView.pointerMove(mousePosition);
+      } else {
+        this._contentView.pointerLeave();
+      }
+    }
+  }.bind(this);
+
+  this.element().addEventListener('mousemove', function(e) {
+    if (animationFrame === null) {
+      animationFrame = window.requestAnimationFrame(updateMousePosition);
+    }
+    var rect = this.element().getBoundingClientRect();
+    mousePosition = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }.bind(this));
+
+  this.element().addEventListener('mouseleave', function(e) {
+    if (animationFrame === null) {
+      animationFrame = window.requestAnimationFrame(updateMousePosition);
+    }
+    mousePosition = null;
+  }.bind(this));
+
+  this.element().addEventListener('click', function(e) {
+    if (this._contentView !== null) {
+      var rect = this.element().getBoundingClientRect();
+      var pos = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+      this._contentView.pointerClick(pos);
+    }
+  }.bind(this));
 };
 
 function preventSelection(element) {

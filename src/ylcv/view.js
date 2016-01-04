@@ -81,6 +81,18 @@ View.prototype.setAnimate = function(a) {
   this._bufferedView.setAnimate(a);
 };
 
+View.prototype.pointerMove = function(pos) {
+  this._bufferedView.pointerMove(pos);
+};
+
+View.prototype.pointerLeave = function() {
+  this._bufferedView.pointerLeave();
+};
+
+View.prototype.pointerClick = function(pos) {
+  this._bufferedView.pointerClick(pos);
+};
+
 View.prototype._updateView = function(emitChange) {
   var scrollStateChange = false;
   if (this._headlessView.shouldShowContent()) {
