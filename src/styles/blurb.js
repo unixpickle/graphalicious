@@ -13,6 +13,7 @@ function Blurb(viewport, config, point, text) {
   this._config = config;
   this._point = point;
   this._text = text;
+  this._strikethrough = (this._text[0] === '!');
 
   if (point.y+viewport.fullY >= viewport.fullHeight-Blurb.UP_DOWN_THRESHOLD) {
     this._side = Blurb.UP;
@@ -151,7 +152,7 @@ Blurb.prototype._updateCachedCanvas = function() {
 
   var ctx = this._cachedCanvas.getContext('2d');
   ctx.font = this._config.getBlurbFont();
-  var contentWidth = ctx.measureText(this._text).width + Blurb.SIDE_MARGINS;
+  var contentWidth = ctx.measureText(this._textToDraw()).width + Blurb.SIDE_MARGINS;
   // TODO: figure out a real way to compute the contentHeight. This may require
   // some DOM voodoo--oh my.
   var contentHeight = 30;
@@ -258,7 +259,23 @@ Blurb.prototype._updateCachedCanvas = function() {
   ctx.font = this._config.getBlurbFont();
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
-  ctx.fillText(this._text, textPosition.x, textPosition.y);
+  ctx.fillText(this._textToDraw(), textPosition.x, textPosition.y);
+
+  if (this._strikethrough) {
+    ctx.strokeStyle = this._config.getBlurbTextColor();
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(textPosition.x-(contentWidth/2)+(Blurb.SIDE_MARGINS/2), textPosition.y);
+    ctx.lineTo(textPosition.x+(contentWidth/2)-(Blurb.SIDE_MARGINS/2), textPosition.y);
+    ctx.stroke();
+  }
+};
+
+Blurb.prototype._textToDraw = function() {
+  if (this._strikethrough || (this._text[0] === '\\')) {
+    return this._text.substr(1);
+  }
+  return this._text;
 };
 
 Blurb.prototype._currentAlpha = function() {

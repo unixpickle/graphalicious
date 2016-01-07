@@ -21,8 +21,8 @@ Every data point has three fields:
  * *number* primary - the primary value of the data point.
  * *number* secondary - the secondary value of the data point, or -1 if no secondary value exists.
  * *boolean* proper - the data point is "proper".
- * *string* primaryTooltip - the tooltip text for the primary value. This may be undefined.
- * *string* secondaryTooltip - the tooltip text for the secondary value. This may be undefined.
+ * *string* primaryTooltip - the tooltip text for the primary value. This may be undefined. If this is a string which begins with "!", then the tooltip is considered "improper". This usually means that it will be crossed-out by the *VisualStyle*. If this is a string with a leading backslash, the backslash will be omitted; this allows you to escape a leading "!".
+ * *string* secondaryTooltip - the tooltip text for the secondary value. This may be undefined. See primaryTooltip for more info.
 
 # The Chunk type
 

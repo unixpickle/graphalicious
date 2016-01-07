@@ -163,8 +163,9 @@
 
   StaticChunk.prototype.getDataPoint = function(relIdx) {
     var point = this._points[this._start+relIdx];
-    point.primaryTooltip = point.primary + '';
-    point.secondaryTooltip = point.secondary + '';
+    var improperStr = (point.proper ? '' : '!');
+    point.primaryTooltip = improperStr + point.primary;
+    point.secondaryTooltip = improperStr + point.secondary;
     return point;
   };
 
