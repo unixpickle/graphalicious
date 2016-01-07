@@ -474,7 +474,7 @@ BarChunkView.prototype._updateBlurbManagerElongated = function(viewport, factor,
   }
 
   var landscapeCoords = {
-    x: (this._pointerPosition.x - viewport.x) * factor,
+    x: (this._pointerPosition.x - viewport.x) / factor,
     y: this._pointerPosition.y
   };
 
@@ -488,7 +488,7 @@ BarChunkView.prototype._updateBlurbManagerElongated = function(viewport, factor,
     this._blurbManager.update(animating, viewport, 0, null, null);
   } else {
     var vpPoint = {
-      x: (info.position.x / factor) + viewport.x,
+      x: (info.position.x * factor) + viewport.x,
       y: info.position.y
     };
     vpPoint.x = Math.min(viewport.x+viewport.width, Math.max(viewport.x, vpPoint.x));
