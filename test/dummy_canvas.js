@@ -13,6 +13,12 @@ function DummyContext() {
 DummyContext.prototype.fillRect = function(x, y, width, height) {
 };
 
+DummyContext.prototype.rect = function(x, y, width, height) {
+};
+
+DummyContext.prototype.clip = function() {
+};
+
 DummyContext.prototype.save = function() {
 };
 
