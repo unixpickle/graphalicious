@@ -211,9 +211,15 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     var regularWidth = landscape.width();
     var stretchFactor = viewport.width / regularWidth;
     viewport.context.save();
-    viewport.context.translate(viewport.x);
+    viewport.context.translate(viewport.x, 0);
     viewport.context.scale(stretchFactor, 1);
-    var markers = this._drawRange(0, landscape, range, viewport, maxValue);
+    var markers = this._drawRange(0, landscape, range, {
+      context: viewport.context,
+      x: 0,
+      y: viewport.y,
+      height: viewport.height,
+      width: landscape.width()
+    }, maxValue);
     viewport.context.restore();
 
     for (var i = 0, len = markers.length; i < len; ++i) {
