@@ -183,7 +183,8 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     landscape: landscape,
     range: range,
     viewport: viewport,
-    maxValue: maxValue
+    maxValue: maxValue,
+    stretchFactor: 1
   });
 
   var region = landscape.computeRegion(range);
@@ -216,33 +217,14 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   if (stretchMode === BarStyleAttrs.STRETCH_MODE_ELONGATE) {
     var regularWidth = landscape.width();
     var stretchFactor = viewport.width / regularWidth;
-    viewport.context.save();
-    viewport.context.translate(viewport.x, 0);
-    viewport.context.scale(stretchFactor, 1);
     var markers = this._drawRange({
-      drawOffset: 0,
+      drawOffset: viewport.x,
       landscape: landscape,
       range: range,
-      viewport: {
-        context: viewport.context,
-        x: 0,
-        y: viewport.y,
-        height: viewport.height,
-        width: landscape.width(),
-        fullX: viewport.x,
-        fullY: viewport.y,
-        fullWidth: viewport.fullWidth,
-        fullHeight: viewport.fullHeight
-      },
-      maxValue: maxValue
+      viewport: viewport,
+      maxValue: maxValue,
+      stretchFactor: stretchFactor
     });
-    viewport.context.restore();
-
-    for (var i = 0, len = markers.length; i < len; ++i) {
-      var marker = markers[i];
-      marker.x *= stretchFactor;
-      marker.x += viewport.x;
-    }
 
     var result = landscape.computeRegion(range);
     result.xmarkers = markers;
@@ -270,7 +252,8 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     landscape: landscape,
     range: range,
     viewport: viewport,
-    maxValue: maxValue
+    maxValue: maxValue,
+    stretchFactor: 1
   });
 
   this._updateBlurbManager({
@@ -320,7 +303,7 @@ BarChunkView.prototype._drawRange = function(p) {
     var coords = p.landscape.computeBarRegion(i);
     coords.left += p.drawOffset;
 
-    var xmarker = this._computeXMarker(p.landscape, p.drawOffset, i);
+    var xmarker = this._computeXMarker(p, i);
     xmarkers.push(xmarker);
 
     for (var j = 0, len = values.length; j < len; ++j) {
@@ -337,9 +320,9 @@ BarChunkView.prototype._drawRange = function(p) {
 
       this._drawValue({
         ctx: ctx,
-        x: coords.left,
+        x: (coords.left-p.viewport.x)*p.stretchFactor + p.viewport.x,
         y: y,
-        width: coords.width,
+        width: coords.width*p.stretchFactor,
         height: height,
         eclipseHeight: eclipseHeight,
         pointIndex: i,
@@ -366,13 +349,13 @@ BarChunkView.prototype._drawValue = function(params) {
 };
 
 // _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
-BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {
+BarChunkView.prototype._computeXMarker = function(p, idx) {
   assert(idx >= this._startIndex && idx < this._startIndex + this._morphingPointCount());
 
   var result = this._computeXMarkerData(idx);
 
-  var barCoords = landscape.computeBarRegion(idx);
-  var barRegion = landscape.computeRegion({startIndex: idx, length: 1});
+  var barCoords = p.landscape.computeBarRegion(idx);
+  var barRegion = p.landscape.computeRegion({startIndex: idx, length: 1});
   switch (this._attrs.getXLabelAlignment()) {
   case BarStyleAttrs.X_LABELS_CENTER:
     result.x = barCoords.left + barCoords.width/2;
@@ -386,7 +369,9 @@ BarChunkView.prototype._computeXMarker = function(landscape, drawOffset, idx) {
   default:
     throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
   }
-  result.x += drawOffset;
+
+  result.x += p.drawOffset;
+  result.x = (result.x-p.viewport.x)*p.stretchFactor + p.viewport.x;
 
   return result;
 };
