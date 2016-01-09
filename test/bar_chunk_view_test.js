@@ -729,6 +729,96 @@ function testBlurbsNormal() {
   assert(chunkView._blurbManager._currentBlurb === null);
 }
 
+function testBlurbsElongated() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT,
+    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+  });
+
+  var dataSource = DataSource.random(2, 10, false);
+  dataSource.insert(1, {primary: 15, secondary: -1});
+  dataSource.insert(2, {primary: 13, secondary: -1});
+  dataSource.insert(3, {primary: 12, secondary: -1});
+  var chunk = dataSource.fetchChunkSync(0, 1, 3);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+
+  var viewport = {
+    context: context,
+    x: 10,
+    y: 5,
+    width: 500,
+    height: 100,
+    fullX: 0,
+    fullY: 0,
+    fullWidth: 510,
+    fullHeight: 105
+  };
+
+  var stretchFactor = (500 / 240);
+
+  chunkView.pointerMove({x: 10+(10+40+6)*stretchFactor, y: 105 - 75 + SMALL_NUM});
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(0);
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(2000);
+  chunkView.draw(viewport, 0, 20);
+  assert.equal(currentAnimationFrameCb, null);
+
+  var blurb = chunkView._blurbManager._currentBlurb;
+  assert(blurb !== null);
+  assert(Math.abs(blurb._point.x - (10+(10+40+5+20)*stretchFactor)) < SMALL_NUM);
+  assert(Math.abs(blurb._point.y - 30) < SMALL_NUM);
+  assert.equal(blurb._text, ''+chunk.getDataPoint(0).primary);
+
+  chunkView.pointerMove({x: 10+(10+40+5+39)*stretchFactor, y: 105 - 55});
+  chunkView.draw(viewport, 0, 20);
+  assert.equal(currentAnimationFrameCb, null);
+  assert.equal(blurb, chunkView._blurbManager._currentBlurb);
+
+  // NOTE: first the old blurb fades out, then the new one fades in.
+  chunkView.pointerMove({x: 10+(10+40*2+5+6)*stretchFactor, y: 105-65+SMALL_NUM});
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(0);
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(2000);
+  assert.equal(chunkView._blurbManager._currentBlurb, null);
+  chunkView.draw(viewport, 0, 20);
+  assert(chunkView._blurbManager._currentBlurb !== null);
+  callAnimationFrameCb(2000);
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(4000);
+  chunkView.draw(viewport, 0, 20);
+  assert.equal(currentAnimationFrameCb, null);
+
+  blurb = chunkView._blurbManager._currentBlurb;
+  assert(blurb !== null);
+  assert(Math.abs(blurb._point.x - (10+(10+40*2+5*2+20)*stretchFactor)) < SMALL_NUM);
+  assert(Math.abs(blurb._point.y - 40) < SMALL_NUM);
+  assert.equal(blurb._text, ''+chunk.getDataPoint(1).primary);
+
+  chunkView.pointerMove({x: 10+(10+40*3+4+5)*stretchFactor, y: 105-65+SMALL_NUM});
+  chunkView.draw(viewport, 0, 20);
+  assert.equal(currentAnimationFrameCb, null);
+  assert.equal(blurb, chunkView._blurbManager._currentBlurb);
+
+  chunkView.pointerMove({x: 10+(10+40*3+6+5)*stretchFactor, y: 105-65+SMALL_NUM});
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(0);
+  chunkView.draw(viewport, 0, 20);
+  callAnimationFrameCb(2000);
+  chunkView.draw(viewport, 0, 20);
+  assert.equal(currentAnimationFrameCb, null);
+
+  assert(chunkView._blurbManager._currentBlurb === null);
+}
+
 testWidth();
 testDrawBestCase();
 testDrawBasicScrolling();
@@ -740,5 +830,6 @@ testDrawModifying();
 testDrawDeleting();
 testDrawInserting();
 testBlurbsNormal();
+testBlurbsElongated();
 
 console.log('PASS');
