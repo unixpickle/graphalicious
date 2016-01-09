@@ -675,6 +675,10 @@ BarChunkView.prototype._morphingGetPointProperness = function(idx) {
 };
 
 BarChunkView.prototype._registerBlurbManagerEvents = function() {
-  // TODO: prevent duplicate redraw emissions when the BarChunkView is already animating.
-  this._blurbManager.on('redraw', this.emit.bind(this, 'redraw'));
+  this._blurbManager.on('redraw', function() {
+    // Avoid redrawing twice per animation frame.
+    if (this._animationFrame === null) {
+      this.emit('redraw');
+    }
+  }.bind(this));
 };
