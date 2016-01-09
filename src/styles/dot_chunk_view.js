@@ -46,7 +46,7 @@ DotChunkView.prototype._drawValue = function(params) {
 };
 
 DotChunkView.prototype._radiusForDot = function(params) {
-  return this._attrs.getBarWidth() / 2;
+  return params.stretchFactor * this._attrs.getBarWidth() / 2;
 };
 
 DotChunkView.prototype._opacityForDot = function(params) {

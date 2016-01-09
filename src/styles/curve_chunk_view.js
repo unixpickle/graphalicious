@@ -273,6 +273,7 @@ CurveChunkView.prototype._generatePointsForPath = function(range, params, getter
     } else if (i === this._morphingEncompassingCount() - 1) {
       x = params.drawOffset + coords.left + coords.width - this._attrs.getBarWidth()/2;
     }
+    x = (x-params.viewport.x)*params.stretchFactor + params.viewport.x;
     points.push({x: x, y: y});
   }
   return points;

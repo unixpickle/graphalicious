@@ -327,7 +327,8 @@ BarChunkView.prototype._drawRange = function(p) {
         eclipseHeight: eclipseHeight,
         pointIndex: i,
         primary: j === 0,
-        properness: this._morphingGetPointProperness(i - this._startIndex)
+        properness: this._morphingGetPointProperness(i - this._startIndex),
+        stretchFactor: p.stretchFactor
       });
     }
   }
