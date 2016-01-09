@@ -10,25 +10,16 @@ function CurveChunkView(dotAttrs, attrs, chunk, dataSource) {
 CurveChunkView.prototype = Object.create(DotChunkView.prototype);
 CurveChunkView.prototype.constructor = CurveChunkView;
 
-CurveChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewport, maxValue) {
-  var params = {
-    drawOffset: drawOffset,
-    landscape: landscape,
-    range: range,
-    viewport: viewport,
-    maxValue: maxValue
-  };
+CurveChunkView.prototype._drawRange = function(p) {
+  p.viewport.context.save();
+  p.viewport.context.beginPath();
+  p.viewport.context.rect(p.viewport.x, p.viewport.y, p.viewport.width, p.viewport.height);
+  p.viewport.context.clip();
+  this._newMorphingPrimaryY = this._strokePrimaryPath(p.range, p);
+  this._newMorphingSecondaryY = this._strokeSecondaryPath(p.range, p);
+  p.viewport.context.restore();
 
-  viewport.context.save();
-  viewport.context.beginPath();
-  viewport.context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
-  viewport.context.clip();
-  this._newMorphingPrimaryY = this._strokePrimaryPath(range, params);
-  this._newMorphingSecondaryY = this._strokeSecondaryPath(range, params);
-  viewport.context.restore();
-
-  return DotChunkView.prototype._drawRange.call(this, drawOffset, landscape, range, viewport,
-    maxValue);
+  return DotChunkView.prototype._drawRange.call(this, p);
 };
 
 CurveChunkView.prototype._drawValue = function(params) {

@@ -178,7 +178,13 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   }
 
   var drawOffset = viewport.x - scrollX;
-  var xmarkers = this._drawRange(drawOffset, landscape, range, viewport, maxValue);
+  var xmarkers = this._drawRange({
+    drawOffset: drawOffset,
+    landscape: landscape,
+    range: range,
+    viewport: viewport,
+    maxValue: maxValue
+  });
 
   var region = landscape.computeRegion(range);
   region.left += drawOffset;
@@ -213,13 +219,23 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     viewport.context.save();
     viewport.context.translate(viewport.x, 0);
     viewport.context.scale(stretchFactor, 1);
-    var markers = this._drawRange(0, landscape, range, {
-      context: viewport.context,
-      x: 0,
-      y: viewport.y,
-      height: viewport.height,
-      width: landscape.width()
-    }, maxValue);
+    var markers = this._drawRange({
+      drawOffset: 0,
+      landscape: landscape,
+      range: range,
+      viewport: {
+        context: viewport.context,
+        x: 0,
+        y: viewport.y,
+        height: viewport.height,
+        width: landscape.width(),
+        fullX: viewport.x,
+        fullY: viewport.y,
+        fullWidth: viewport.fullWidth,
+        fullHeight: viewport.fullHeight
+      },
+      maxValue: maxValue
+    });
     viewport.context.restore();
 
     for (var i = 0, len = markers.length; i < len; ++i) {
@@ -249,7 +265,13 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     left += viewport.width - landscape.width();
   }
 
-  var markers = this._drawRange(left, landscape, range, viewport, maxValue);
+  var markers = this._drawRange({
+    drawOffset: left,
+    landscape: landscape,
+    range: range,
+    viewport: viewport,
+    maxValue: maxValue
+  });
 
   this._updateBlurbManager({
     x: left,
@@ -273,20 +295,20 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   };
 };
 
-BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewport, maxValue) {
-  viewport.context.save();
-  viewport.context.beginPath();
-  viewport.context.rect(viewport.x, viewport.y, viewport.width, viewport.height);
-  viewport.context.clip();
+BarChunkView.prototype._drawRange = function(p) {
+  p.viewport.context.save();
+  p.viewport.context.beginPath();
+  p.viewport.context.rect(p.viewport.x, p.viewport.y, p.viewport.width, p.viewport.height);
+  p.viewport.context.clip();
 
   var pointCount = this._morphingPointCount();
 
   var colorScheme = this._attrs.getColorScheme();
   var colors = [colorScheme.getPrimary(), colorScheme.getSecondary()];
-  var ctx = viewport.context;
+  var ctx = p.viewport.context;
   var xmarkers = [];
 
-  for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
+  for (var i = p.range.startIndex, end = p.range.startIndex+p.range.length; i < end; ++i) {
     assert(i >= this._startIndex && i < this._startIndex + pointCount);
 
     var dataPoint = this._morphingGetPoint(i - this._startIndex);
@@ -295,22 +317,22 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
       values.push(dataPoint.secondary);
     }
 
-    var coords = landscape.computeBarRegion(i);
-    coords.left += drawOffset;
+    var coords = p.landscape.computeBarRegion(i);
+    coords.left += p.drawOffset;
 
-    var xmarker = this._computeXMarker(landscape, drawOffset, i);
+    var xmarker = this._computeXMarker(p.landscape, p.drawOffset, i);
     xmarkers.push(xmarker);
 
     for (var j = 0, len = values.length; j < len; ++j) {
       var val = values[j];
-      var height = viewport.height * (val / maxValue);
-      var y = viewport.y + viewport.height - height;
+      var height = p.viewport.height * (val / p.maxValue);
+      var y = p.viewport.y + p.viewport.height - height;
 
       ctx.fillStyle = colors[j];
 
       var eclipseHeight = 0;
       if (j === 0 && values.length > 1) {
-        eclipseHeight = viewport.height * (values[1] / maxValue);
+        eclipseHeight = p.viewport.height * (values[1] / p.maxValue);
       }
 
       this._drawValue({
@@ -327,7 +349,7 @@ BarChunkView.prototype._drawRange = function(drawOffset, landscape, range, viewp
     }
   }
 
-  viewport.context.restore();
+  p.viewport.context.restore();
   return xmarkers;
 };
 
