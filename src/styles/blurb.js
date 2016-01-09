@@ -88,7 +88,9 @@ Blurb.prototype.fadeIn = function() {
   }
 
   var alpha = this._currentAlpha();
-  if (alpha > 0) {
+  if (alpha === 1) {
+    return;
+  } else if (alpha > 0) {
     this._animationStartTimeOffset = Blurb.IN_DELAY + Blurb.IN_DURATION*alpha;
   } else {
     this._animationStartTimeOffset = 0;

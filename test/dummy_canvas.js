@@ -46,4 +46,17 @@ DummyContext.prototype.stroke = function() {
 DummyContext.prototype.closePath = function() {
 };
 
+DummyContext.prototype.measureText = function(text) {
+  return text.length * 10;
+};
+
+DummyContext.prototype.fill = function() {
+};
+
+DummyContext.prototype.fillText = function(text, x, y) {
+};
+
+DummyContext.prototype.drawImage = function(img, x, y, w, h) {
+};
+
 module.exports = DummyCanvas;
