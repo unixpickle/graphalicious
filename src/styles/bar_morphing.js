@@ -8,7 +8,7 @@ function MorphingBarLandscape(info) {
 MorphingBarLandscape.prototype.copy = function() {
   return new MorphingBarLandscape({
     pointCount: this._pointCount,
-    attrs: this._attrs.copy(),
+    attrs: this._attrs.copyAttributes(),
     morphingIndex: this._morphingIndex,
     morphingVisibility: this._morphingVisibility
   });
@@ -16,6 +16,10 @@ MorphingBarLandscape.prototype.copy = function() {
 
 MorphingBarLandscape.prototype.getPointCount = function() {
   return this._pointCount;
+};
+
+MorphingBarLandscape.prototype.getAttributes = function() {
+  return this._attrs;
 };
 
 MorphingBarLandscape.prototype.computeRange = function(region) {

@@ -287,7 +287,6 @@ BarChunkView.prototype._drawRange = function(p) {
   var colorScheme = this._attrs.getColorScheme();
   var colors = [colorScheme.getPrimary(), colorScheme.getSecondary()];
   var ctx = p.viewport.context;
-  var xmarkers = [];
 
   for (var i = p.range.startIndex, end = p.range.startIndex+p.range.length; i < end; ++i) {
     assert(i >= this._startIndex && i < this._startIndex + pointCount);
@@ -300,9 +299,6 @@ BarChunkView.prototype._drawRange = function(p) {
 
     var coords = p.landscape.computeBarRegion(i);
     coords.left += p.drawOffset;
-
-    var xmarker = this._computeXMarker(p, i);
-    xmarkers.push(xmarker);
 
     for (var j = 0, len = values.length; j < len; ++j) {
       var val = values[j];
@@ -332,7 +328,7 @@ BarChunkView.prototype._drawRange = function(p) {
   }
 
   p.viewport.context.restore();
-  return xmarkers;
+  return this._generateXMarkers(p);
 };
 
 BarChunkView.prototype._drawValue = function(params) {
@@ -364,91 +360,6 @@ BarChunkView.prototype._generateXMarkers = function(p) {
   }
 
   return new BarXMarkers(info);
-};
-
-// _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
-BarChunkView.prototype._computeXMarker = function(p, idx) {
-  assert(idx >= this._startIndex && idx < this._startIndex + this._morphingPointCount());
-
-  var result = this._computeXMarkerData(idx);
-
-  var barCoords = p.landscape.computeBarRegion(idx);
-  var barRegion = p.landscape.computeRegion({startIndex: idx, length: 1});
-  switch (this._attrs.getXLabelAlignment()) {
-  case BarStyleAttrs.X_LABELS_CENTER:
-    result.x = barCoords.left + barCoords.width/2;
-    break;
-  case BarStyleAttrs.X_LABELS_RIGHT:
-    result.x = (barCoords.left + barCoords.width + barRegion.left + barRegion.width) / 2;
-    break;
-  case BarStyleAttrs.X_LABELS_LEFT:
-    result.x = (barCoords.left + barRegion.left) / 2;
-    break;
-  default:
-    throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
-  }
-
-  result.x += p.drawOffset;
-  result.x = (result.x-p.viewport.x)*p.stretchFactor + p.viewport.x;
-
-  return result;
-};
-
-// _computeXMarkerData generates an XMarker object without the x field.
-// The supplied index should be absolute, not chunk-relative.
-BarChunkView.prototype._computeXMarkerData = function(idx) {
-  var result = {
-    visibility: 1,
-    index: idx,
-    oldIndex: idx
-  };
-
-  switch (this._animationType) {
-  case BarChunkView.ANIMATION_DELETE:
-    if (idx < this._animationPointIndex) {
-      result.dataPoint = this._dataPoints[idx - this._startIndex];
-      result.oldDataPoint = result.dataPoint;
-    } else if (idx === this._animationPointIndex) {
-      result.index = -1;
-      result.oldIndex = this._animationPointIndex;
-      result.dataPoint = null;
-      result.oldDataPoint = this._animationDataPoint;
-      result.visibility = 1 - this._animationProgress;
-    } else {
-      --result.index;
-      result.dataPoint = this._dataPoints[idx - 1 - this._startIndex];
-      result.oldDataPoint = result.dataPoint;
-    }
-    break;
-  case BarChunkView.ANIMATION_MODIFY:
-    var newPoint = this._dataPoints[idx - this._startIndex];
-    result.dataPoint = newPoint;
-    if (idx !== this._animationPointIndex) {
-      result.oldDataPoint = newPoint;
-    } else {
-      result.oldDataPoint = this._animationDataPoint;
-    }
-    break;
-  case BarChunkView.ANIMATION_INSERT:
-    result.dataPoint = this._dataPoints[idx - this._startIndex];
-    if (idx === this._animationPointIndex) {
-      result.oldDataPoint = null;
-      result.oldIndex = -1;
-      result.visibility = this._animationProgress;
-    } else {
-      result.oldDataPoint = result.dataPoint;
-    }
-    if (idx > this._animationPointIndex) {
-      --result.oldIndex;
-    }
-    break;
-  case BarChunkView.ANIMATION_NONE:
-    result.dataPoint = this._dataPoints[idx - this._startIndex];
-    result.oldDataPoint = result.dataPoint;
-    break;
-  }
-
-  return result;
 };
 
 BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValue, stretch) {
