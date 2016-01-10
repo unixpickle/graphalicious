@@ -18,7 +18,7 @@ When a *ChunkView* is drawn into an HTML5 canvas, it is given a **canvas viewpor
 
 Sometimes, the complete landscape will not be as wide as the canvas viewport. In this case, the complete landscape literally does not "fill up" the place where it is being rendered. The visual style of a *ChunkView* determines how it handles this situation. Sometimes, a *ChunkView* may visually stretch itself; other times, a *ChunkView* may choose to justify itself to the left or right of the canvas viewport.
 
-After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a tuple `(x, width, x-markers)` specifying both the x-axis markers and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen real estate was actually taken up.
+After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a tuple `(x, width, xMarkers)` specifying both the [XMarkers](XMarkers.md) and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen real estate was actually taken up.
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. The events themselves specify coordinates relative to the canvas. As a result, the *ChunkView* will need to request a re-draw in order to utilize the coordinates in any meaningful way.
 
@@ -39,18 +39,7 @@ The *DrawReport* type represents a horizontal range of pixels in a 2D drawing co
 
  * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels.
  * *number* width - the width of the range, in pixels.
- * \[[XMarker](#the-xmarker-type)\] xmarkers - the x-axis markers in this range
-
-# The XMarker type
-
-The *XMarker* type stores various information about an x-axis marker, including its position and the point it represents. An array of XMarkers are returned from the *ChunkView*s draw routine as part of the [DrawReport](#the-drawreport-type). This type can accommodate for situations where a data point is being deleted but is partially visible. It has the following fields:
-
- * *number* x - the x-offset, in canvas-relative cordinates, for the marker.
- * *int* index - the index of the corresponding data point in the *DataSource*. This is -1 if the data point was deleted from the data source and is being animated away.
- * *int* oldIndex - the index of the data point in the *DataSource* before the current animating change. This is -1 if the point was just inserted and is being animated in.
- * [DataPoint](../DataSource.md#the-datapoint-type) dataPoint - the current (post-animation) data point for this marker. This will be null if the point is being deleted.
- * [DataPoint](../DataSource.md#the-datapoint-type) oldDataPoint - the old (pre-animation) data point for this marker. This will be null if the point is being inserted.
- * *number* visibility - a fraction from 0 (invisible) to 1 (completely visible) representing how animated in/out the data point is.
+ * \[[XMarkers](XMarkers.md)\] xMarkers - the x-axis markers at the instant the *ChunkView* was drawn. This will be frozen in time and immutable, meaning that it can be referenced and used for as long as necessary.
 
 # The CanvasViewport type
 
@@ -66,7 +55,7 @@ The *CanvasViewport* type represents a rectangular region inside a canvas. It ha
  * *number* fullHeight - the width of the total usable canvas.
  * *Context2D* context - the 2D drawing context.
 
-Note that the four coordinate values (e.g., x, width) have "full" analogs (e.g., fullX, fullWidth). These coordinate values tell the *ChunkView* how much space it can draw things like tooltips or other out-of-content displays.
+Note that the four coordinate values (e.g., x, width) have "full" analogs (e.g., fullX, fullWidth). These coordinate values tell the *ChunkView* how much space it has to draw things like tooltips or other out-of-content displays.
 
 # Methods
 
