@@ -19,8 +19,6 @@ function BarChunkView(attrs, chunk, dataSource) {
   this._animationType = BarChunkView.ANIMATION_NONE;
   this._animationDataPoint = null;
   this._animationPointIndex = 0;
-  this._animationInitialStartIndex = 0;
-  this._animationInitialCount = 0;
 
   this._pointerPosition = null;
   this._blurbManager = new BlurbManager(attrs);
@@ -349,6 +347,25 @@ BarChunkView.prototype._drawValue = function(params) {
   }
 };
 
+// _generateXMarkers generates XMarkers for the current drawRange call.
+BarChunkView.prototype._generateXMarkers = function(p) {
+  var info = {
+    drawParams: p,
+    animationType: this._animationType,
+    animationProgress: this._animationProgress,
+    animationPointIndex: this._animationPointIndex,
+    animationOldPoint: null
+  };
+
+  switch (this._animationType) {
+  case BarChunkView.ANIMATION_MODIFY:
+  case BarChunkView.ANIMATION_DELETE:
+    info.animationOldPoint = this._animationOldPoint;
+  }
+
+  return new BarXMarkers(info);
+};
+
 // _computeXMarker generates an XMarker object for a bar being drawn by _drawRange.
 BarChunkView.prototype._computeXMarker = function(p, idx) {
   assert(idx >= this._startIndex && idx < this._startIndex + this._morphingPointCount());
@@ -548,8 +565,6 @@ BarChunkView.prototype._animate = function(time) {
 };
 
 BarChunkView.prototype._startAnimation = function(index, type, point) {
-  this._animationInitialStartIndex = this._startIndex;
-  this._animationInitialCount = this._dataPoints.length;
   this._animationPointIndex = index;
   this._animationDataPoint = point;
   this._animationProgress = 0;

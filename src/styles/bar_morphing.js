@@ -5,6 +5,19 @@ function MorphingBarLandscape(info) {
   this._morphingVisibility = info.morphingVisibility || 0;
 }
 
+MorphingBarLandscape.prototype.copy = function() {
+  return new MorphingBarLandscape({
+    pointCount: this._pointCount,
+    attrs: this._attrs.copy(),
+    morphingIndex: this._morphingIndex,
+    morphingVisibility: this._morphingVisibility
+  });
+};
+
+MorphingBarLandscape.prototype.getPointCount = function() {
+  return this._pointCount;
+};
+
 MorphingBarLandscape.prototype.computeRange = function(region) {
   region = regionIntersection(region, {left: 0, width: this.width()});
 
