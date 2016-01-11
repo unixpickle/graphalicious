@@ -176,7 +176,7 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   }
 
   var drawOffset = viewport.x - scrollX;
-  var xmarkers = this._drawRange({
+  var xMarkers = this._drawRange({
     drawOffset: drawOffset,
     landscape: landscape,
     range: range,
@@ -194,7 +194,7 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   if (region.left + region.width > viewport.x + viewport.width) {
     region.width = viewport.x + viewport.width - region.left;
   }
-  region.xmarkers = xmarkers;
+  region.xMarkers = xMarkers;
 
   if (region.width < 0) {
     region.width = 0;
@@ -225,7 +225,7 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     });
 
     var result = landscape.computeRegion(range);
-    result.xmarkers = markers;
+    result.xMarkers = markers;
     result.width *= stretchFactor;
     result.left *= stretchFactor;
     result.left += viewport.x;
@@ -272,7 +272,7 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
   return {
     left: region.left + left,
     width: region.width,
-    xmarkers: markers
+    xMarkers: markers
   };
 };
 

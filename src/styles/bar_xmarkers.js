@@ -48,25 +48,25 @@ BarXMarkers.prototype.getXMarker = function(index) {
 
 BarXMarkers.prototype._computeXMarkerData = function(index) {
   var result = {
-    index: idx,
-    oldIndex: idx,
+    index: index,
+    oldIndex: index,
     oldDataPoint: null,
     animationProgress: -1,
   };
 
   if (this._animationType === BarChunkView.ANIMATION_NONE ||
-      idx < this._animationPointIndex) {
+      index < this._animationPointIndex) {
     return result;
   }
 
-  if (idx === this._animationPointIndex) {
+  if (index === this._animationPointIndex) {
     result.animationProgress = this._animationProgress;
     result.oldDataPoint = this._animationOldPoint;
   }
 
   switch (this._animationType) {
   case BarChunkView.ANIMATION_DELETE:
-    if (idx === this._animationPointIndex) {
+    if (index === this._animationPointIndex) {
       result.index = -1;
     } else {
       --result.index;
@@ -116,9 +116,9 @@ BarXMarkers.prototype._canvasRegionToRegion = function(r) {
 };
 
 BarXMarkers.prototype._canvasXToLandscapeX = function(x) {
-  return (x-this._viewportX)/this._scaleFactor + this._viewportX - this._drawOffset;
+  return (x-this._viewportX)/this._stretchFactor + this._viewportX - this._drawOffset;
 };
 
 BarXMarkers.prototype._landscapeXToCanvasX = function(x) {
-  return (x + this._drawOffset - this._viewportX)*this._scaleFactor + this._viewportX;
+  return (x + this._drawOffset - this._viewportX)*this._stretchFactor + this._viewportX;
 };

@@ -15,8 +15,8 @@ function callAnimationFrameCb(arg) {
 
 var importRes = require('./importer')([
   'base/color_scheme.js', 'base/attrs.js', 'styles/bar_style.js',
-  'styles/bar_morphing.js', 'styles/bar_chunk_view.js', 'styles/utilities.js',
-  'styles/blurb.js', 'styles/blurb_manager.js'
+  'styles/bar_xmarkers.js', 'styles/bar_morphing.js', 'styles/bar_chunk_view.js',
+  'styles/utilities.js', 'styles/blurb.js', 'styles/blurb_manager.js'
 ], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
   window: {
     requestAnimationFrame: function(f) {
@@ -65,9 +65,9 @@ function testWidth() {
 
 function testDrawBestCase() {
   var xLabelOffsets = [
-    [BarStyle.X_LABELS_LEFT, 5, 52.5],
-    [BarStyle.X_LABELS_CENTER, 30, 75],
-    [BarStyle.X_LABELS_RIGHT, 52.5, 97.5]
+    {alignment: BarStyle.X_LABELS_LEFT, x0: 5, x1: 52.5, rangeLen: 7},
+    {alignment: BarStyle.X_LABELS_CENTER, x0: 30, x1: 75, rangeLen: 7},
+    {alignment: BarStyle.X_LABELS_RIGHT, x0: 52.5, x1: 97.5, rangeLen: 6},
   ];
 
   for (var j = 0; j < 3; ++j) {
@@ -79,7 +79,7 @@ function testDrawBestCase() {
       rightMargin: 10,
       barSpacing: 5,
       barWidth: 40,
-      xLabelAlignment: xInfo[0]
+      xLabelAlignment: xInfo.alignment
     });
 
     var dataSource = DataSource.random(1000, 10, true);
@@ -94,32 +94,41 @@ function testDrawBestCase() {
     assert(Math.abs(report.width - 313) < SMALL_NUM, 'invalid width');
     assert(Math.abs(report.left - 10) < SMALL_NUM, 'invalid left offset');
 
-    assert(report.xmarkers.length === 7);
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
+    assert(report.xMarkers.getLength() === dataSource.getLength());
+    var visibleMarkers = report.xMarkers.computeRange({left: 0, width: 323});
+    assert(visibleMarkers.startIndex === 0);
+    assert(visibleMarkers.length === xInfo.rangeLen);
+    for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
       assert(marker.index === i);
       assert(marker.oldIndex === i);
-      assert(marker.dataPoint === chunk.getDataPoint(i));
-      assert(marker.oldDataPoint === chunk.getDataPoint(i));
-      assert(marker.visibility === 1);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
     }
 
-    var firstXValue = xInfo[1] + viewport.x;
-    assert(Math.abs(report.xmarkers[0].x - firstXValue) < SMALL_NUM, 'invalid x for xmarkers[0]');
+    var firstXValue = xInfo.x0 + viewport.x;
+    assert(Math.abs(report.xMarkers.getXMarker(0).x-firstXValue) < SMALL_NUM,
+      'invalid x for first x marker');
 
-    for (var i = 1, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var xValue = viewport.x + xInfo[2] + (i-1)*45;
-      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for xmarkers[' + i + ']');
+    for (var i = 1, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var xValue = viewport.x + xInfo.x1 + (i-1)*45;
+      if (i === len-1 && xInfo.alignment === BarStyle.X_LABELS_RIGHT) {
+        xValue += 2.5;
+      }
+      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for x marker ' + i);
     }
   }
 }
 
 function testDrawBasicScrolling() {
   var xLabelOffsets = [
-    [BarStyle.X_LABELS_LEFT, 5, 52.5],
-    [BarStyle.X_LABELS_CENTER, 30, 75],
-    [BarStyle.X_LABELS_RIGHT, 52.5, 97.5]
+    {alignment: BarStyle.X_LABELS_LEFT, x0: 5, x1: 52.5, rangeLen0: 7, rangeLen1: 7,
+      rangeStart1: 1},
+    {alignment: BarStyle.X_LABELS_CENTER, x0: 30, x1: 75, rangeLen0: 7, rangeLen1: 7,
+      rangeStart1: 1},
+    {alignment: BarStyle.X_LABELS_RIGHT, x0: 52.5, x1: 97.5, rangeLen0: 6, rangeLen1: 7,
+      rangeStart1: 0},
   ];
 
   for (var j = 0; j < 3; ++j) {
@@ -131,7 +140,7 @@ function testDrawBasicScrolling() {
       rightMargin: 10,
       barSpacing: 5,
       barWidth: 40,
-      xLabelAlignment: xInfo[0]
+      xLabelAlignment: xInfo.alignment
     });
 
     var dataSource = DataSource.random(1000, 10, true);
@@ -147,43 +156,58 @@ function testDrawBasicScrolling() {
     assert(Math.abs(report.width - 313) < SMALL_NUM, 'invalid width');
     assert(Math.abs(report.left - 10) < SMALL_NUM, 'invalid left offset');
 
-    assert(report.xmarkers.length === 7);
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
+    assert(report.xMarkers.getLength() === dataSource.getLength());
+    var visibleMarkers = report.xMarkers.computeRange({left: 10, width: 313});
+    assert(visibleMarkers.startIndex === 0);
+    assert(visibleMarkers.length === xInfo.rangeLen0);
+    for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
       assert(marker.index === i);
       assert(marker.oldIndex === i);
-      assert(marker.dataPoint === chunk.getDataPoint(i));
-      assert(marker.oldDataPoint === chunk.getDataPoint(i));
-      assert(marker.visibility === 1);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
     }
 
-    var firstXValue = xInfo[1] + viewport.x - 3;
-    assert(Math.abs(report.xmarkers[0].x - firstXValue) < SMALL_NUM, 'invalid x for xmarkers[0]');
+    var firstXValue = xInfo.x0 + viewport.x - 3;
+    assert(Math.abs(report.xMarkers.getXMarker(0).x - firstXValue) < SMALL_NUM,
+      'invalid x for first x marker');
 
-    for (var i = 1, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var xValue = viewport.x + xInfo[2] + (i-1)*45 - 3;
-      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for xmarkers[' + i + ']');
+    for (var i = 1, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var xValue = viewport.x + xInfo.x1 + (i-1)*45 - 3;
+      if (i === len-1 && xInfo.alignment === BarStyle.X_LABELS_RIGHT) {
+        xValue += 2.5;
+      }
+      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for x marker ' + i);
     }
 
     var report = chunkView.draw(viewport, 51, 20);
     assert(Math.abs(report.width - 313) < SMALL_NUM, 'invalid width');
     assert(Math.abs(report.left - 10) < SMALL_NUM, 'invalid left offset');
 
-    assert(report.xmarkers.length === 7);
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      assert(marker.index === i+1);
-      assert(marker.oldIndex === i+1);
-      assert(marker.dataPoint === chunk.getDataPoint(i+1));
-      assert(marker.oldDataPoint === chunk.getDataPoint(i+1));
-      assert(marker.visibility === 1);
+    assert(report.xMarkers.getLength() === dataSource.getLength());
+    var visibleMarkers = report.xMarkers.computeRange({left: 10, width: 313});
+    assert(visibleMarkers.startIndex === xInfo.rangeStart1);
+    assert(visibleMarkers.length === xInfo.rangeLen1);
+    for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      assert(marker.index === i);
+      assert(marker.oldIndex === i);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
     }
 
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var xValue = viewport.x + xInfo[2] + i*45 - 51;
-      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for xmarkers[' + i + ']');
+    firstXValue = xInfo.x0 + viewport.x - 51;
+    assert(Math.abs(report.xMarkers.getXMarker(0).x - firstXValue) < SMALL_NUM,
+      'invalid x for first x marker');
+
+    for (var i = 1, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var xValue = viewport.x + xInfo.x1 + (i-1)*45 - 51;
+      if (i === len-1 && xInfo.alignment === BarStyle.X_LABELS_RIGHT) {
+        xValue += 2.5;
+      }
+      assert(Math.abs(marker.x - xValue) < SMALL_NUM, 'invalid x for x marker ' + i);
     }
   }
 }
@@ -213,18 +237,20 @@ function testDrawEdgeCases() {
   assert(Math.abs(report.width - (313 - (40*5+5*4))) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - (10 + 40*5 + 5*4)) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 2);
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
-    assert(marker.index === i+5);
-    assert(marker.oldIndex === i+5);
-    assert(marker.dataPoint === chunk.getDataPoint(i));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i));
-    assert(marker.visibility === 1);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10 + 40*5 + 5*4, width: 83});
+  assert(visibleMarkers.startIndex === 5);
+  assert(visibleMarkers.length === 2);
+  for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
   }
 
-  assert(Math.abs(report.xmarkers[0].x - (10+40*5+5*4+2.5)) < SMALL_NUM);
-  assert(Math.abs(report.xmarkers[1].x - (10+40*6+5*5+2.5)) < SMALL_NUM);
+  assert(Math.abs(report.xMarkers.getXMarker(5).x - (10+40*5+5*4+2.5)) < SMALL_NUM);
+  assert(Math.abs(report.xMarkers.getXMarker(6).x - (10+40*6+5*5+2.5)) < SMALL_NUM);
 
   // Draw the content so it barely fills the entire viewport.
 
@@ -232,16 +258,18 @@ function testDrawEdgeCases() {
   assert(Math.abs(report.width - 313) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - 10) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 7);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: 313});
+  assert(visibleMarkers.startIndex === 5);
+  assert(visibleMarkers.length === 7);
   var startMarkerX = 10 + 2.5 - 1;
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
-    assert(marker.index === i + 5);
-    assert(marker.oldIndex === i + 5);
-    assert(marker.dataPoint === chunk.getDataPoint(i));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i));
-    assert(marker.visibility === 1);
-    assert(Math.abs(marker.x - startMarkerX - i*45) < SMALL_NUM);
+  for (var i = 5, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
+    assert(Math.abs(marker.x - startMarkerX - (i-5)*45) < SMALL_NUM);
   }
 
   // Draw the content so it does not fill the right part of the viewport.
@@ -250,16 +278,18 @@ function testDrawEdgeCases() {
   assert(Math.abs(report.width - 111) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - 10) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 3);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: 313});
+  assert(visibleMarkers.startIndex === 13);
+  assert(visibleMarkers.length === 7);
   startMarkerX = -16.5;
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
-    assert(marker.index === i + 12);
-    assert(marker.oldIndex === i + 12);
-    assert(marker.dataPoint === chunk.getDataPoint(i + 7));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i + 7));
-    assert(marker.visibility === 1);
-    assert(Math.abs(marker.x - startMarkerX - i*45) < SMALL_NUM);
+  for (var i = 12, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
+    assert(Math.abs(marker.x - startMarkerX - (i-12)*45) < SMALL_NUM);
   }
 
   // Draw the content so that it only fills the middle of the viewport.
@@ -270,45 +300,43 @@ function testDrawEdgeCases() {
   assert(Math.abs(report.width - (11*5 + 10*40)) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - (10*2 + 40*5 + 5*4)) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 10);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: viewport.width});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 21);
+
   startMarkerX = 10*2 + 5*40 + 4*5 + 2.5;
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
-    assert(marker.index === i + 5);
-    assert(marker.oldIndex === i + 5);
-    assert(marker.dataPoint === chunk.getDataPoint(i));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i));
-    assert(marker.visibility === 1);
-    assert(Math.abs(marker.x - startMarkerX - i*45) < SMALL_NUM);
+  for (var i = 5, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
+    assert(Math.abs(marker.x - startMarkerX - (i-5)*45) < SMALL_NUM);
   }
 
-  // Draw the content so that it covers one pixel on the far left side.
-
+  // Draw the content so that it covers one pixel on the far right side.
   viewport.width = 10 + 40*5 + 4*5 + 1;
   var report = chunkView.draw(viewport, 0, 20);
   assert(Math.abs(report.width - 1) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - (viewport.x+10+40*5+4*5)) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 1);
-  assert(report.xmarkers[0].index === 5);
-  assert(report.xmarkers[0].oldIndex === 5);
-  assert(report.xmarkers[0].dataPoint === chunk.getDataPoint(0));
-  assert(report.xmarkers[0].oldDataPoint === chunk.getDataPoint(0));
-  assert(report.xmarkers[0].visibility === 1);
-  assert(report.xmarkers[0].x === report.left + 2.5);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: viewport.width});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 5);
+  assert(report.xMarkers.getXMarker(5).x === report.left + 2.5);
 
-  // Draw the content so that it covers one pixel on the far right side.
+  // Draw the content so that it covers one pixel on the far left side.
   var report = chunkView.draw(viewport, 10+40*15+5*15-1, 20);
   assert(Math.abs(report.width - 1) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - viewport.x) < SMALL_NUM, 'invalid left offset');
 
-  assert(report.xmarkers.length === 1);
-  assert(report.xmarkers[0].index === 14);
-  assert(report.xmarkers[0].oldIndex === 14);
-  assert(report.xmarkers[0].dataPoint === chunk.getDataPoint(9));
-  assert(report.xmarkers[0].oldDataPoint === chunk.getDataPoint(9));
-  assert(report.xmarkers[0].visibility === 1);
-  assert(report.xmarkers[0].x === report.left - 4 - 40 - 2.5);
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: viewport.width});
+  assert(visibleMarkers.startIndex === 16);
+  assert(visibleMarkers.length === 5);
+  assert(report.xMarkers.getXMarker(14).x === report.left - 4 - 40 - 2.5);
 }
 
 function testDrawJustifiedStretch() {
