@@ -97,26 +97,6 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   }
   viewport.context.restore();
 
-  var markers = [];
-  for (var i = 0, len = this._chunk.getLength(); i < len; ++i) {
-    var x = startX + pointSpacing*i;
-    if (x < viewport.x) {
-      continue;
-    } else if (x >= viewport.x+viewport.width) {
-      break;
-    }
-    var point = this._chunk.getDataPoint(i);
-    var idx = i + this._chunk.getStartIndex();
-    markers.push({
-      x: x,
-      index: idx,
-      oldIndex: idx,
-      dataPoint: point,
-      oldDataPoint: point,
-      visibility: 1
-    });
-  }
-
   var drawLeft = startX;
   var drawWidth = Math.max(0, (this._chunk.getLength()-1)*pointSpacing);
   if (this._chunk.getStartIndex() === 0) {
@@ -131,7 +111,11 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     left: drawLeft,
     width: drawWidth
   });
-  report.xmarkers = markers;
+  report.xmarkers = new FullCurveXMarkers({
+    startX: viewport.x - scrollX + this._attrs.getLeftMargin(),
+    length: this._dataSource.getLength(),
+    spacing: pointSpacing
+  });
 
   return report;
 };
