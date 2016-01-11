@@ -73,7 +73,7 @@ BarXMarkers.prototype._computeXMarkerData = function(index) {
     }
     break;
   case BarChunkView.ANIMATION_INSERT:
-    if (idx === this._animationPointIndex) {
+    if (index === this._animationPointIndex) {
       result.oldIndex = -1;
     } else {
       --result.oldIndex;

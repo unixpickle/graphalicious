@@ -518,23 +518,29 @@ function testDrawModifying() {
     currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
 
     var report = chunkView.draw(viewport, 0, 20);
-    assert(report.xmarkers.length === 10);
     assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
     assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
 
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var expectedX = 457.5 + i*45 + viewport.x;
-      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
-      assert(marker.index === i + 10);
-      assert(marker.oldIndex === i + 10);
-      assert(marker.dataPoint === chunk.getDataPoint(i));
-      if (i === 5) {
+    var markerRange = report.xMarkers.computeRange({
+      left: report.left,
+      width: report.width - 2.501
+    });
+    assert(markerRange.startIndex === 10);
+    assert(markerRange.length === 10);
+
+    for (var i = 10, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var expectedX = 457.5 + (i-10)*45 + viewport.x;
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid x marker ' + i);
+      assert(marker.index === i);
+      assert(marker.oldIndex === i);
+      if (i === 15) {
         assert(marker.oldDataPoint === oldPoint);
+        assert(Math.abs(marker.animationProgress-(j/2)) < SMALL_NUM);
       } else {
-        assert(marker.oldDataPoint === chunk.getDataPoint(i));
+        assert(marker.oldDataPoint === null);
+        assert(marker.animationProgress === -1);
       }
-      assert(marker.visibility === 1);
     }
   }
 }
@@ -567,7 +573,6 @@ function testDrawDeleting() {
     currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
 
     var report = chunkView.draw(viewport, 0, 20);
-    assert(report.xmarkers.length === 10);
     if (j === 0) {
       assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
     } else {
@@ -575,41 +580,47 @@ function testDrawDeleting() {
     }
     assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
 
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var expectedX = 457.5 + i*45 + viewport.x;
+    assert(report.xMarkers.getLength() === 30);
+    var usedRange = report.xMarkers.computeRange({
+      left: report.left,
+      width: report.width - 2.501
+    });
+    assert(usedRange.startIndex === 10);
+    assert(usedRange.length === 10);
+    var visibleRange = report.xMarkers.computeRange({left: viewport.x, width: viewport.width});
+    assert(visibleRange.startIndex === 0);
+    assert(visibleRange.length === 30);
+
+    for (var i = 10, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var expectedX = 457.5 + (i-10)*45 + viewport.x;
       if (j === 1) {
-        if (i === 5) {
+        if (i === 15) {
           expectedX -= 2.5 / 4;
-        } else if (i === 6) {
+        } else if (i === 16) {
           expectedX -= 45/2 - 2.5/4;
-        } else if (i > 6) {
+        } else if (i > 16) {
           expectedX -= 45 / 2;
         }
       }
-      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
-      if (i > 5) {
-        assert(marker.index === i + 9);
-      } else if (i === 5) {
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid x marker ' + i);
+      if (i > 15) {
+        assert(marker.index === i-1);
+      } else if (i === 15) {
         assert(marker.index === -1);
-      } else if (i < 5) {
-        assert(marker.index === i + 10);
+      } else if (i < 15) {
+        assert(marker.index === i);
       }
-      assert(marker.oldIndex === i + 10);
-      if (i === 5) {
-        assert(marker.dataPoint === null);
+      assert(marker.oldIndex === i);
+      if (i === 15) {
         assert(marker.oldDataPoint === oldPoint);
-      } else if (i < 5) {
-        assert(marker.dataPoint === chunk.getDataPoint(i));
-        assert(marker.oldDataPoint === chunk.getDataPoint(i));
-      } else if (i > 5) {
-        assert(marker.dataPoint === chunk.getDataPoint(i - 1));
-        assert(marker.oldDataPoint === chunk.getDataPoint(i - 1));
-      }
-      if (i === 5) {
-        assert(marker.visibility === 1-(j/2));
       } else {
-        assert(marker.visibility === 1);
+        assert(marker.oldDataPoint === null);
+      }
+      if (i === 15) {
+        assert(marker.animationProgress === j/2);
+      } else {
+        assert(marker.animationProgress === -1);
       }
     }
   }
@@ -642,7 +653,6 @@ function testDrawInserting() {
     currentAnimationFrameCb(j * BarChunkView.ANIMATION_DURATION / 2);
 
     var report = chunkView.draw(viewport, 0, 20);
-    assert(report.xmarkers.length === 10);
     if (j === 0) {
       assert(Math.abs(report.width - 410) < SMALL_NUM, 'invalid width');
     } else {
@@ -650,45 +660,51 @@ function testDrawInserting() {
     }
     assert(Math.abs(report.left - 455 - viewport.x) < SMALL_NUM, 'invalid left offset');
 
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var expectedX = 457.5 + i*45 + viewport.x;
+    assert(report.xMarkers.getLength() === 30);
+    var usedRange = report.xMarkers.computeRange({
+      left: report.left,
+      width: report.width - 2.501
+    });
+    assert(usedRange.startIndex === 10);
+    assert(usedRange.length === 10);
+    var visibleRange = report.xMarkers.computeRange({left: viewport.x, width: viewport.width});
+    assert(visibleRange.startIndex === 0);
+    assert(visibleRange.length === 30);
+
+    for (var i = 10, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var expectedX = 457.5 + (i-10)*45 + viewport.x;
       if (j === 1) {
-        if (i === 5) {
+        if (i === 15) {
           expectedX -= 2.5 / 4;
-        } else if (i === 6) {
+        } else if (i === 16) {
           expectedX -= 45/2 - 2.5/4;
-        } else if (i > 6) {
+        } else if (i > 16) {
           expectedX -= 45 / 2;
         }
       } else {
-        if (i === 5) {
+        if (i === 15) {
           expectedX -= 2.5 / 2;
-        } else if (i === 6) {
+        } else if (i === 16) {
           expectedX -= 45 - 2.5/2;
-        } else if (i > 6) {
+        } else if (i > 16) {
           expectedX -= 45;
         }
       }
       assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
-      if (i > 5) {
-        assert(marker.oldIndex === i + 9);
-      } else if (i === 5) {
+      if (i > 15) {
+        assert(marker.oldIndex === i-1);
+      } else if (i === 15) {
         assert(marker.oldIndex === -1);
-      } else if (i < 5) {
-        assert(marker.oldIndex === i + 10);
+      } else if (i < 15) {
+        assert(marker.oldIndex === i);
       }
-      assert(marker.index === i + 10);
-      assert(marker.dataPoint === chunk.getDataPoint(i));
-      if (i === 5) {
-        assert(marker.oldDataPoint === null);
+      assert(marker.index === i);
+      assert(marker.oldDataPoint === null);
+      if (i === 15) {
+        assert(marker.animationProgress === j/2);
       } else {
-        assert(marker.oldDataPoint === chunk.getDataPoint(i));
-      }
-      if (i === 5) {
-        assert(marker.visibility === j/2);
-      } else {
-        assert(marker.visibility === 1);
+        assert(marker.animationProgress === -1);
       }
     }
   }

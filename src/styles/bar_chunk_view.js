@@ -356,7 +356,7 @@ BarChunkView.prototype._generateXMarkers = function(p) {
   switch (this._animationType) {
   case BarChunkView.ANIMATION_MODIFY:
   case BarChunkView.ANIMATION_DELETE:
-    info.animationOldPoint = this._animationOldPoint;
+    info.animationOldPoint = this._animationDataPoint;
   }
 
   return new BarXMarkers(info);
