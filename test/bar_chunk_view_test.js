@@ -378,15 +378,20 @@ function testDrawJustifiedStretch() {
     assert(Math.abs(report.width - 455) < SMALL_NUM, 'invalid width');
     assert(Math.abs(report.left - utilizedLeft[j] - viewport.x) < SMALL_NUM, 'invalid left offset');
 
-    for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-      var marker = report.xmarkers[i];
-      var expectedX = labelStarts[j] + i*45 + viewport.x;
-      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
-      assert(marker.index === i + 10);
-      assert(marker.oldIndex === i + 10);
-      assert(marker.dataPoint === chunk.getDataPoint(i));
-      assert(marker.oldDataPoint === chunk.getDataPoint(i));
-      assert(marker.visibility === 1);
+    var visibleMarkers = report.xMarkers.computeRange({left: viewport.x, width: viewport.width});
+    assert(visibleMarkers.startIndex === 0);
+    assert(visibleMarkers.length === 30);
+    var usedMarkers = report.xMarkers.computeRange(report);
+    assert(usedMarkers.startIndex === 10);
+    assert(usedMarkers.length === 11);
+    for (var i = 10, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var expectedX = labelStarts[j] + (i-10)*45 + viewport.x;
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid x marker ' + i);
+      assert(marker.index === i);
+      assert(marker.oldIndex === i);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
     }
   }
 }
@@ -416,17 +421,33 @@ function testDrawElongatedStretch() {
   assert(Math.abs(report.width - 455*stretchFactor) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - 455*stretchFactor - viewport.x) < SMALL_NUM, 'invalid left offset');
 
+  var visibleMarkers = report.xMarkers.computeRange({left: viewport.x, width: viewport.width});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 30);
+  var usedMarkers = report.xMarkers.computeRange(report);
+  assert(usedMarkers.startIndex === 10);
+  assert(usedMarkers.length === 11);
+  var edgeCaseMarkers = report.xMarkers.computeRange({
+    left: report.left,
+    width: report.width - 2.501*stretchFactor
+  });
+  assert(edgeCaseMarkers.length === 10);
+  edgeCaseMarkers = report.xMarkers.computeRange({
+    left: report.left,
+    width: report.width - 2.499*stretchFactor
+  });
+  assert(edgeCaseMarkers.length === 11);
+
   var markerSpacing = 45 * stretchFactor;
   var firstMarker = 457.5*stretchFactor;
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
-    var expectedX = firstMarker + i*markerSpacing + viewport.x;
+  for (var i = 10, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    var expectedX = firstMarker + (i-10)*markerSpacing + viewport.x;
     assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
-    assert(marker.index === i + 10);
-    assert(marker.oldIndex === i + 10);
-    assert(marker.dataPoint === chunk.getDataPoint(i));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i));
-    assert(marker.visibility === 1);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
   }
 }
 
@@ -452,19 +473,21 @@ function testDrawStretchEdgeCase() {
 
   assert(Math.abs(report.width - viewport.width) < SMALL_NUM, 'invalid width');
   assert(Math.abs(report.left - viewport.x) < SMALL_NUM, 'invalid left offset');
-  assert.equal(report.xmarkers.length, 30, 'invalid marker count');
+
+  var visibleMarkers = report.xMarkers.computeRange(report);
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 30);
 
   var markerSpacing = 45;
   var firstMarker = 2.5;
-  for (var i = 0, len = report.xmarkers.length; i < len; ++i) {
-    var marker = report.xmarkers[i];
+  for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
     var expectedX = firstMarker + i*markerSpacing + viewport.x;
     assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
     assert(marker.index === i);
     assert(marker.oldIndex === i);
-    assert(marker.dataPoint === chunk.getDataPoint(i));
-    assert(marker.oldDataPoint === chunk.getDataPoint(i));
-    assert(marker.visibility === 1);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
   }
 }
 
