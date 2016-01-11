@@ -14,31 +14,35 @@ BarXMarkers.prototype.getLength = function() {
 };
 
 BarXMarkers.prototype.computeRange = function(canvasRegion) {
-  throw new Error('not yet implemented');
+  var region = this._canvasRegionToRegion(canvasRegion);
+  var range = this._landscape.computeRange(region);
+
+  // An x marker for the point before/after the region may be visible,
+  // since x markers might be beside their corresponding bars.
+  var startIndex = Math.max(0, range.startIndex-1);
+  var endIndex = Math.min(this.getLength()-1, range.startIndex+range.length);
+
+  for (; startIndex <= endIndex; ++startIndex) {
+    if (this._computeXMarkerX(startIndex) >= canvasRegion.left) {
+      break;
+    }
+  }
+  for (; endIndex >= startIndex; --endIndex) {
+    if (this._computeXMarkerX(endIndex) < canvasRegion.left+canvasRegion.width) {
+      break;
+    }
+  }
+
+  if (endIndex < startIndex) {
+    return {startIndex: 0, length: 0};
+  }
+
+  return {startIndex: startIndex, length: endIndex - startIndex + 1};
 };
 
 BarXMarkers.prototype.getXMarker = function(index) {
   var result = this._computeXMarkerData(index);
-
-  var barCoords = this._landscape.computeBarRegion(index);
-  var barRegion = this._landscape.computeRegion({startIndex: index, length: 1});
-  switch (this._landscape.getAttributes().getXLabelAlignment()) {
-  case BarStyleAttrs.X_LABELS_CENTER:
-    result.x = barCoords.left + barCoords.width/2;
-    break;
-  case BarStyleAttrs.X_LABELS_RIGHT:
-    result.x = (barCoords.left + barCoords.width + barRegion.left + barRegion.width) / 2;
-    break;
-  case BarStyleAttrs.X_LABELS_LEFT:
-    result.x = (barCoords.left + barRegion.left) / 2;
-    break;
-  default:
-    throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
-  }
-
-  result.x += this._drawOffset;
-  result.x = (result.x-this._viewportX)*this._stretchFactor + this._viewportX;
-
+  result.x = this._computeXMarkerX(index);
   return result;
 };
 
@@ -78,4 +82,43 @@ BarXMarkers.prototype._computeXMarkerData = function(index) {
   }
 
   return result;
+};
+
+BarXMarkers.prototype._computeXMarkerX = function(index) {
+  var barCoords = this._landscape.computeBarRegion(index);
+  var barRegion = this._landscape.computeRegion({startIndex: index, length: 1});
+  var landscapeX;
+
+  switch (this._landscape.getAttributes().getXLabelAlignment()) {
+  case BarStyleAttrs.X_LABELS_CENTER:
+    landscapeX = barCoords.left + barCoords.width/2;
+    break;
+  case BarStyleAttrs.X_LABELS_RIGHT:
+    landscapeX = (barCoords.left + barCoords.width + barRegion.left + barRegion.width) / 2;
+    break;
+  case BarStyleAttrs.X_LABELS_LEFT:
+    landscapeX = (barCoords.left + barRegion.left) / 2;
+    break;
+  default:
+    throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
+  }
+
+  return this._landscapeXToCanvasX(landscapeX);
+};
+
+BarXMarkers.prototype._canvasRegionToRegion = function(r) {
+  var newLeft = this._canvasXToLandscapeX(r.left);
+  var newRight = this._canvasXToLandscapeX(r.left + r.width);
+  return {
+    left: newLeft,
+    width: newRight - newLeft
+  };
+};
+
+BarXMarkers.prototype._canvasXToLandscapeX = function(x) {
+  return (x-this._viewportX)/this._scaleFactor + this._viewportX - this._drawOffset;
+};
+
+BarXMarkers.prototype._landscapeXToCanvasX = function(x) {
+  return (x + this._drawOffset - this._viewportX)*this._scaleFactor + this._viewportX;
 };
