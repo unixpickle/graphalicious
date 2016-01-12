@@ -654,6 +654,57 @@ function testDrawStretchEdgeCase() {
   }
 }
 
+function testDrawJustifiedElongated() {
+  var fullWidth = 40*10 + 5*11;
+  var justifications = [
+    BarStyle.JUSTIFY_LEFT,
+    BarStyle.JUSTIFY_CENTER,
+    BarStyle.JUSTIFY_RIGHT
+  ];
+  var leftValues = [10, fullWidth/2 + 10, fullWidth + 10];
+
+  for (var j = 0; j < 3; ++j) {
+    var style = new BarStyle({
+      colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+      leftMargin: 5,
+      rightMargin: 5,
+      barSpacing: 5,
+      barWidth: 40,
+      xLabelAlignment: BarStyle.X_LABELS_LEFT,
+      maxElongation: 2,
+      justification: justifications[j]
+    });
+
+    var dataSource = DataSource.random(10, 10, true);
+    var chunk = dataSource.fetchChunkSync(0, 0, 10);
+
+    var chunkView = style.createChunkView(chunk, dataSource);
+    var context = new Canvas().getContext('2d');
+
+    var viewport = {context: context, x: 10, y: 5, width: fullWidth * 3, height: 100};
+    var report = chunkView.draw(viewport, 0, 20);
+
+    assert(Math.abs(report.width - fullWidth*2) < SMALL_NUM, 'invalid width');
+    assert(Math.abs(report.left - leftValues[j]) < SMALL_NUM, 'invalid left offset');
+
+    var visibleMarkers = report.xMarkers.computeRange(report);
+    assert(visibleMarkers.startIndex === 0);
+    assert(visibleMarkers.length === 10);
+
+    var markerSpacing = 45*2;
+    var firstMarker = report.left + 5;
+    for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+      var marker = report.xMarkers.getXMarker(i);
+      var expectedX = firstMarker + i*markerSpacing;
+      assert(Math.abs(marker.x - expectedX) < SMALL_NUM, 'invalid xmarker[' + i + '].x');
+      assert(marker.index === i);
+      assert(marker.oldIndex === i);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
+    }
+  }
+}
+
 function testDrawModifying() {
   var style = new BarStyle({
     colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
@@ -1060,6 +1111,7 @@ testDrawEmptyChunk();
 testDrawJustifiedStretch();
 testDrawElongatedStretch();
 testDrawStretchEdgeCase();
+testDrawJustifiedElongated();
 testDrawModifying();
 testDrawDeleting();
 testDrawInserting();
