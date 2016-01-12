@@ -385,7 +385,7 @@ function testDrawOnePoint() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+    justification: BarStyle.JUSTIFY_LEFT
   });
 
   var dataSource = DataSource.random(1, 10, true);
@@ -431,7 +431,7 @@ function testDrawNoData() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+    maxElongation: Infinity
   });
 
   var dataSource = DataSource.random(0, 10, true);
@@ -464,7 +464,7 @@ function testDrawEmptyChunk() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+    maxElongation: Infinity
   });
 
   var dataSource = DataSource.random(10, 10, true);
@@ -503,10 +503,10 @@ function testDrawEmptyChunk() {
 }
 
 function testDrawJustifiedStretch() {
-  var stretchModes = [
-    BarStyle.STRETCH_MODE_JUSTIFY_LEFT,
-    BarStyle.STRETCH_MODE_JUSTIFY_CENTER,
-    BarStyle.STRETCH_MODE_JUSTIFY_RIGHT
+  var justifications = [
+    BarStyle.JUSTIFY_LEFT,
+    BarStyle.JUSTIFY_CENTER,
+    BarStyle.JUSTIFY_RIGHT
   ];
   var labelStarts = [
     457.5,
@@ -526,7 +526,7 @@ function testDrawJustifiedStretch() {
       barSpacing: 5,
       barWidth: 40,
       xLabelAlignment: BarStyle.X_LABELS_LEFT,
-      stretchMode: stretchModes[j]
+      justification: justifications[j]
     });
 
     var dataSource = DataSource.random(30, 10, true);
@@ -567,7 +567,7 @@ function testDrawElongatedStretch() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+    maxElongation: Infinity
   });
 
   var dataSource = DataSource.random(30, 10, true);
@@ -622,7 +622,7 @@ function testDrawStretchEdgeCase() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+    maxElongation: Infinity
   });
 
   var dataSource = DataSource.random(30, 10, true);
@@ -662,7 +662,7 @@ function testDrawModifying() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+    justification: BarStyle.JUSTIFY_LEFT
   });
 
   var dataSource = DataSource.random(30, 10, true);
@@ -716,7 +716,7 @@ function testDrawDeleting() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+    justification: BarStyle.JUSTIFY_LEFT
   });
 
   var dataSource = DataSource.random(30, 10, true);
@@ -797,7 +797,7 @@ function testDrawInserting() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+    justification: BarStyle.JUSTIFY_LEFT
   });
 
   var dataSource = DataSource.random(29, 10, true);
@@ -881,7 +881,7 @@ function testBlurbsNormal() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+    justification: BarStyle.JUSTIFY_LEFT
   });
 
   var dataSource = DataSource.random(30, 10, false);
@@ -967,7 +967,7 @@ function testBlurbsElongated() {
     barSpacing: 5,
     barWidth: 40,
     xLabelAlignment: BarStyle.X_LABELS_LEFT,
-    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+    maxElongation: Infinity
   });
 
   var dataSource = DataSource.random(2, 10, false);

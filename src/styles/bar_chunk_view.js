@@ -214,38 +214,33 @@ BarChunkView.prototype._stretchedDrawParams = function(viewport, maxValue) {
   var landscape = this._morphingLandscape();
 
   var range = {startIndex: this._startIndex, length: this._morphingPointCount()};
-  var stretchMode = this._attrs.getStretchMode();
 
-  if (stretchMode === BarStyleAttrs.STRETCH_MODE_ELONGATE) {
-    var regularWidth = landscape.width();
-    var stretchFactor = viewport.width / regularWidth;
-    if (regularWidth === 0) {
-      stretchFactor = 1;
-    }
-    return new BarDrawParams({
-      drawOffset: viewport.x,
-      landscape: landscape,
-      range: range,
-      viewport: viewport,
-      maxValue: maxValue,
-      stretchFactor: stretchFactor
-    });
+  var regularWidth = landscape.width();
+  var stretchFactor;
+  if (regularWidth === 0) {
+    stretchFactor = 1;
+  } else {
+    stretchFactor = viewport.width / regularWidth;
   }
+  stretchFactor = Math.min(stretchFactor, this._attrs.getMaxElongation());
 
-  var left = viewport.x;
-  if (stretchMode === BarStyleAttrs.STRETCH_MODE_JUSTIFY_CENTER) {
-    left += (viewport.width - landscape.width()) / 2;
-  } else if (stretchMode === BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT) {
-    left += viewport.width - landscape.width();
+  var stretchedWidth = regularWidth * stretchFactor;
+  var justification = this._attrs.getJustification();
+
+  var offset = 0;
+  if (justification === BarStyleAttrs.JUSTIFY_CENTER) {
+    offset = (viewport.width - stretchedWidth) / 2;
+  } else if (justification === BarStyleAttrs.JUSTIFY_RIGHT) {
+    offset = viewport.width - stretchedWidth;
   }
 
   return new BarDrawParams({
-    drawOffset: left,
+    drawOffset: viewport.x + offset/stretchFactor,
     landscape: landscape,
     range: range,
     viewport: viewport,
     maxValue: maxValue,
-    stretchFactor: 1
+    stretchFactor: stretchFactor
   });
 };
 

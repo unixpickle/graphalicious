@@ -5,21 +5,21 @@ function BarStyleAttrs(attrs) {
     BarStyleAttrs.DEFAULTS);
 }
 
-BarStyleAttrs.STRETCH_MODE_JUSTIFY_LEFT = 0;
-BarStyleAttrs.STRETCH_MODE_JUSTIFY_CENTER = 1;
-BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT = 2;
-BarStyleAttrs.STRETCH_MODE_ELONGATE = 3;
+BarStyleAttrs.JUSTIFY_LEFT = 0;
+BarStyleAttrs.JUSTIFY_CENTER = 1;
+BarStyleAttrs.JUSTIFY_RIGHT = 2;
 
 BarStyleAttrs.X_LABELS_LEFT = 0;
 BarStyleAttrs.X_LABELS_CENTER = 1;
 BarStyleAttrs.X_LABELS_RIGHT = 2;
 
 BarStyleAttrs.ATTRIBUTES = ['colorScheme', 'leftMargin', 'rightMargin', 'barSpacing', 'barWidth',
-  'stretchMode', 'xLabelAlignment', 'animateDeletions', 'animateInsertions',
+  'maxElongation', 'justification', 'xLabelAlignment', 'animateDeletions', 'animateInsertions',
   'animateModifications', 'blurbTextColor', 'blurbFont'];
 
 BarStyleAttrs.DEFAULTS = {
-  stretchMode: BarStyleAttrs.STRETCH_MODE_JUSTIFY_RIGHT,
+  justification: BarStyleAttrs.JUSTIFY_RIGHT,
+  maxElongation: 1,
   xLabelAlignment: BarStyleAttrs.X_LABELS_LEFT,
   animateDeletions: true,
   animateInsertions: true,
@@ -116,7 +116,7 @@ for (var attr in BarStyleAttrs.prototype) {
 
 // Inherit global properties from BarStyleAttrs.
 for (var attr in BarStyleAttrs) {
-  if (attr.match(/^STRETCH_MODE_/) || attr.match(/^X_LABELS_/)) {
+  if (attr.match(/^(JUSTIFY_|X_LABELS_)/)) {
     BarStyle[attr] = BarStyleAttrs[attr];
   }
 }
