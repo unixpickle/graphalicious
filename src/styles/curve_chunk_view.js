@@ -10,16 +10,13 @@ function CurveChunkView(dotAttrs, attrs, chunk, dataSource) {
 CurveChunkView.prototype = Object.create(DotChunkView.prototype);
 CurveChunkView.prototype.constructor = CurveChunkView;
 
-CurveChunkView.prototype._drawRange = function(p) {
-  p.viewport.context.save();
-  p.viewport.context.beginPath();
-  p.viewport.context.rect(p.viewport.x, p.viewport.y, p.viewport.width, p.viewport.height);
-  p.viewport.context.clip();
-  this._newMorphingPrimaryY = this._strokePrimaryPath(p.range, p);
-  this._newMorphingSecondaryY = this._strokeSecondaryPath(p.range, p);
-  p.viewport.context.restore();
+CurveChunkView.prototype._drawRange = function(params) {
+  params.clipViewport();
+  this._newMorphingPrimaryY = this._strokePrimaryPath(params);
+  this._newMorphingSecondaryY = this._strokeSecondaryPath(params);
+  params.unclipViewport();
 
-  return DotChunkView.prototype._drawRange.call(this, p);
+  return DotChunkView.prototype._drawRange.call(this, params);
 };
 
 CurveChunkView.prototype._drawValue = function(params) {
@@ -61,16 +58,18 @@ CurveChunkView.prototype._opacityForDot = function(params) {
   }
 };
 
-CurveChunkView.prototype._strokePrimaryPath = function(range, params) {
-  var ctx = params.viewport.context;
+CurveChunkView.prototype._strokePrimaryPath = function(params) {
+  var ctx = params.getViewport().context;
   ctx.lineWidth = 3;
   ctx.strokeStyle = this._attrs.getColorScheme().getPrimary();
   var getter = this._morphingSplineGetter.bind(this, true);
-  return this._strokePath(range, params, getter);
+  return this._strokePath(params.getRange(), params, getter);
 };
 
-CurveChunkView.prototype._strokeSecondaryPath = function(range, params) {
-  var ctx = params.viewport.context;
+CurveChunkView.prototype._strokeSecondaryPath = function(params) {
+  var range = params.getRange();
+  var ctx = params.getViewport().context;
+
   ctx.lineWidth = 3;
   ctx.strokeStyle = this._attrs.getColorScheme().getSecondary();
 
@@ -141,7 +140,7 @@ CurveChunkView.prototype._strokePathNoMorphing = function(range, params, getter)
   var points = this._generatePointsForPath(range, params, getter);
   var linePoints = smoothPath(points, 1);
 
-  var ctx = params.viewport.context;
+  var ctx = params.getViewport().context;
   ctx.beginPath();
   ctx.moveTo(linePoints[0].x, linePoints[0].y);
   for (var i = 1, len = linePoints.length; i < len; ++i) {
@@ -173,7 +172,7 @@ CurveChunkView.prototype._strokePathEdgeMorphing = function(range, params, gette
   assert(showingPath[showingPath.length-1].x >= hiddenPath[0].x);
 
   var amountShowing = 1 - this._animationProgress;
-  var ctx = params.viewport.context;
+  var ctx = params.getViewport().context;
 
   // NOTE: as we draw the overlapping part, keep in mind that the hidden x values and showing x
   // values might be a tad misaligned, but it's okay, I promise.
@@ -238,7 +237,7 @@ CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter
     amountShowing = 1 - this._animationProgress;
   }
 
-  var ctx = params.viewport.context;
+  var ctx = params.getViewport().context;
   var resultY = 0;
   ctx.beginPath();
   ctx.moveTo(showingPath[0].x, (1-amountShowing)*hiddenPath[0].y+amountShowing*showingPath[0].y);
@@ -257,23 +256,26 @@ CurveChunkView.prototype._strokePathMidMorphing = function(range, params, getter
 
 // _generatePointsForPath generates point objects for every value in a range, given drawing params.
 CurveChunkView.prototype._generatePointsForPath = function(range, params, getter) {
+  var viewport = params.getViewport();
+  var maxValue = params.getMaxValue();
+
   var points = [];
   for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
-    var height = params.viewport.height * (getter(i) / params.maxValue);
-    var y = params.viewport.y + params.viewport.height - height;
+    var height = viewport.height * (getter(i) / maxValue);
+    var y = viewport.y + viewport.height - height;
 
     if (this._dotAttrs.getBottomMargin() > height) {
       y = y + height - this._dotAttrs.getBottomMargin();
     }
 
-    var coords = params.landscape.computeBarRegion(i);
-    var x = params.drawOffset + coords.left + coords.width/2;
+    var coords = params.getLandscape().computeBarRegion(i);
+    var x = coords.left + coords.width/2;
     if (i === 0) {
-      x = params.drawOffset + coords.left + this._attrs.getBarWidth()/2;
+      x = coords.left + this._attrs.getBarWidth()/2;
     } else if (i === this._morphingEncompassingCount() - 1) {
-      x = params.drawOffset + coords.left + coords.width - this._attrs.getBarWidth()/2;
+      x = coords.left + coords.width - this._attrs.getBarWidth()/2;
     }
-    x = (x-params.viewport.x)*params.stretchFactor + params.viewport.x;
+    x = params.landscapeXToCanvasX(x);
     points.push({x: x, y: y});
   }
   return points;

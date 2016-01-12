@@ -84,17 +84,20 @@ DotChunkView.prototype._drawCircle = function(params, x, y, radius) {
   ctx.fillStyle = oldFill;
 };
 
-DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue,
-                                                           visibleRegion) {
+DotChunkView.prototype._computeHoverInformation = function(pointerPos, params) {
   var landscape = this._morphingLandscape();
-  var maxRadius = DotChunkView.HOVER_NEAR_RADIUS + this._attrs.getBarWidth()/2;
-  var range = landscape.computeRange({left: pointerPos.x-maxRadius, width: maxRadius*2});
+  var maxRadius = (DotChunkView.HOVER_NEAR_RADIUS + this._attrs.getBarWidth()/2) *
+    params.getStretchFactor();
+  var range = params.getLandscape().computeRange({
+    left: pointerPos.x - maxRadius,
+    width: maxRadius * 2
+  });
 
   var closestDistance = maxRadius;
   var closestResult = null;
 
   for (var i = range.startIndex-1; i <= range.startIndex+range.length; ++i) {
-    var points = this._hoverInfosForPointIndex(i, viewport, maxValue, landscape, visibleRegion);
+    var points = this._hoverInfosForPointIndex(i, params);
     for (var j = 0, len = points.length; j < len; ++j) {
       var point = points[j];
       var dist = Math.sqrt(Math.pow(point.position.x-pointerPos.x, 2) +
@@ -109,15 +112,19 @@ DotChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   return closestResult;
 };
 
-DotChunkView.prototype._hoverInfosForPointIndex = function(index, viewport, maxValue, landscape,
-                                                           visibleRegion) {
+DotChunkView.prototype._hoverInfosForPointIndex = function(index, params) {
   if (index < this._startIndex || index >= this._startIndex+this._morphingPointCount()) {
     return [];
   }
 
+  var viewport = params.getViewport();
+  var maxValue = params.getMaxValue();
+
   var point = this._morphingGetPoint(index - this._startIndex);
-  var region = landscape.computeBarRegion(index);
-  var radius = this._attrs.getBarWidth() / 2;
+  var region = params.getLandscape().computeBarRegion(index);
+  var radius = (this._attrs.getBarWidth() / 2) * params.getStretchFactor();
+
+  var visibleRegion = params.canvasRegionToRegion({left: viewport.x, width: viewport.width});
 
   var res = [];
   for (var i = 0; i < 2; ++i) {

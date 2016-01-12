@@ -15,8 +15,9 @@ function callAnimationFrameCb(arg) {
 
 var importRes = require('./importer')([
   'base/color_scheme.js', 'base/attrs.js', 'styles/bar_style.js',
-  'styles/bar_xmarkers.js', 'styles/bar_morphing.js', 'styles/bar_chunk_view.js',
-  'styles/utilities.js', 'styles/blurb.js', 'styles/blurb_manager.js'
+  'styles/bar_xmarkers.js', 'styles/bar_draw_params.js', 'styles/bar_morphing.js',
+  'styles/bar_chunk_view.js', 'styles/utilities.js', 'styles/blurb.js',
+  'styles/blurb_manager.js'
 ], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
   window: {
     requestAnimationFrame: function(f) {

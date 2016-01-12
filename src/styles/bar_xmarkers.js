@@ -1,8 +1,5 @@
 function BarXMarkers(info) {
-  this._landscape = info.drawParams.landscape.copy();
-  this._drawOffset = info.drawParams.drawOffset;
-  this._stretchFactor = info.drawParams.stretchFactor;
-  this._viewportX = info.drawParams.viewport.x;
+  this._drawParams = info.drawParams;
   this._animationType = info.animationType;
   this._animationPointIndex = info.animationPointIndex;
   this._animationOldPoint = info.animationOldPoint;
@@ -10,12 +7,12 @@ function BarXMarkers(info) {
 }
 
 BarXMarkers.prototype.getLength = function() {
-  return this._landscape.getPointCount();
+  return this._drawParams.getLandscape().getPointCount();
 };
 
 BarXMarkers.prototype.computeRange = function(canvasRegion) {
-  var region = this._canvasRegionToRegion(canvasRegion);
-  var range = this._landscape.computeRange(region);
+  var region = this._drawParams.canvasRegionToRegion(canvasRegion);
+  var range = this._drawParams.getLandscape().computeRange(region);
 
   // An x marker for the point before/after the region may be visible,
   // since x markers might be beside their corresponding bars.
@@ -85,11 +82,12 @@ BarXMarkers.prototype._computeXMarkerData = function(index) {
 };
 
 BarXMarkers.prototype._computeXMarkerX = function(index) {
-  var barCoords = this._landscape.computeBarRegion(index);
-  var barRegion = this._landscape.computeRegion({startIndex: index, length: 1});
-  var landscapeX;
+  var landscape = this._drawParams.getLandscape();
+  var barCoords = landscape.computeBarRegion(index);
+  var barRegion = landscape.computeRegion({startIndex: index, length: 1});
 
-  switch (this._landscape.getAttributes().getXLabelAlignment()) {
+  var landscapeX;
+  switch (this._drawParams.getLandscape().getAttributes().getXLabelAlignment()) {
   case BarStyleAttrs.X_LABELS_CENTER:
     landscapeX = barCoords.left + barCoords.width/2;
     break;
@@ -103,22 +101,5 @@ BarXMarkers.prototype._computeXMarkerX = function(index) {
     throw new Error('unknown x-label alignment:' + this._attrs.getXLabelAlignment());
   }
 
-  return this._landscapeXToCanvasX(landscapeX);
-};
-
-BarXMarkers.prototype._canvasRegionToRegion = function(r) {
-  var newLeft = this._canvasXToLandscapeX(r.left);
-  var newRight = this._canvasXToLandscapeX(r.left + r.width);
-  return {
-    left: newLeft,
-    width: newRight - newLeft
-  };
-};
-
-BarXMarkers.prototype._canvasXToLandscapeX = function(x) {
-  return (x-this._viewportX)/this._stretchFactor + this._viewportX - this._drawOffset;
-};
-
-BarXMarkers.prototype._landscapeXToCanvasX = function(x) {
-  return (x + this._drawOffset - this._viewportX)*this._stretchFactor + this._viewportX;
+  return this._drawParams.landscapeXToCanvasX(landscapeX);
 };

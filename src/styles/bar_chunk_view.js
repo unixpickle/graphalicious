@@ -148,22 +148,50 @@ BarChunkView.prototype.pointerClick = function() {
 };
 
 BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
+  var params = this._computeDrawParams(viewport, scrollX, maxValue);
+
+  this._drawRange(params);
+  this._updateBlurbManager(params, scrollX);
+  if (this._blurbManager.blurb() !== null) {
+    this._blurbManager.blurb().draw(params.getViewport().context);
+  }
+
+  var landscapeRegion = params.getLandscape().computeRegion(params.getRange());
+  var result = params.regionToCanvasRegion(landscapeRegion);
+
+  var boundedResult = regionIntersection(result, {left: viewport.x, width: viewport.width});
+
+  // If no content was visibily drawn, at least pass on the information of where
+  // its off-screen edge would have been.
+  if (boundedResult.width === 0) {
+    if (result.left+result.width < viewport.x) {
+      boundedResult.left = result.left+result.width;
+    } else if (result.left > viewport.x+viewport.width) {
+      boundedResult.left = result.left;
+    }
+  }
+
+  boundedResult.xMarkers = this._generateXMarkers(params);
+  return boundedResult;
+};
+
+BarChunkView.prototype._computeDrawParams = function(viewport, scrollX, maxValue) {
+  if (this.getEncompassingWidth() <= viewport.width) {
+    return this._stretchedDrawParams(viewport, maxValue);
+  }
+
   var totalCount = this._morphingEncompassingCount();
   var pointCount = this._morphingPointCount();
 
   var landscape = this._morphingLandscape();
   var range = landscape.computeRange({left: scrollX, width: viewport.width});
 
-  assert(range.length <= totalCount && range.startIndex < totalCount);
+  assert(range.startIndex+range.length <= totalCount);
+  assert(range.startIndex >= 0 && range.length >= 0);
   assert(range.length > 0 || range.startIndex === 0);
 
-  if (this.getEncompassingWidth() <= viewport.width) {
-    assert(range.startIndex === 0);
-    return this._drawStretched(landscape, viewport, maxValue);
-  }
-
-  // NOTE: if the content is offscreen besides some whitespace an edge, include the data point for
-  // that edge.
+  // NOTE: if the content is offscreen besides some whitespace at either edge,
+  // include the data point at the edge so that we have something to draw.
   if (range.startIndex + range.length <= this._startIndex) {
     range = {startIndex: this._startIndex, length: 1};
   } else if (range.startIndex >= this._startIndex+pointCount) {
@@ -171,12 +199,8 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
   }
 
   range = rangeIntersection(range, {startIndex: this._startIndex, length: pointCount});
-  if (range.length === 0) {
-    return {left: viewport.x, width: 0, xmarkers: []};
-  }
-
   var drawOffset = viewport.x - scrollX;
-  var xMarkers = this._drawRange({
+  return new BarDrawParams({
     drawOffset: drawOffset,
     landscape: landscape,
     range: range,
@@ -184,38 +208,21 @@ BarChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     maxValue: maxValue,
     stretchFactor: 1
   });
-
-  var region = landscape.computeRegion(range);
-  region.left += drawOffset;
-  if (region.left < viewport.x) {
-    region.width -= viewport.x - region.left;
-    region.left = viewport.x;
-  }
-  if (region.left + region.width > viewport.x + viewport.width) {
-    region.width = viewport.x + viewport.width - region.left;
-  }
-  region.xMarkers = xMarkers;
-
-  if (region.width < 0) {
-    region.width = 0;
-  }
-
-  this._updateBlurbManager(viewport, scrollX, maxValue, 1);
-  if (this._blurbManager.blurb() !== null) {
-    this._blurbManager.blurb().draw(viewport.context);
-  }
-
-  return region;
 };
 
-BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) {
+BarChunkView.prototype._stretchedDrawParams = function(viewport, maxValue) {
+  var landscape = this._morphingLandscape();
+
   var range = {startIndex: this._startIndex, length: this._morphingPointCount()};
   var stretchMode = this._attrs.getStretchMode();
 
   if (stretchMode === BarStyleAttrs.STRETCH_MODE_ELONGATE) {
     var regularWidth = landscape.width();
     var stretchFactor = viewport.width / regularWidth;
-    var markers = this._drawRange({
+    if (regularWidth === 0) {
+      stretchFactor = 1;
+    }
+    return new BarDrawParams({
       drawOffset: viewport.x,
       landscape: landscape,
       range: range,
@@ -223,19 +230,6 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
       maxValue: maxValue,
       stretchFactor: stretchFactor
     });
-
-    var result = landscape.computeRegion(range);
-    result.xMarkers = markers;
-    result.width *= stretchFactor;
-    result.left *= stretchFactor;
-    result.left += viewport.x;
-
-    this._updateBlurbManager(viewport, 0, maxValue, stretchFactor);
-    if (this._blurbManager.blurb() !== null) {
-      this._blurbManager.blurb().draw(viewport.context);
-    }
-
-    return result;
   }
 
   var left = viewport.x;
@@ -245,7 +239,7 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     left += viewport.width - landscape.width();
   }
 
-  var markers = this._drawRange({
+  return new BarDrawParams({
     drawOffset: left,
     landscape: landscape,
     range: range,
@@ -253,43 +247,21 @@ BarChunkView.prototype._drawStretched = function(landscape, viewport, maxValue) 
     maxValue: maxValue,
     stretchFactor: 1
   });
-
-  this._updateBlurbManager({
-    x: left,
-    y: viewport.y,
-    width: viewport.width - (left - viewport.x),
-    height: viewport.height,
-    fullX: viewport.fullX,
-    fullY: viewport.fullY,
-    fullWidth: viewport.fullWidth,
-    fullHeight: viewport.fullHeight
-  }, 0, maxValue, 1);
-  if (this._blurbManager.blurb() !== null) {
-    this._blurbManager.blurb().draw(viewport.context);
-  }
-
-  var region = landscape.computeRegion(range);
-  return {
-    left: region.left + left,
-    width: region.width,
-    xMarkers: markers
-  };
 };
 
-BarChunkView.prototype._drawRange = function(p) {
-  p.viewport.context.save();
-  p.viewport.context.beginPath();
-  p.viewport.context.rect(p.viewport.x, p.viewport.y, p.viewport.width, p.viewport.height);
-  p.viewport.context.clip();
+BarChunkView.prototype._drawRange = function(params) {
+  params.clipViewport();
 
   var pointCount = this._morphingPointCount();
-
   var colorScheme = this._attrs.getColorScheme();
   var colors = [colorScheme.getPrimary(), colorScheme.getSecondary()];
-  var ctx = p.viewport.context;
+  var range = params.getRange();
+  var viewport = params.getViewport();
+  var maxValue = params.getMaxValue();
+  var ctx = viewport.context;
 
-  for (var i = p.range.startIndex, end = p.range.startIndex+p.range.length; i < end; ++i) {
-    assert(i >= this._startIndex && i < this._startIndex + pointCount);
+  for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
+    assert(i >= this._startIndex && i < this._startIndex+pointCount);
 
     var dataPoint = this._morphingGetPoint(i - this._startIndex);
     var values = [dataPoint.primary];
@@ -297,38 +269,37 @@ BarChunkView.prototype._drawRange = function(p) {
       values.push(dataPoint.secondary);
     }
 
-    var coords = p.landscape.computeBarRegion(i);
-    coords.left += p.drawOffset;
-
+    var barRegion = params.getLandscape().computeBarRegion(i);
+    var barLeft = params.landscapeXToCanvasX(barRegion.left);
+    var barWidth = params.landscapeWidthToCanvasWidth(barRegion.width);
     for (var j = 0, len = values.length; j < len; ++j) {
       var val = values[j];
-      var height = p.viewport.height * (val / p.maxValue);
-      var y = p.viewport.y + p.viewport.height - height;
+      var height = viewport.height * (val / maxValue);
+      var y = viewport.y + viewport.height - height;
 
       ctx.fillStyle = colors[j];
 
       var eclipseHeight = 0;
       if (j === 0 && values.length > 1) {
-        eclipseHeight = p.viewport.height * (values[1] / p.maxValue);
+        eclipseHeight = viewport.height * (values[1] / maxValue);
       }
 
       this._drawValue({
         ctx: ctx,
-        x: (coords.left-p.viewport.x)*p.stretchFactor + p.viewport.x,
+        x: barLeft,
         y: y,
-        width: coords.width*p.stretchFactor,
+        width: barWidth,
         height: height,
         eclipseHeight: eclipseHeight,
         pointIndex: i,
         primary: j === 0,
         properness: this._morphingGetPointProperness(i - this._startIndex),
-        stretchFactor: p.stretchFactor
+        stretchFactor: params.getStretchFactor()
       });
     }
   }
 
-  p.viewport.context.restore();
-  return this._generateXMarkers(p);
+  params.unclipViewport();
 };
 
 BarChunkView.prototype._drawValue = function(params) {
@@ -344,9 +315,9 @@ BarChunkView.prototype._drawValue = function(params) {
 };
 
 // _generateXMarkers generates XMarkers for the current drawRange call.
-BarChunkView.prototype._generateXMarkers = function(p) {
+BarChunkView.prototype._generateXMarkers = function(params) {
   var info = {
-    drawParams: p,
+    drawParams: params,
     animationType: this._animationType,
     animationProgress: this._animationProgress,
     animationPointIndex: this._animationPointIndex,
@@ -362,9 +333,10 @@ BarChunkView.prototype._generateXMarkers = function(p) {
   return new BarXMarkers(info);
 };
 
-BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValue, stretch) {
+BarChunkView.prototype._updateBlurbManager = function(params, scrollX) {
   var animating = (this._animationType !== BarChunkView.ANIMATION_NONE);
 
+  var viewport = params.getViewport();
   if (this._pointerPosition === null ||
       this._pointerPosition.x < viewport.x ||
       this._pointerPosition.y < viewport.y ||
@@ -375,21 +347,21 @@ BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValu
   }
 
   var landscapeCoords = {
-    x: (this._pointerPosition.x-viewport.x)/stretch + scrollX,
+    x: params.canvasXToLandscapeX(this._pointerPosition.x),
     y: this._pointerPosition.y
   };
 
-  var visibleRegion = {
-    left: scrollX,
+  var visibleRegion = params.canvasRegionToRegion({
+    left: viewport.x,
     width: viewport.width
-  };
+  });
 
-  var info = this._computeHoverInformation(landscapeCoords, viewport, maxValue, visibleRegion);
+  var info = this._computeHoverInformation(landscapeCoords, params);
   if (info === null) {
     this._blurbManager.update(animating, viewport, scrollX, null, null);
   } else {
     var vpPoint = {
-      x: (info.position.x-scrollX)*stretch + viewport.x,
+      x: params.landscapeXToCanvasX(info.position.x),
       y: info.position.y
     };
     vpPoint.x = Math.min(viewport.x+viewport.width, Math.max(viewport.x, vpPoint.x));
@@ -402,29 +374,27 @@ BarChunkView.prototype._updateBlurbManager = function(viewport, scrollX, maxValu
 // viewport coordinates. In other words, the x-value of the position is translated and
 // scaled so as not to change as the user scrolls or stretches the graph.
 //
-// The visibleRegion argument hints at what parts of the complete landscape are visible to
-// the user. This can prevent blurbs from appearing next to completely hidden points.
-//
 // The returned object will either be null (no value is hovered) or be an object
 // with the following keys:
 // - text: the tooltip text
-// - position: the complete landscape coordinates to which the corresponding blurb should point
-BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport, maxValue,
-                                                           visibleRegion) {
-  var landscape = this._morphingLandscape();
-  var range = landscape.computeRange({left: pointerPos.x, width: 1});
+// - position: the complete landscape coordinates to which the blurb should point
+BarChunkView.prototype._computeHoverInformation = function(pointerPos, drawParams) {
+  var range = drawParams.getLandscape().computeRange({left: pointerPos.x, width: 1});
   var index = range.startIndex;
   if (index < this._startIndex || index >= this._startIndex+this._morphingPointCount()) {
     return null;
   }
-  var region = landscape.computeBarRegion(index);
+
+  var region = drawParams.getLandscape().computeBarRegion(index);
   if (pointerPos.x < region.left || pointerPos.x >= region.left+region.width) {
     return null;
   }
-  var point = this._morphingGetPoint(index - this._startIndex);
 
+  var viewport = drawParams.getViewport();
+
+  var point = this._morphingGetPoint(index - this._startIndex);
   if (point.hasOwnProperty('secondaryTooltip') && point.secondary >= 0) {
-    var secondaryHeight = (point.secondary / maxValue) * viewport.height;
+    var secondaryHeight = (point.secondary / drawParams.getMaxValue()) * viewport.height;
     if (pointerPos.y >= viewport.y+viewport.height-secondaryHeight) {
       return {
         text: point.secondaryTooltip,
@@ -437,7 +407,7 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, viewport,
   }
 
   if (point.hasOwnProperty('primaryTooltip')) {
-    var primaryHeight = (point.primary / maxValue) * viewport.height;
+    var primaryHeight = (point.primary / drawParams.getMaxValue()) * viewport.height;
     var usePrimaryHeight = Math.max(primaryHeight, BarChunkView.HOVER_MIN_BAR_HEIGHT);
     if (pointerPos.y >= viewport.y+viewport.height-usePrimaryHeight) {
       return {
