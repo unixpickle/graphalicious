@@ -66,7 +66,7 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     var res = {
       left: viewport.x,
       width: 0,
-      xmarkers: []
+      xMarkers: new FullCurveXMarkers({length: 0, spacing: 1, startX: 1})
     };
     if (this._chunk.getLength() === 1) {
       res.width = viewport.width;
@@ -111,7 +111,7 @@ FullCurveChunkView.prototype.draw = function(viewport, scrollX, maxValue) {
     left: drawLeft,
     width: drawWidth
   });
-  report.xmarkers = new FullCurveXMarkers({
+  report.xMarkers = new FullCurveXMarkers({
     startX: viewport.x - scrollX + this._attrs.getLeftMargin(),
     length: this._dataSource.getLength(),
     spacing: pointSpacing
