@@ -339,6 +339,168 @@ function testDrawEdgeCases() {
   assert(report.xMarkers.getXMarker(14).x === report.left - 4 - 40 - 2.5);
 }
 
+function testDrawOffscreen() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT
+  });
+
+  var dataSource = DataSource.random(1000, 10, true);
+  var chunk = dataSource.fetchChunkSync(0, 10, 10);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+
+  var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
+  var report = chunkView.draw(viewport, 0, 20);
+  assert(Math.abs(report.width) < SMALL_NUM, 'invalid width');
+  assert(report.left === viewport.x+10+40*10+5*9, 'invalid left offset');
+
+  assert(report.xMarkers.getLength() === dataSource.getLength());
+  var visibleMarkers = report.xMarkers.computeRange({left: 10, width: 313});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 7);
+  for (var i = 0, len = report.xMarkers.getLength(); i < len; ++i) {
+    var marker = report.xMarkers.getXMarker(i);
+    assert(marker.index === i);
+    assert(marker.oldIndex === i);
+    assert(marker.oldDataPoint === null);
+    assert(marker.animationProgress === -1);
+  }
+
+  assert(Math.abs(report.xMarkers.getXMarker(0).x - viewport.x - 5) < SMALL_NUM);
+  assert(Math.abs(report.xMarkers.getXMarker(1).x - viewport.x - 52.5) < SMALL_NUM);
+}
+
+function testDrawOnePoint() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT,
+    stretchMode: BarStyle.STRETCH_MODE_JUSTIFY_LEFT
+  });
+
+  var dataSource = DataSource.random(1, 10, true);
+  var chunk = dataSource.fetchChunkSync(0, 0, 1);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+  var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
+
+  var report = chunkView.draw(viewport, 0, 20);
+
+  assert(Math.abs(report.width - 60) < SMALL_NUM, 'invalid width');
+  assert(Math.abs(report.left - viewport.x) < SMALL_NUM, 'invalid left');
+
+  assert(report.xMarkers.getLength() === 1);
+  var visibleMarkers = report.xMarkers.computeRange({left: 0, width: 1000});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 1);
+  visibleMarkers = report.xMarkers.computeRange({left: 0, width: 1});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 0);
+  visibleMarkers = report.xMarkers.computeRange({left: 1000, width: 1});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 0);
+  visibleMarkers = report.xMarkers.computeRange({left: 10, width: 15});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 1);
+
+  assert(report.xMarkers.getXMarker(0).x === viewport.x+5);
+
+  style.setAttributes({xLabelAlignment: BarStyle.X_LABELS_RIGHT});
+  chunkView = style.createChunkView(chunk, dataSource);
+
+  var report = chunkView.draw(viewport, 0, 20);
+  assert(report.xMarkers.getXMarker(0).x === viewport.x+10+40+5);
+}
+
+function testDrawNoData() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT,
+    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+  });
+
+  var dataSource = DataSource.random(0, 10, true);
+  var chunk = dataSource.fetchChunkSync(0, 0, 0);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+  var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
+
+  var report = chunkView.draw(viewport, 0, 20);
+
+  assert(Math.abs(report.width) < SMALL_NUM, 'invalid width');
+  assert(report.xMarkers.getLength() === 0);
+  var visibleMarkers = report.xMarkers.computeRange({left: 0, width: 1000});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 0);
+  visibleMarkers = report.xMarkers.computeRange({left: 0, width: 1});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 0);
+  visibleMarkers = report.xMarkers.computeRange({left: 1000, width: 1});
+  assert(visibleMarkers.startIndex === 0);
+  assert(visibleMarkers.length === 0);
+}
+
+function testDrawEmptyChunk() {
+  var style = new BarStyle({
+    colorScheme: new ColorScheme('#65bcd4', '#325e6a'),
+    leftMargin: 10,
+    rightMargin: 10,
+    barSpacing: 5,
+    barWidth: 40,
+    xLabelAlignment: BarStyle.X_LABELS_LEFT,
+    stretchMode: BarStyle.STRETCH_MODE_ELONGATE
+  });
+
+  var dataSource = DataSource.random(10, 10, true);
+  var chunk = dataSource.fetchChunkSync(0, 5, 0);
+
+  var chunkView = style.createChunkView(chunk, dataSource);
+  var context = new Canvas().getContext('2d');
+
+  var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
+
+  for (var i = 1; i <= 2; ++i) {
+    var report = chunkView.draw(viewport, 0, 20);
+    assert(Math.abs(report.width) < SMALL_NUM, 'invalid width');
+
+    assert(report.xMarkers.getLength() === dataSource.getLength());
+    var visibleMarkers = report.xMarkers.computeRange({left: viewport.x, width: viewport.width});
+    assert(visibleMarkers.startIndex === 0);
+    if (i === 1) {
+      assert(visibleMarkers.length === 7);
+    } else {
+      assert(visibleMarkers.length === 10);
+    }
+    for (var j = 0, len = report.xMarkers.getLength(); j < len; ++j) {
+      var marker = report.xMarkers.getXMarker(j);
+      assert(marker.index === j);
+      assert(marker.oldIndex === j);
+      assert(marker.oldDataPoint === null);
+      assert(marker.animationProgress === -1);
+    }
+
+    assert(Math.abs(report.xMarkers.getXMarker(0).x - viewport.x - 5*i) < SMALL_NUM);
+    assert(Math.abs(report.xMarkers.getXMarker(1).x - viewport.x - 52.5*i) < SMALL_NUM);
+
+    viewport.width = (10*2 + 40*10 + 5*9) * 2;
+  }
+}
+
 function testDrawJustifiedStretch() {
   var stretchModes = [
     BarStyle.STRETCH_MODE_JUSTIFY_LEFT,
@@ -890,6 +1052,10 @@ testWidth();
 testDrawBestCase();
 testDrawBasicScrolling();
 testDrawEdgeCases();
+testDrawOffscreen();
+testDrawOnePoint();
+testDrawNoData();
+testDrawEmptyChunk();
 testDrawJustifiedStretch();
 testDrawElongatedStretch();
 testDrawStretchEdgeCase();

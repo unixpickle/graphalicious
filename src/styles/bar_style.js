@@ -122,7 +122,7 @@ for (var attr in BarStyleAttrs) {
 }
 
 BarStyle.prototype.setAttributes = function(attrs) {
-  this._attrs.setAttributes(attrs);
+  BarStyleAttrs.prototype.setAttributes.call(this, attrs);
   this.emit('metricChange');
 };
 
