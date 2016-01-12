@@ -12,19 +12,21 @@ Since a partial landscape is a part of a complete landscape, it is helpful for a
 
 Animations are essential to beautiful graphs, and a *ChunkView* is responsible for them. An **animation** is a smooth transition between an old complete landscape and a new complete landscape. Only some changes to the complete landscape (i.e. changes to the *DataSource*) may trigger an animation, while others (i.e. changes in visual style) may not. When a *ChunkView* is performing an animation, we can imagine the complete landscape **morphing** from the old landscape to the new one. The *VisualStyle* interface does not capture said morphing, but instead only represents **final landscapes**. A final landscape is a landscape during which no animations are taking place. While a *VisualStyle* only knows about **final landscapes**, the *ChunkView* has extra information about **morphing landscapes** as well. In particular, while an animation is being performed, a *ChunkView* has two different offsets, widths, and encompassing widths. One set of values is for the final landscape, while the other is for the current morphing landscape. This is useful information because it allows the *ContentView* to know how and where to draw the *ChunkView* at every point during an animation.
 
-A *ChunkView* also provides specific information about the position of data points on the x-axis. Specifically, it provides x-axis markers, canvas-relative horizontal offsets, for each point. These x-axis markers may be used by *ContentView*s to draw x-axis labels for each data point in the graph.
+A *ChunkView* also provides specific information about the position of data points on the x-axis. Specifically, it provides x-axis markers, canvas-relative horizontal offsets, for each point. These x-axis markers may be used by *ContentView*s to draw x-axis labels for each data point in the graph. See the [XMarkers](XMarkers.md) documentation for more.
 
-When a *ChunkView* is drawn into an HTML5 canvas, it is given a **canvas viewport**, a canvas and a rectangle of pixels in which the *ChunkView* may draw itself. If the width of the complete landscape is greater than the width of the canvas viewport, then the *ChunkView* will be given a **scroll offset**. In this case, the x value in the canvas at which the partial landscape will be rendered is equal to the sum of the x value of canvas viewport, the offset of the partial landscape, and the negative scroll offset.
+When a *ChunkView* is drawn into an HTML5 canvas, it is given a **viewport**, a rectangle in the canvas in which the *ChunkView* may draw itself. If the width of the complete landscape is greater than the width of the viewport, then the *ChunkView* will be given a **scroll offset**. In this case, the x value in the canvas at which the partial landscape will be rendered is equal to the sum of the x value of viewport, the offset of the partial landscape, and the negative scroll offset.
 
-Sometimes, the complete landscape will not be as wide as the canvas viewport. In this case, the complete landscape literally does not "fill up" the place where it is being rendered. The visual style of a *ChunkView* determines how it handles this situation. Sometimes, a *ChunkView* may visually stretch itself; other times, a *ChunkView* may choose to justify itself to the left or right of the canvas viewport.
+Sometimes, the complete landscape will not be as wide as the viewport. In this case, the complete landscape literally does not "fill up" the place where it is being rendered. The visual style of a *ChunkView* determines how it handles this situation. Sometimes, a *ChunkView* may visually stretch itself; other times, a *ChunkView* may choose to justify itself to the left or right of the viewport.
 
-After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a tuple `(x, width, xMarkers)` specifying both the [XMarkers](XMarkers.md) and the horizontal range of pixels within the canvas viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the canvas viewport, since it tells the *ContentView* how much screen real estate was actually taken up.
+When a *ChunkView* is being drawn, it is given a **full viewport** in addition to the viewport itself. The full viewport, which is necessarily a superset of the viewport, indicates where the *ChunkView* may draw overflowing content such as tooltips.
+
+After a *ChunkView* is done drawing itself, it returns a **draw report**&mdash;a tuple `(x, width, xMarkers)` specifying both the [XMarkers](XMarkers.md) and the horizontal range of pixels within the viewport that the partial landscape took up. This is particularly useful for cases when the complete landscape is narrower than the viewport, since it tells the *ContentView* how much screen real estate was actually taken up. If the width of the draw report is 0, then the x value can be used to hint where the nearest off-screen edge of the *ChunkView* is. In this case only, the x value may be outside of the viewport.
 
 The *ChunkView* can receive "pointer" events (normally equivalent to mouse events), allowing user interaction. These events can be used for hover effects and click handlers. The events themselves specify coordinates relative to the canvas. As a result, the *ChunkView* will need to request a re-draw in order to utilize the coordinates in any meaningful way.
 
-Since *ChunkView*s only draw partial landscapes, *ChunkView*s have to create and draw new *ChunkView*s as the user demands to look at different parts of the data. As a consequence, animations get "cut off" when the user demands new parts of the data, since newly created *ChunkView*s do not know the animation state of their predecessors. However, this is not as big a problem as it may seem. All a *ContentView* needs to do is ensure that new *ChunkView*s are not created or drawn while their current *ChunkView* is animating. While this seems like a decent answer to the problem, there are other cases where this argument is unacceptable.
+Since *ChunkView*s only draw partial landscapes, *ContentView*s may have to create and draw new *ChunkView*s as the user demands to look at different parts of the data. As a consequence, animations get "cut off" when the user demands new parts of the data, since newly created *ChunkView*s do not know the animation state of their predecessors. However, this is not as big a problem as it may seem. All a *ContentView* needs to do is ensure that new *ChunkView*s are not created or drawn while the last *ChunkView* is animating. While this seems like a decent answer to the problem, there are other cases where this argument is unacceptable.
 
-Sometimes, a *ChunkView* may wish to **handoff** data to the next *ChunkView*. Handoff is useful for things like fading tooltips: if the user hovers over a point to see more information about it, the tooltip should not vanish and then fade back in when the *ChunkView* is replaced. Handoff is not intended to apply to animations; *ContentView*s should not expect *ChunkView*s to handoff their animation states. Nevertheless, *ContentView*s should implement the handoff facility, telling each *ChunkView* about its predecessor (if applicable).
+Sometimes, a *ChunkView* may wish to **handoff** data to the next *ChunkView*. Handoff is useful for things like fading tooltips that the *ContentView* has no direct knowledge of. For example, if the user hovers over a point to see more information about it, the tooltip should not vanish and then fade back in if the *ChunkView* is replaced. Handoff is not intended to apply to animations; *ContentView*s should not expect *ChunkView*s to handoff their animation states. Nevertheless, *ContentView*s should implement the handoff facility, telling each *ChunkView* about its predecessor when applicable.
 
 # The PointerPosition type
 
@@ -37,25 +39,23 @@ The *PointerPosition* type expresses the coordinates of a pointer (e.g., the mou
 
 The *DrawReport* type represents a horizontal range of pixels in a 2D drawing context and x-axis offsets corresponding to data points in this range. It has the following fields:
 
- * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels.
+ * *number* left - the x-axis coordinate of the leftmost part of the range, in pixels. If the *ChunkView* was drawn completely off-screen, this should indicate the x offset of *ChunkView*'s edge nearest to the viewport.
  * *number* width - the width of the range, in pixels.
  * \[[XMarkers](XMarkers.md)\] xMarkers - the x-axis markers at the instant the *ChunkView* was drawn. This will be frozen in time and immutable, meaning that it can be referenced and used for as long as necessary.
 
 # The CanvasViewport type
 
-The *CanvasViewport* type represents a rectangular region inside a canvas. It has the following fields:
+The *CanvasViewport* contains the viewport, full viewport, and canvas. It has the following fields:
 
  * *number* x - the x offset of the top left corner of the region.
  * *number* y - the y offset of the top left corner of the region.
  * *number* width - the width of the region.
  * *number* height - the height of the region.
- * *number* fullX - the x offset of the top left corner of the total usable canvas.
- * *number* fullY - the y offset of the top left corner of the total usable canvas.
- * *number* fullWidth - the width of the total usable canvas.
- * *number* fullHeight - the width of the total usable canvas.
+ * *number* fullX - the x offset of the top left corner of the full viewport.
+ * *number* fullY - the y offset of the top left corner of the full viewport.
+ * *number* fullWidth - the width of the full viewport.
+ * *number* fullHeight - the width of the full viewport.
  * *Context2D* context - the 2D drawing context.
-
-Note that the four coordinate values (e.g., x, width) have "full" analogs (e.g., fullX, fullWidth). These coordinate values tell the *ChunkView* how much space it has to draw things like tooltips or other out-of-content displays.
 
 # Methods
 
@@ -83,7 +83,7 @@ A *ContentView* should notify a *ChunkView* of any pointer events. These events 
 
 Drawing can be performed with these methods:
 
- * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the canvas viewport. The *ChunkView* is responsible for clipping itself inside of the specified viewport.
+ * [DrawReport](#the-drawreport-type) draw(viewport, scrollX, maxValue) - draw the *ChunkView* in the given viewport at the given offset. The maxValue argument helps determine how vertically stretched the content should be; it specifies the primary value that should correspond to data points which take up the full height of the viewport. The *ChunkView* is responsible for clipping itself inside of the specified viewport.
 
 The handoff mechanism is implemented through the following method:
 
