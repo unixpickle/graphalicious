@@ -14,6 +14,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
+ * Add YLCV configuration parameters used to determine full viewport
  * Fix issue where arrow of upward facing blurb goes under scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels

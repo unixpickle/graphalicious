@@ -323,7 +323,7 @@ BufferedView.prototype.draw = function() {
     fullX: 0,
     fullY: 0,
     fullWidth: this._width,
-    fullHeight: this._height,
+    fullHeight: this._height - this._yLabels.getBottomY(),
     context: this._context
   };
 
