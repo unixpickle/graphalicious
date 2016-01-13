@@ -320,7 +320,8 @@ HeadlessView.prototype._dataSourceInsert = function(index) {
 
   var totalPixels = this._steadyState.getScrollState().getTotalPixels() + newWidth - oldWidth;
   var newScrollState = null;
-  if (this._keepRightOnVisibleDataSourceChange()) {
+  var keptRight = this._keepRightOnVisibleDataSourceChange();
+  if (keptRight) {
     newScrollState = new window.scrollerjs.State(totalPixels, this._width,
       this._steadyState.getScrollState().getScrolledPixels() + newWidth - oldWidth);
   } else {
@@ -328,6 +329,7 @@ HeadlessView.prototype._dataSourceInsert = function(index) {
       this._steadyState.getScrollState().getScrolledPixels());
   }
 
+  var oldSteadyState = this._steadyState;
   this._steadyState = this._steadyState.copyWithScrollState(newScrollState);
   this._updateYLabels();
   this._updateLeftmostLabels();
@@ -336,6 +338,24 @@ HeadlessView.prototype._dataSourceInsert = function(index) {
     this._config.dataSource.getLength());
   var pointVisible = (index >= newVisibleRange.startIndex &&
     index < newVisibleRange.startIndex+newVisibleRange.length);
+
+  // If the point will never be visible, then we should proactively scroll
+  // to avoid changing what the user is looking at.
+  var keptToWrongSide = ((index < newVisibleRange.startIndex && !keptRight) ||
+    (index >= newVisibleRange.startIndex+newVisibleRange.length && keptRight));
+  if (keptToWrongSide) {
+    this._steadyState = oldSteadyState;
+    if (keptRight) {
+      newScrollState = new window.scrollerjs.State(totalPixels, this._width,
+        this._steadyState.getScrollState().getScrolledPixels());
+    } else {
+      newScrollState = new window.scrollerjs.State(totalPixels, this._width,
+        this._steadyState.getScrollState().getScrolledPixels() + newWidth - oldWidth);
+    }
+    this._steadyState = this._steadyState.copyWithScrollState(newScrollState);
+    this._updateYLabels();
+    this._updateLeftmostLabels();
+  }
 
   if (this._chunkView !== null) {
     var canAnimate = this._animate && pointVisible;
