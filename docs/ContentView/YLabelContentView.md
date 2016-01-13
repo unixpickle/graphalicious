@@ -34,6 +34,8 @@ The *YLCVSettings* type stores all of the configuration parameters for a YLCV. I
  * *number* minSpacing - the minimum number of pixels between any two y-axis labels.
  * *number* maxSpacing - the maximum number of pixels between any two y-axis labels.
  * *boolean* emphasizeRight - if this is true, it indicates that the more relevant data is on the right of the graph. When this is true, the graph will favor the right side of the graph in otherwise neutral situations. For example, the graph will scroll to the right if the user shrinks the graph viewport so that it needs to start scrolling.
+ * *boolean* constrictFullViewportTop - if this is true, it indicates that any content *ChunkView*s should be told not to draw above the top y-axis line. This affects the fullY and fullHeight viewport parameters given to *ChunkView*s when they draw themselves.
+ * *boolean* constrictFullViewportBottom - like constrictFullViewportTop, but for the bottom y-axis line.
 
 # Construction
 

@@ -13,6 +13,8 @@ function BufferedView(config) {
   this._leftLoader = config.loader1;
   this._rightLoader = config.loader2;
   this._visualStyle = config.visualStyle;
+  this._fullViewportTop = config.constrictFullViewportTop ? config.topMargin : 0;
+  this._fullViewportBottom = config.constrictFullViewportBottom ? config.bottomMargin : 0;
 
   this._element = document.createElement('div');
   this._canvas = document.createElement('canvas');
@@ -321,9 +323,9 @@ BufferedView.prototype.draw = function() {
     width: this._width - yLabelWidth + labelsOffset,
     height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
     fullX: 0,
-    fullY: 0,
+    fullY: this._fullViewportTop,
     fullWidth: this._width,
-    fullHeight: this._height - this._yLabels.getBottomY(),
+    fullHeight: this._height - (this._fullViewportTop + this._fullViewportBottom),
     context: this._context
   };
 
@@ -355,9 +357,9 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
     width: this._width - yLabelWidth,
     height: this._yLabels.getBottomY() - this._yLabels.getTopY(),
     fullX: 0,
-    fullY: 0,
+    fullY: this._fullViewportTop,
     fullWidth: this._width,
-    fullHeight: this._height,
+    fullHeight: this._height - (this._fullViewportTop + this._fullViewportBottom),
     context: this._context
   };
 

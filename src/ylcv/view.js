@@ -27,7 +27,8 @@ function View(config) {
 View.CONFIG_ATTRS = ['visualStyle', 'dataSource', 'splashScreen', 'loader1', 'loader2',
   'topMargin', 'bottomMargin', 'labelLeftMargin', 'labelRightMargin', 'labelColor',
   'labelFont', 'separatorColor', 'formatValue', 'roundValue', 'topLabelSpace',
-  'minSpacing', 'maxSpacing', 'emphasizeRight'];
+  'minSpacing', 'maxSpacing', 'emphasizeRight', 'constrictFullViewportTop',
+  'constrictFullViewportBottom'];
 
 View.DEFAULTS = {
   topMargin: 20,
@@ -40,7 +41,9 @@ View.DEFAULTS = {
   topLabelSpace: 0,
   minSpacing: 30,
   maxSpacing: 70,
-  emphasizeRight: true
+  emphasizeRight: true,
+  constrictFullViewportTop: false,
+  constrictFullViewportBottom: false
 };
 
 View.prototype = Object.create(EventEmitter.prototype);

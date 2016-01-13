@@ -29,7 +29,8 @@ function handleLoad() {
     loader2: new window.SplashScreen(colorScheme),
     topLabelSpace: 10,
     formatValue: interpretation.format.bind(interpretation),
-    roundValue: interpretation.round.bind(interpretation)
+    roundValue: interpretation.round.bind(interpretation),
+    constrictFullViewportBottom: true
   });
 
   globalView = new window.graphalicious.base.View();

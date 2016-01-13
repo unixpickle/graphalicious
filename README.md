@@ -14,7 +14,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Add YLCV configuration parameters used to determine full viewport
+ * Unify animations throughout the ContentView so that blurbs, graph animations, and x-label animations can all trigger the same draw() per animation frame.
  * Fix issue where arrow of upward facing blurb goes under scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
