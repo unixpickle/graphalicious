@@ -12,7 +12,7 @@ Chunks should be able to persist through various kinds of modifications. For exa
 
 Many graph types require access to two different chunks of data simultaneously: one chunk at the beginning of the data, and one whose position can change as the user scrolls. The reason for this is irrelevant for people implementing *DataSource*. For those of you who are interested, it is caused by the fact that y-axis labels resize dynamically.
 
-Some graph types have x-axis labels. For these graphs types, the *DataSource* must be able to report x-axis labels for every data point index.
+Some graph types have x-axis labels. For these graphs types, the *DataSource* must be able to report the text of an x-axis labels given data point index. Unlike fetching data, fetching an x-axis label is a synchronous operation.
 
 # The DataPoint type
 
@@ -41,7 +41,7 @@ A *DataSource* must implement the following methods:
 
  * *int* getLength() - get the total number of data points in the data source.
  * [Chunk](#the-chunk-type) getChunk(chunkIndex) - get one of the two chunks. This will return `null` if the chunk is currently available (i.e. it is still loading).
- * *string* getXAxisLabel(index) - get the x-axis label for the given data point index. If there are no x-axis labels, this should return the empty string.
+ * *string* getXAxisLabel(index) - get the x-axis label for the given data point index. If there are no x-axis labels, or if there is no label for this point, this should return null.
  * *void* fetchChunk(chunkIndex, start, length) - get a chunk and set it to chunk0 or chunk1 respectively. While the chunk is loading, the existing chunk will not be affected (i.e. it will not become null). The data source should automatically clip the start index and length to valid values. If a fetch operation was already underway for the given chunkIndex, it will be cancelled and replaced with this new fetch operation. Fetch operations will not be cancelled or changed when the data source is modified. For instance, if you fetch points in the range (5,5), and the 8th point is deleted while the fetch is underway, you will still get a chunk with range (5,5), but its points will be different than they would have been should the modification not have taken place. It is up to the DataSource's user to re-call fetchChunk() on data changes. However, when the DataSource is invalidated, it should cancel all fetch operations automatically.
  * *void* cancel(chunkIndex) - cancel a chunk0 or chunk1 fetch operation. This will not affect the current value of the chunk.
  * *bool* isLoadingChunk(chunkIndex) - get whether or not a new value for a chunk is being loaded.

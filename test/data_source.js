@@ -48,7 +48,7 @@
   };
 
   TestDataSource.prototype.getXAxisLabel = function(idx) {
-    return idx + 1;
+    return '' + (idx + 1);
   };
 
   TestDataSource.prototype.fetchChunk = function(idx, start, len) {
