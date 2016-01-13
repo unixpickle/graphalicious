@@ -93,6 +93,12 @@ View.prototype.pointerClick = function(pos) {
   this._bufferedView.pointerClick(pos);
 };
 
+// _drawnWithInfo can be overridden in subclasses to draw things like x-axis labels.
+// The info object will either be null (nothing was drawn), or an object with a viewport
+// and report (draw report) attribute.
+View.prototype._drawnWithInfo = function(info) {
+};
+
 View.prototype._updateView = function(emitChange) {
   var scrollStateChange = false;
   if (this._headlessView.shouldShowContent()) {
@@ -109,7 +115,7 @@ View.prototype._updateView = function(emitChange) {
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
     this._bufferedView.setChunkViewOffset(cv);
 
-    this._bufferedView.draw();
+    this._drawnWithInfo(this._bufferedView.draw());
   } else {
     if (this._bufferedView.showingSplash() && this._lastScrollState) {
       this._lastScrollState = null;
@@ -119,7 +125,7 @@ View.prototype._updateView = function(emitChange) {
     this._bufferedView.setYLabels(null);
     this._bufferedView.setChunkViewOffset(0);
     this._bufferedView.setChunkViewMargins(null);
-    this._bufferedView.draw();
+    this._drawnWithInfo(this._bufferedView.draw());
   }
 
   this._updateLoaderStates();

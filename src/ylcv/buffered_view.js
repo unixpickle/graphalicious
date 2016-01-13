@@ -275,7 +275,7 @@ BufferedView.prototype.pointerClick = function(pos) {
 // draw draws the ChunkView and the labels and positions the loaders.
 BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
-    return;
+    return null;
   }
   assert(this._chunkView !== null);
 
@@ -283,14 +283,13 @@ BufferedView.prototype.draw = function() {
 
   if (this._yLabels === null) {
     this._showFullscreenLoader();
-    return;
+    return null;
   }
 
   var yLabelWidth = this._yLabels.totalWidth();
 
   if (yLabelWidth+this._chunkView.getEncompassingWidth() <= this._width) {
-    this._drawStretched(yLabelWidth);
-    return;
+    return this._drawStretched(yLabelWidth);
   }
 
   var labelsOffset = 0;
@@ -325,9 +324,8 @@ BufferedView.prototype.draw = function() {
     context: this._context
   };
 
-  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
   var offset = this._chunkViewOffset + viewport.x;
-  this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
+  var report = this._chunkView.draw(viewport, offset, this._yLabels.getMaxValue());
 
   this._context.beginPath();
   this._context.rect(viewport.x, 0, viewport.width, this._height);
@@ -339,6 +337,11 @@ BufferedView.prototype.draw = function() {
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
   this._context.restore();
+
+  return {
+    viewport: viewport,
+    report: report
+  };
 };
 
 BufferedView.prototype._drawStretched = function(yLabelWidth) {
@@ -357,7 +360,6 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
     context: this._context
   };
 
-  // TODO: somehow we need to pass the DrawReport along to subclasses for the XLCV.
   assert(Math.abs(this._chunkViewOffset + viewport.x) < 0.001);
   var report = this._chunkView.draw(viewport, 0, this._yLabels.getMaxValue());
 
@@ -380,6 +382,11 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
   this._context.restore();
+
+  return {
+    viewport: viewport,
+    report: report
+  };
 };
 
 BufferedView.prototype._showFullscreenLoader = function() {
