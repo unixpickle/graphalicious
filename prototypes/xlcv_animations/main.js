@@ -3,7 +3,7 @@ var globalDataSource;
 var globalView;
 
 function handleLoad() {
-  globalDataSource = window.TestDataSource.random(1000, 20000, false);
+  globalDataSource = window.TestDataSource.random(1500, 20000, false);
   globalDataSource.loadTimeout = function() {
     return 1000;
   };
