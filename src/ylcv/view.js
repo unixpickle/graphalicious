@@ -18,6 +18,8 @@ function View(config) {
 
   this._headlessView.on('change', this._updateView.bind(this, true));
   this._bufferedView.on('change', this._updateView.bind(this, true));
+  this._bufferedView.on('drawClipped', this._drawClippedContent.bind(this));
+  this._bufferedView.on('drawUnclipped', this._drawUnclippedContent.bind(this));
 
   this._lastScrollState = null;
 }
@@ -93,10 +95,18 @@ View.prototype.pointerClick = function(pos) {
   this._bufferedView.pointerClick(pos);
 };
 
-// _drawnWithInfo can be overridden in subclasses to draw things like x-axis labels.
-// The info object will either be null (nothing was drawn), or an object with a viewport
-// and report (draw report) attribute.
-View.prototype._drawnWithInfo = function(info) {
+// _drawClippedContent can be overridden in subclasses to draw things like x-axis labels.
+// The info object will be an object with two attributes, "viewport" and "report".
+// Unlike in _drawUnclippedContent(), the context will be clipped to a region which
+// contains the current chunk. Also unlike _drawUnclippedContent, this will only be
+// called if some content was drawn.
+View.prototype._drawClippedContent = function(info) {
+};
+
+// _drawUnclippedContent can be overridden in a subclass to draw additional content.
+// The info object will either be null, or an object like the one passed to
+// _drawClippedContent(). If it is null, it signifies that no content is visible.
+View.prototype._drawUnclippedContent = function(info) {
 };
 
 View.prototype._updateView = function(emitChange) {
@@ -115,7 +125,7 @@ View.prototype._updateView = function(emitChange) {
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
     this._bufferedView.setChunkViewOffset(cv);
 
-    this._drawnWithInfo(this._bufferedView.draw());
+    this._bufferedView.draw();
   } else {
     if (this._bufferedView.showingSplash() && this._lastScrollState) {
       this._lastScrollState = null;
@@ -125,7 +135,7 @@ View.prototype._updateView = function(emitChange) {
     this._bufferedView.setYLabels(null);
     this._bufferedView.setChunkViewOffset(0);
     this._bufferedView.setChunkViewMargins(null);
-    this._drawnWithInfo(this._bufferedView.draw());
+    this._bufferedView.draw();
   }
 
   this._updateLoaderStates();

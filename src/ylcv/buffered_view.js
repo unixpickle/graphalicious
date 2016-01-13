@@ -275,7 +275,8 @@ BufferedView.prototype.pointerClick = function(pos) {
 // draw draws the ChunkView and the labels and positions the loaders.
 BufferedView.prototype.draw = function() {
   if (this._state !== BufferedView.STATE_CONTENT || this._context === null) {
-    return null;
+    this.emit('drawUnclipped', null);
+    return;
   }
   assert(this._chunkView !== null);
 
@@ -283,13 +284,15 @@ BufferedView.prototype.draw = function() {
 
   if (this._yLabels === null) {
     this._showFullscreenLoader();
-    return null;
+    this.emit('drawUnclipped', null);
+    return;
   }
 
   var yLabelWidth = this._yLabels.totalWidth();
 
   if (yLabelWidth+this._chunkView.getEncompassingWidth() <= this._width) {
-    return this._drawStretched(yLabelWidth);
+    this._drawStretched(yLabelWidth);
+    return;
   }
 
   var labelsOffset = 0;
@@ -336,12 +339,10 @@ BufferedView.prototype.draw = function() {
 
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
+  var drawInfo = {viewport: viewport, report: report};
+  this.emit('drawClipped', drawInfo);
   this._context.restore();
-
-  return {
-    viewport: viewport,
-    report: report
-  };
+  this.emit('drawUnclipped', drawInfo);
 };
 
 BufferedView.prototype._drawStretched = function(yLabelWidth) {
@@ -381,12 +382,10 @@ BufferedView.prototype._drawStretched = function(yLabelWidth) {
   this._drawLines();
   this._showLoaders(viewport.x, chunkLeft, chunkRight);
 
+  var drawInfo = {viewport: viewport, report: report};
+  this.emit('drawClipped', drawInfo);
   this._context.restore();
-
-  return {
-    viewport: viewport,
-    report: report
-  };
+  this.emit('drawUnclipped', drawInfo);
 };
 
 BufferedView.prototype._showFullscreenLoader = function() {
