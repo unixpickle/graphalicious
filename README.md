@@ -4,9 +4,7 @@ This will be a tremendously beautiful graphing API.
 
 # Dependencies
 
-This depends on [crystal](https://github.com/unixpickle/crystal), [eventemitter.js](https://github.com/unixpickle/eventemitter.js), and [scroller.js](https://github.com/unixpickle/scroller.js).
-
-This also uses the window.requestAnimationFrame API.
+This depends on [crystal](https://github.com/unixpickle/crystal), [eventemitter.js](https://github.com/unixpickle/eventemitter.js), [harmonizer](https://github.com/unixpickle/harmonizer) and [scroller.js](https://github.com/unixpickle/scroller.js).
 
 # Building
 
@@ -14,7 +12,7 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Unify animations throughout the ContentView so that blurbs, graph animations, and x-label animations can all trigger the same draw() per animation frame.
+ * Use **harmonizer** in everything.
  * Fix issue where arrow of upward facing blurb goes under scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels

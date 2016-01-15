@@ -65,9 +65,10 @@ A set of methods can be used to get the current properties of the morphing parti
  * *number* getOffset() - get the offset of the region of the morphing partial scene of the *ChunkView*.
  * *number* getEncompassingWidth() - get the width of the morphing complete scene.
 
-The animation behavior of a *ChunkView* can be controlled:
+Since the *ChunkView* is responsible for morphing animations, and may perform other internal animations as well, there are a number of animation-related methods:
 
- * *void* finishAnimation() - finish the current animation early.
+ * *void* finishAnimation() - finish the current animation early. This only applies to animations which occur because of data changes. Some animations (e.g. tooltips fading in/out) are specific to the *ChunkView* and cannot be controlled by this method.
+ * [Harmonizer](https://github.com/unixpickle/harmonizer) harmonizer() - get the *Harmonizer* that this *ChunkView* uses for its animations. When a *ChunkView* needs to be redrawn, it will request the redraw through this *Harmonizer*.
 
 A *ContentView* should notify a *ChunkView* when the *DataSource* changes. These methods return a boolean value, indicating whether or not an animation has been initiated by the change. These methods also take a boolean *animate* value, suggesting whether or not this change should trigger an animation. The *animate* argument is necessary but not sufficient for an animation to take place.
 
@@ -93,6 +94,5 @@ The handoff mechanism is implemented through the following method:
 
 A *ChunkView* may emit the following events:
 
- * animationFrame(progress) - request a redraw because an animation is running. This includes a progress parameter which is a number between 0 (just started) and 1 (ending) which indicates how "done" the animation is. After a progress of 1 is reported, the *ChunkView* will emit *animationEnd*.
- * animationEnd() - an animation has ended.
- * redraw() - request a redraw for a superficial (not width-changing) reason. This is useful for responding to pointer events.
+ * animationFrame(progress) - tell the *ContentView* the new progress of a running animation. The progress value will be between 0 (just started) and 1 (ending) which indicates how "done" the animation is. After a progress of 1 is reported, the *ChunkView* will emit *animationEnd*. This event only fires for animations involving data changes; it will not fire for internal animations such as tooltip fade-ins. The *ContentView* which receives this event should request a redraw from the root *Harmonizer*.
+ * animationEnd() - an animation has ended. This corresponds to a the last animationFrame event for a given animation.
