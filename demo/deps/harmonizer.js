@@ -1,4 +1,4 @@
-// harmonizer version 0.4.1
+// harmonizer version 0.4.2
 //
 // Copyright (c) 2016, Alex Nichol.
 // All rights reserved.
@@ -93,6 +93,14 @@
 
   Harmonizer.prototype.getContext = function() {
     return this._context;
+  };
+
+  Harmonizer.prototype.isAnimating = function() {
+    return this._animationState === ANIMATION_RUNNING;
+  };
+
+  Harmonizer.prototype.isPaused = function() {
+    return this._animationState === ANIMATION_PAUSED;
   };
 
   Harmonizer.prototype.start = function() {

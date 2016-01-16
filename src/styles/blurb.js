@@ -25,7 +25,6 @@ function Blurb(viewport, config, point, text, harmonizerContext) {
   }
 
   this._fadingIn = true;
-  this._animating = false;
   this._animationElapsed = 0;
   this._animationTimeOffset = 0;
   this._harmonizer.on('animationFrame', this._handleAnimationFrame.bind(this));
@@ -87,7 +86,7 @@ Blurb.prototype.getText = function() {
 };
 
 Blurb.prototype.fadeIn = function() {
-  if (this._fadingIn && this._animating) {
+  if (this._fadingIn && this._harmonizer.isAnimating()) {
     return;
   }
 
@@ -102,7 +101,6 @@ Blurb.prototype.fadeIn = function() {
 
   this._fadingIn = true;
   this._animationElapsed = 0;
-  this._animating = true;
 
   // NOTE: we stop() before we start() to reset harmonizer's elapsed counter.
   this._harmonizer.stop();
@@ -123,7 +121,6 @@ Blurb.prototype.fadeOut = function() {
 
   this._fadingIn = false;
   this._animationElapsed = 0;
-  this._animating = true;
 
   // NOTE: we stop() before we start() to reset harmonizer's elapsed counter.
   this._harmonizer.stop();
@@ -299,7 +296,6 @@ Blurb.prototype._handleAnimationFrame = function(time) {
   this._animationElapsed = time;
   var alpha = this._currentAlpha();
   if ((alpha === 1 && this._fadingIn) || (alpha === 0 && !this._fadingIn)) {
-    this._animating = false;
     this._harmonizer.stop();
     if (!this._fadingIn) {
       this.emit('hidden');
