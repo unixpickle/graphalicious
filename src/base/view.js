@@ -77,12 +77,10 @@ View.prototype._handleScroll = function() {
 };
 
 View.prototype._registerMouseEvents = function() {
-  // Use a Harmonizer to buffer cursor movements; otherwise they come in too rapidly.
-  var harmonizer = new window.harmonizer.Harmonizer(this._harmonizerContext);
   var mousePosition = null;
+  var harmonizer = new window.harmonizer.Harmonizer(this._harmonizerContext);
 
-  harmonizer.makeSingleShot();
-  harmonizer.on('paint', function() {
+  harmonizer.makeSingleShot(function() {
     if (this._contentView !== null) {
       if (mousePosition !== null) {
         this._contentView.pointerMove(mousePosition);

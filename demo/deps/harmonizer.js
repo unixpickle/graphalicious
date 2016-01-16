@@ -1,4 +1,4 @@
-// harmonizer version 0.3.0
+// harmonizer version 0.4.0
 //
 // Copyright (c) 2016, Alex Nichol.
 // All rights reserved.
@@ -166,11 +166,18 @@
     return res;
   };
 
-  Harmonizer.prototype.makeSingleShot = function() {
-    this.on('animationFrame', function() {
-      this.stop();
-      this.requestPaint();
-    }.bind(this));
+  Harmonizer.prototype.makeSingleShot = function(handler) {
+    if ('undefined' === typeof handler) {
+      this.on('animationFrame', function() {
+        this.stop();
+        this.requestPaint();
+      }.bind(this));
+    } else {
+      this.on('animationFrame', function() {
+        this.stop();
+        handler();
+      }.bind(this));
+    }
   };
 
   Harmonizer.prototype._handleFrame = function(time) {
