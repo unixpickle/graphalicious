@@ -59,7 +59,7 @@ XLCV.prototype._drawLabels = function(ctx, markers, range) {
   ctx.textAlign = 'center';
 
   for (var i = range.startIndex, end = range.startIndex+range.length; i < end; ++i) {
-    if ((this._lastPointCount-i) % 2 === 0) {
+    if ((i % 2) === 0) {
       continue;
     }
     ctx.globalAlpha = this._labelOpacity();
@@ -90,23 +90,22 @@ XLCV.prototype.translation = function() {
   if (document.getElementById('slide-labels').checked) {
     return 35 - 35*xLabelVisibility();
   } else {
-    return 1;
+    return 0;
   }
 };
 
 XLCV.prototype._isAnimatingOut = function() {
-  if (globalAnimationStart === null) {
+  if (!animationHarmonizer.isAnimating()) {
     return false;
   }
-  var time = new Date().getTime() - globalAnimationStart;
-  return time <= XLCV_HIDE_DURATION;
+  return animationRunTime <= XLCV_HIDE_DURATION;
 };
 
 function xLabelVisibility() {
-  if (globalAnimationStart === null) {
+  if (!animationHarmonizer.isAnimating()) {
     return 1;
   }
-  var time = new Date().getTime() - globalAnimationStart;
+  var time = animationRunTime;
   if (time > XLCV_ANIMATION_DURATION) {
     return 1;
   }

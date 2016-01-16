@@ -43,6 +43,8 @@ function handleLoad() {
   handleResize();
   globalView.setContentView(globalXLCV);
   globalView.setAnimate(true);
+
+  globalXLCV._bufferedView._harmonizer.appendChild(animationHarmonizer);
 }
 
 function handleResize() {

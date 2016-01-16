@@ -3,6 +3,17 @@ var XLCV_ANIMATION_DURATION = 700;
 var XLCV_HIDE_DURATION = 300;
 var XLCV_STAGNATE_DURATION = 200;
 var animationInterval = null;
+var animationHarmonizer = new window.harmonizer.Harmonizer();
+var animationRunTime = 0;
+
+animationHarmonizer.on('animationFrame', function(time) {
+  animationRunTime = time;
+  if (time >= XLCV_ANIMATION_DURATION) {
+    animationHarmonizer.stop();
+    enableButtons();
+  }
+  animationHarmonizer.requestPaint();
+});
 
 function disableButtons() {
   document.getElementById('delete-button').disabled = true;
@@ -16,9 +27,8 @@ function enableButtons() {
 
 function insertPoint() {
   disableButtons();
-  globalAnimationStart = new Date().getTime();
-  setTimeout(finishAnimation, XLCV_ANIMATION_DURATION);
-  animationInterval = setInterval(globalXLCV._updateView.bind(globalXLCV, false), 1000/60);
+  animationRunTime = 0;
+  animationHarmonizer.start();
 
   globalDataSource.insert(globalDataSource.getLength()-5, {
     primary: Math.random() * 20000,
@@ -29,14 +39,7 @@ function insertPoint() {
 
 function deletePoint() {
   disableButtons();
-  globalAnimationStart = new Date().getTime();
-  setTimeout(finishAnimation, XLCV_ANIMATION_DURATION);
-  animationInterval = setInterval(globalXLCV._updateView.bind(globalXLCV, false), 1000/60);
+  animationRunTime = 0;
+  animationHarmonizer.start();
   globalDataSource.delete(globalDataSource.getLength()-5);
-}
-
-function finishAnimation() {
-  clearInterval(animationInterval);
-  enableButtons();
-  globalXLCV._updateView(false);
 }
