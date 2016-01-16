@@ -1,4 +1,4 @@
-// scrollerjs version 0.0.5
+// scrollerjs version 0.2.0
 //
 // Copyright (c) 2015, Alex Nichol and Jonathan Loeb.
 // All rights reserved.
@@ -39,8 +39,11 @@
     exports = module.exports;
   }
 
-  function View(barPosition, content) {
+  function View(barPosition, context) {
     window.EventEmitter.call(this);
+
+    var harmonizerContext = context || window.harmonizer.defaultContext;
+    this._scrollWheelHarmonizer = new window.harmonizer.Harmonizer(context || harmonizerContext);
 
     this._barPosition = barPosition;
     this._element = document.createElement('div');
@@ -311,7 +314,8 @@
 
   View.prototype._startEasing = function(velocity) {
     this._stopEasing();
-    this._ease = new Ease(-velocity, this.getState().getScrolledPixels());
+    var h = this._scrollWheelHarmonizer.spawnChild();
+    this._ease = new Ease(h, -velocity, this.getState().getScrolledPixels());
     this._ease.on('offset', function(x) {
       if (x < 0 || x > this.getState().maxScrolledPixels()) {
         this._stopEasing();
@@ -321,6 +325,7 @@
       this._emitScroll();
     }.bind(this));
     this._ease.on('done', function() {
+      this._scrollWheelHarmonizer.removeChild(this._ease.harmonizer());
       this._ease = null;
     }.bind(this));
     this._ease.start();
@@ -329,6 +334,7 @@
   View.prototype._stopEasing = function() {
     if (this._ease !== null) {
       this._ease.cancel();
+      this._scrollWheelHarmonizer.removeChild(this._ease.harmonizer());
       this._ease = null;
     }
   };
@@ -338,32 +344,31 @@
 
     var pendingDelta = 0;
     var secondaryDelta = 0;
-    var pendingRequest = false;
-    this._element.addEventListener('wheel', function(e) {
-      if (!pendingRequest) {
-        pendingRequest = true;
-        window.requestAnimationFrame(function() {
-          pendingRequest = false;
 
-          // NOTE: when you scroll vertically on a trackpad on OS X,
-          // it unwantedly scrolls horizontally by a slight amount.
-          if (Math.abs(secondaryDelta) > 2*Math.abs(pendingDelta)) {
-            pendingDelta = 0;
-            secondaryDelta = 0;
-            return;
-          }
+    this._scrollWheelHarmonizer.on('animationFrame', function() {
+      this._scrollWheelHarmonizer.stop();
 
-          var state = this.getState();
-          this.setState(new State(state.getTotalPixels(), state.getVisiblePixels(),
-            state.getScrolledPixels() + pendingDelta));
-          this._emitScroll();
-
-          pendingDelta = 0;
-          secondaryDelta = 0;
-
-          this.flash();
-        }.bind(this));
+      // NOTE: when you scroll vertically on a trackpad on OS X,
+      // it unwantedly scrolls horizontally by a slight amount.
+      if (Math.abs(secondaryDelta) > 2*Math.abs(pendingDelta)) {
+        pendingDelta = 0;
+        secondaryDelta = 0;
+        return;
       }
+
+      var state = this.getState();
+      this.setState(new State(state.getTotalPixels(), state.getVisiblePixels(),
+        state.getScrolledPixels() + pendingDelta));
+      this._emitScroll();
+
+      pendingDelta = 0;
+      secondaryDelta = 0;
+
+      this.flash();
+    }.bind(this));
+
+    this._element.addEventListener('wheel', function(e) {
+      this._scrollWheelHarmonizer.start();
       if (this._bar.getOrientation() === Bar.ORIENTATION_HORIZONTAL) {
         pendingDelta += e.deltaX;
         secondaryDelta += e.deltaY;
@@ -507,17 +512,17 @@
 
   // Ease is used to gradually slow down a scroll view
   // after being flicked by the user.
-  function Ease(startVelocity, startOffset) {
+  function Ease(harmonizer, startVelocity, startOffset) {
     window.EventEmitter.call(this);
 
+    this._harmonizer = harmonizer;
     this._startVelocity = startVelocity;
     this._startOffset = startOffset;
     this._startTime = null;
     this._req = null;
 
     this._acceleration = -startVelocity / Ease.DURATION;
-
-    this._boundTick = this._tick.bind(this);
+    this._harmonizer.on('animationFrame', this._tick.bind(this));
   }
 
   Ease.DURATION = 1000;
@@ -525,26 +530,19 @@
   Ease.prototype = Object.create(window.EventEmitter.prototype);
   Ease.prototype.constructor = Ease;
 
+  Ease.prototype.harmonizer = function() {
+    return this._harmonizer;
+  };
+
   Ease.prototype.start = function() {
-    this._req = window.requestAnimationFrame(this._boundTick);
+    this._harmonizer.start();
   };
 
   Ease.prototype.cancel = function() {
-    if (this._req !== null) {
-      window.cancelAnimationFrame(this._req);
-      this._req = null;
-    }
+    this._harmonizer.stop();
   };
 
-  Ease.prototype._tick = function(time) {
-    this._req = window.requestAnimationFrame(this._boundTick);
-
-    if (this._startTime === null) {
-      this._startTime = time;
-      return;
-    }
-
-    var elapsedTime = time - this._startTime;
+  Ease.prototype._tick = function(elapsedTime) {
     if (elapsedTime < 0) {
       this.cancel();
       this.emit('done');

@@ -1,5 +1,8 @@
-function View() {
-  this._scrollView = new window.scrollerjs.View(window.scrollerjs.View.BAR_POSITION_BOTTOM);
+function View(harmonizerContext) {
+  this._harmonizerContext = harmonizerContext || window.harmonizer.defaultContext;
+
+  this._scrollView = new window.scrollerjs.View(window.scrollerjs.View.BAR_POSITION_BOTTOM,
+    this._harmonizerContext);
   this._contentView = null;
   this._animate = false;
 
@@ -74,12 +77,12 @@ View.prototype._handleScroll = function() {
 };
 
 View.prototype._registerMouseEvents = function() {
-  // We use window.requestAnimationFrame() to buffer cursor movements.
+  // Use a Harmonizer to buffer cursor movements; otherwise they come in too rapidly.
+  var harmonizer = new window.harmonizer.Harmonizer(this._harmonizerContext);
   var mousePosition = null;
-  var animationFrame = null;
 
-  var updateMousePosition = function() {
-    animationFrame = null;
+  harmonizer.makeSingleShot();
+  harmonizer.on('paint', function() {
     if (this._contentView !== null) {
       if (mousePosition !== null) {
         this._contentView.pointerMove(mousePosition);
@@ -87,24 +90,20 @@ View.prototype._registerMouseEvents = function() {
         this._contentView.pointerLeave();
       }
     }
-  }.bind(this);
+  }.bind(this));
 
   this.element().addEventListener('mousemove', function(e) {
-    if (animationFrame === null) {
-      animationFrame = window.requestAnimationFrame(updateMousePosition);
-    }
     var rect = this.element().getBoundingClientRect();
     mousePosition = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
+    harmonizer.start();
   }.bind(this));
 
   this.element().addEventListener('mouseleave', function(e) {
-    if (animationFrame === null) {
-      animationFrame = window.requestAnimationFrame(updateMousePosition);
-    }
     mousePosition = null;
+    harmonizer.start();
   }.bind(this));
 
   this.element().addEventListener('click', function(e) {

@@ -7,9 +7,9 @@ function CurveStyle(attrs) {
 CurveStyle.prototype = Object.create(DotStyle.prototype);
 CurveStyle.prototype.constructor = CurveStyle;
 
-CurveStyle.prototype.createChunkView = function(chunk, dataSource) {
+CurveStyle.prototype.createChunkView = function(chunk, dataSource, harmonizerContext) {
   return new CurveChunkView(this._dotAttrs.copyAttributes(), this.copyAttributes(), chunk,
-    dataSource);
+    dataSource, harmonizerContext);
 };
 
 exports.CurveStyle = CurveStyle;

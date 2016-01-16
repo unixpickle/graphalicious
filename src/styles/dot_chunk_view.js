@@ -1,7 +1,7 @@
 //deps bar_chunk_view.js
 
-function DotChunkView(dotAttrs, attrs, chunk, dataSource) {
-  BarChunkView.call(this, attrs, chunk, dataSource);
+function DotChunkView(dotAttrs, attrs, chunk, dataSource, harmonizerContext) {
+  BarChunkView.call(this, attrs, chunk, dataSource, harmonizerContext);
   this._dotAttrs = dotAttrs;
 }
 

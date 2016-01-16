@@ -113,7 +113,7 @@ FullCurveStyle.prototype.computeRegion = function(range, pointCount) {
   return this._attrs.computeRegion(range, pointCount);
 };
 
-FullCurveStyle.prototype.createChunkView = function(chunk, dataSource) {
+FullCurveStyle.prototype.createChunkView = function(chunk, dataSource, harmonizerContext) {
   return new FullCurveChunkView(this._attrs.copyAttributes(), chunk, dataSource);
 };
 

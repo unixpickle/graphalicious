@@ -21,6 +21,7 @@ The *YLCVSettings* type stores all of the configuration parameters for a YLCV. I
  * [SplashScreen](SplashScreen.md) splashScreen
  * [InlineLoaderView](InlineLoaderView.md) loader1
  * [InlineLoaderView](InlineLoaderView.md) loader2
+ * [harmonizer.Context](https://github.com/unixpickle/harmonizer) harmonizerContext - the harmonizer context to use for this content view and all of its *ChunkView*s. If unspecified, the YLCV will use the default harmonizer context.
  * *number* topMargin - the number of pixels above the content.
  * *number* bottomMargin - the number of pixels below the content.
  * *number* labelLeftMargin - the space to the left of the text of any label.

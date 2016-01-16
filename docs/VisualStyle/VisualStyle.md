@@ -36,7 +36,7 @@ Note that the *VisualStyle* interface itself does not do everything that a visua
 
  * [Range](#the-range-type) computeRange(region, pointCount) - compute the smallest range such that, if a *ChunkView* were created with that range, the region of its partial landscape would encompass the given region. If the answer is ambiguous (i.e. two or more ranges yield the same result), this should return the one with the greatest startIndex. If the given region extends below an offset of 0 or above the width of the complete landscape, it will be cropped. You must pass pointCount in order for the *VisualStyle* to compute information about the complete landscape.
  * [Region](#the-region-type) computeRegion(range, pointCount) - compute the region of the partial landscape of the *ChunkView* which would be created for a given range. You must pass the pointCount in order for the *VisualStyle* to compute information about the complete landscape. The indices within the given range will be cropped so as not to exceed the *DataSource*.
- * [ChunkView](ChunkView.md) createChunkView(chunk, dataSource) - create a *ChunkView* for the given chunk.
+ * [ChunkView](ChunkView.md) createChunkView(chunk, dataSource, context) - create a *ChunkView* for the given chunk. The third argument is the [harmonizer](https://github.com/unixpickle/harmonizer) context that the *ChunkView* should use for animations.
 
 ## Events
 

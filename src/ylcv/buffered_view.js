@@ -44,8 +44,11 @@ function BufferedView(config) {
 
   this._currentCursorPosition = null;
 
-  this._boundDraw = this.draw.bind(this);
-  this._visualStyle.on('superficialChange', this._boundDraw);
+  this._harmonizer = new window.harmonizer.Harmonizer(config.harmonizerContext);
+  this._visualStyle.on('superficialChange', function() {
+    this._harmonizer.requestPaint();
+  }.bind(this));
+  this._harmonizer.on('paint', this.draw.bind(this));
 }
 
 BufferedView.STATE_SPLASH = 0;
@@ -62,6 +65,11 @@ BufferedView.LINE_WIDTH = 2;
 BufferedView.prototype = Object.create(EventEmitter.prototype);
 BufferedView.prototype.constructor = BufferedView;
 
+// harmonizer returns the root harmonizer.
+BufferedView.prototype.harmonizer = function() {
+  return this._harmonizer;
+};
+
 // element returns the root DOM element of the view.
 BufferedView.prototype.element = function() {
   return this._element;
@@ -70,7 +78,10 @@ BufferedView.prototype.element = function() {
 // dispose removes any registered event listeners on the ChunkView and VisualStyle.
 BufferedView.prototype.dispose = function() {
   if (this._chunkView) {
-    this._chunkView.removeListener('redraw', this._boundDraw);
+    var harmonizer = this._chunkView.harmonizer();
+    if (harmonizer !== null) {
+      this._harmonizer.removeChild(this._chunkView.harmonizer());
+    }
   }
   this._visualStyle.removeListener('superficialChange', this._boundDraw);
 };
@@ -83,7 +94,7 @@ BufferedView.prototype.context = function() {
 
 // layout updates the size of the BufferedView.
 //
-// You should manually call draw() after calling this.
+// You should manually request a paint after calling this.
 BufferedView.prototype.layout = function(w, h) {
   w = Math.ceil(w);
   h = Math.ceil(h);
@@ -145,14 +156,17 @@ BufferedView.prototype.getChunkView = function() {
 // setChunkView changes the ChunkView that this view uses to draw.
 // You may pass null to indicate that there is no available ChunkView.
 //
-// You should manually call draw() after calling this.
+// You should manually request a paint after calling this.
 BufferedView.prototype.setChunkView = function(cv) {
   if (this._chunkView === cv) {
     return;
   }
 
   if (this._chunkView !== null) {
-    this._chunkView.removeListener('redraw', this._boundDraw);
+    var harmonizer = this._chunkView.harmonizer();
+    if (harmonizer !== null) {
+      this._harmonizer.removeChild(harmonizer);
+    }
     if (cv) {
       cv.handoff(this._chunkView);
     }
@@ -201,7 +215,10 @@ BufferedView.prototype.setChunkView = function(cv) {
       }
       break;
     }
-    cv.on('redraw', this._boundDraw);
+    var harmonizer = cv.harmonizer();
+    if (harmonizer !== null) {
+      this._harmonizer.appendChild(harmonizer);
+    }
   }
 };
 
@@ -212,7 +229,7 @@ BufferedView.prototype.getChunkViewOffset = function() {
 
 // setChunkViewOffset changes the scroll offset.
 //
-// You should manually call draw() after calling this.
+// You should manually request a paint after calling this.
 BufferedView.prototype.setChunkViewOffset = function(val) {
   this._chunkViewOffset = val;
 };
@@ -220,7 +237,7 @@ BufferedView.prototype.setChunkViewOffset = function(val) {
 // setChunkViewMargins tells the view how many data points are before
 // and after the current chunk.
 //
-// You should manually call draw() after calling this.
+// You should manually request a paint after calling this.
 BufferedView.prototype.setChunkViewMargins = function(val) {
   this._chunkViewMargins = val;
 };

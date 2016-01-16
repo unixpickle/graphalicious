@@ -28,7 +28,7 @@ View.CONFIG_ATTRS = ['visualStyle', 'dataSource', 'splashScreen', 'loader1', 'lo
   'topMargin', 'bottomMargin', 'labelLeftMargin', 'labelRightMargin', 'labelColor',
   'labelFont', 'separatorColor', 'formatValue', 'roundValue', 'topLabelSpace',
   'minSpacing', 'maxSpacing', 'emphasizeRight', 'constrictFullViewportTop',
-  'constrictFullViewportBottom'];
+  'constrictFullViewportBottom', 'harmonizerContext'];
 
 View.DEFAULTS = {
   topMargin: 20,
@@ -43,7 +43,8 @@ View.DEFAULTS = {
   maxSpacing: 70,
   emphasizeRight: true,
   constrictFullViewportTop: false,
-  constrictFullViewportBottom: false
+  constrictFullViewportBottom: false,
+  harmonizerContext: window.harmonizer.defaultContext
 };
 
 View.prototype = Object.create(EventEmitter.prototype);
@@ -128,7 +129,7 @@ View.prototype._updateView = function(emitChange) {
       this._headlessView.instantaneousState().getLeftmostLabels().totalWidth();
     this._bufferedView.setChunkViewOffset(cv);
 
-    this._bufferedView.draw();
+    this._bufferedView.harmonizer().requestPaint();
   } else {
     if (this._bufferedView.showingSplash() && this._lastScrollState) {
       this._lastScrollState = null;
@@ -138,7 +139,7 @@ View.prototype._updateView = function(emitChange) {
     this._bufferedView.setYLabels(null);
     this._bufferedView.setChunkViewOffset(0);
     this._bufferedView.setChunkViewMargins(null);
-    this._bufferedView.draw();
+    this._bufferedView.harmonizer().requestPaint();
   }
 
   this._updateLoaderStates();

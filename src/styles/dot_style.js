@@ -31,9 +31,9 @@ DotStyle.prototype.setAttributes = function(attrs) {
   BarStyle.prototype.setAttributes.call(this, dotAttrsToBarAttrs(attrs));
 };
 
-DotStyle.prototype.createChunkView = function(chunk, dataSource) {
+DotStyle.prototype.createChunkView = function(chunk, dataSource, harmonizerContext) {
   return new DotChunkView(this._dotAttrs.copyAttributes(), this.copyAttributes(), chunk,
-    dataSource);
+    dataSource, harmonizerContext);
 };
 
 function dotAttrsToBarAttrs(attrs) {

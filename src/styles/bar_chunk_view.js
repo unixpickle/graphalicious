@@ -1,7 +1,10 @@
 //deps includes.js
 
-function BarChunkView(attrs, chunk, dataSource) {
+function BarChunkView(attrs, chunk, dataSource, harmonizerContext) {
   EventEmitter.call(this);
+
+  assert('object' === typeof harmonizerContext);
+  this._harmonizerContext = harmonizerContext;
 
   this._attrs = attrs;
   this._chunk = chunk;
@@ -45,6 +48,10 @@ BarChunkView.prototype.handoff = function(oldChunkView) {
   this._blurbManager.removeAllListeners();
   this._blurbManager = oldChunkView._blurbManager;
   this._registerBlurbManagerEvents();
+};
+
+BarChunkView.prototype.harmonizer = function() {
+  return null;
 };
 
 BarChunkView.prototype.getWidth = function() {

@@ -16,6 +16,10 @@ FullCurveChunkView.prototype.constructor = FullCurveChunkView;
 FullCurveChunkView.prototype.handoff = function(oldChunkView) {
 };
 
+FullCurveChunkView.prototype.harmonizer = function() {
+  return null;
+};
+
 FullCurveChunkView.prototype.getWidth = function() {
   return this._attrs.computeRegion({
     startIndex: this._chunk.getStartIndex(),

@@ -203,7 +203,7 @@ HeadlessView.prototype._dataSourceLoad = function(chunkIndex) {
     this._loadingCurrentChunk = false;
     var chunk = this._config.dataSource.getChunk(chunkIndex);
     this._chunkView = this._config.visualStyle.createChunkView(chunk,
-      this._config.dataSource);
+      this._config.dataSource, this._config.harmonizerContext);
     this._updateYLabels();
   } else {
     this._needsLeftmostChunk = false;
@@ -520,7 +520,7 @@ HeadlessView.prototype._handleMetricChange = function() {
   if (this._chunkView !== null) {
     var chunk = this._config.dataSource.getChunk(HeadlessView.CURRENT_CHUNK);
     this._chunkView = this._config.visualStyle.createChunkView(chunk,
-      this._config.dataSource);
+      this._config.dataSource, this._config.harmonizerContext);
   }
 
   this._updateYLabels();

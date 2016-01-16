@@ -10,7 +10,7 @@ A *ContentView* does not determine its own size. An external agent (usually a [V
 
 It would be silly for an off-screen *ContentView* to perform animations. Therefore, it is possible to tell a *ContentView* whether or not it should show animations.
 
-The *ContentView* is responsible for managing *ChunkView*s. For instance, it is responsible for passing pointer events from its parent *View* to its child *ChunkView*. In addition, it must add the current *ChunkView*'s *Harmonizer* to its root harmonizer so that it responds to the *ChunkView*'s redraw requests.
+The *ContentView* is responsible for managing *ChunkView*s. For instance, it is responsible for passing pointer events from its parent *View* to its child *ChunkView*. In addition, it must add the current *ChunkView*'s *Harmonizer* to its root harmonizer so that the *ContentView* responds to the *ChunkView*'s redraw requests.
 
 # Methods
 
@@ -19,7 +19,6 @@ A *ContentView* must implement the following methods:
  * [State](https://github.com/unixpickle/scroller.js#the-state-class) getScrollState() - get the *ContentView*'s current scroll state.
  * *void* setScrolledPixels(pixels) - update the scroll offset of the *ContentView*'s scrolling state.
  * *DOMElement* element() - get the visual DOM element for the view. This element should use absolute positioning. The *ContentView* must set its width appropriately.
- * [Harmonizer](https://github.com/unixpickle/harmonizer) harmonizer() - get the *ContentView*'s root *Harmonizer*.
  * *void* layout(width, height) - update the *ContentView*'s dimensions.
  * *void* setAnimate(flag) - enable or disable animations.
  * *void* dispose() - tell the *ContentView* to deregister all of its events and remove references to its resources (such as the DataSource, the VisualStyle, and its ChunkViews).

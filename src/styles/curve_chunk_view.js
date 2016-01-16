@@ -1,7 +1,7 @@
 //deps dot_chunk_view.js
 
-function CurveChunkView(dotAttrs, attrs, chunk, dataSource) {
-  DotChunkView.call(this, dotAttrs, attrs, chunk, dataSource);
+function CurveChunkView(dotAttrs, attrs, chunk, dataSource, harmonizerContext) {
+  DotChunkView.call(this, dotAttrs, attrs, chunk, dataSource, harmonizerContext);
 
   this._newMorphingPrimaryY = -1;
   this._newMorphingSecondaryY = -1;
