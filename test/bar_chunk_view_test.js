@@ -14,11 +14,12 @@ function callAnimationFrameCb(arg) {
 }
 
 var importRes = require('./importer')([
+  '../demo/deps/harmonizer.js',
   'base/color_scheme.js', 'base/attrs.js', 'styles/bar_style.js',
   'styles/bar_xmarkers.js', 'styles/bar_draw_params.js', 'styles/bar_morphing.js',
   'styles/bar_chunk_view.js', 'styles/utilities.js', 'styles/blurb.js',
   'styles/blurb_manager.js'
-], ['BarStyle', 'ColorScheme', 'BarChunkView'], {
+], ['BarStyle', 'ColorScheme', 'BarChunkView', 'window.harmonizer'], {
   window: {
     requestAnimationFrame: function(f) {
       currentAnimationFrameCb = f;
@@ -34,6 +35,11 @@ var importRes = require('./importer')([
     },
     EventEmitter: require('events').EventEmitter
   },
+  performance: {
+    now: function() {
+      return 0;
+    }
+  },
   document: {
     createElement: function(name) {
       assert.equal(name, 'canvas');
@@ -46,6 +52,7 @@ var importRes = require('./importer')([
 var BarStyle = importRes.BarStyle;
 var ColorScheme = importRes.ColorScheme;
 var BarChunkView = importRes.BarChunkView;
+var harmonizer = importRes['window.harmonizer'];
 
 function testWidth() {
   var style = new BarStyle({
@@ -59,7 +66,7 @@ function testWidth() {
   var dataSource = DataSource.random(1000, 10, true);
   dataSource.insert(3, {primary: 5, secondary: -1});
   var chunk = dataSource.fetchChunkSync(0, 0, 100);
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
 
   assert(chunkView.getWidth() === 10+40*100+5*100);
 }
@@ -87,7 +94,7 @@ function testDrawBestCase() {
     dataSource.insert(3, {primary: 5, secondary: -1});
     var chunk = dataSource.fetchChunkSync(0, 0, 100);
 
-    var chunkView = style.createChunkView(chunk, dataSource);
+    var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
     var context = new Canvas().getContext('2d');
 
     var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
@@ -148,7 +155,7 @@ function testDrawBasicScrolling() {
     dataSource.insert(3, {primary: 5, secondary: -1});
     var chunk = dataSource.fetchChunkSync(0, 0, 100);
 
-    var chunkView = style.createChunkView(chunk, dataSource);
+    var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
     var context = new Canvas().getContext('2d');
 
     var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
@@ -227,7 +234,7 @@ function testDrawEdgeCases() {
   dataSource.insert(7, {primary: 5, secondary: -1});
   var chunk = dataSource.fetchChunkSync(0, 5, 10);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
@@ -353,7 +360,7 @@ function testDrawOffscreen() {
   var dataSource = DataSource.random(1000, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 10, 10);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
@@ -391,7 +398,7 @@ function testDrawOnePoint() {
   var dataSource = DataSource.random(1, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 0, 1);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
   var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
 
@@ -417,7 +424,7 @@ function testDrawOnePoint() {
   assert(report.xMarkers.getXMarker(0).x === viewport.x+5);
 
   style.setAttributes({xLabelAlignment: BarStyle.X_LABELS_RIGHT});
-  chunkView = style.createChunkView(chunk, dataSource);
+  chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
 
   var report = chunkView.draw(viewport, 0, 20);
   assert(report.xMarkers.getXMarker(0).x === viewport.x+10+40+5);
@@ -437,7 +444,7 @@ function testDrawNoData() {
   var dataSource = DataSource.random(0, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 0, 0);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
   var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
 
@@ -470,7 +477,7 @@ function testDrawEmptyChunk() {
   var dataSource = DataSource.random(10, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 5, 0);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {context: context, x: 10, y: 5, width: 313, height: 100};
@@ -532,7 +539,7 @@ function testDrawJustifiedStretch() {
     var dataSource = DataSource.random(30, 10, true);
     var chunk = dataSource.fetchChunkSync(0, 10, 10);
 
-    var chunkView = style.createChunkView(chunk, dataSource);
+    var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
     var context = new Canvas().getContext('2d');
 
     var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
@@ -573,7 +580,7 @@ function testDrawElongatedStretch() {
   var dataSource = DataSource.random(30, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 10, 10);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {context: context, x: 10, y: 5, width: 1500, height: 100};
@@ -628,7 +635,7 @@ function testDrawStretchEdgeCase() {
   var dataSource = DataSource.random(30, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 0, 30);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {context: context, x: 10, y: 5, width: 1353, height: 100};
@@ -678,7 +685,7 @@ function testDrawJustifiedElongated() {
     var dataSource = DataSource.random(10, 10, true);
     var chunk = dataSource.fetchChunkSync(0, 0, 10);
 
-    var chunkView = style.createChunkView(chunk, dataSource);
+    var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
     var context = new Canvas().getContext('2d');
 
     var viewport = {context: context, x: 10, y: 5, width: fullWidth * 3, height: 100};
@@ -719,7 +726,7 @@ function testDrawModifying() {
   var dataSource = DataSource.random(30, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 10, 10);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var oldPoint = chunk.getDataPoint(5);
@@ -773,7 +780,7 @@ function testDrawDeleting() {
   var dataSource = DataSource.random(30, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 10, 10);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var oldPoint = chunk.getDataPoint(5);
@@ -854,7 +861,7 @@ function testDrawInserting() {
   var dataSource = DataSource.random(29, 10, true);
   var chunk = dataSource.fetchChunkSync(0, 10, 9);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   dataSource.insert(15, {primary: 15, secondary: -1});
@@ -939,7 +946,7 @@ function testBlurbsNormal() {
   dataSource.insert(0, {primary: 15, secondary: 10});
   var chunk = dataSource.fetchChunkSync(0, 0, 30);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {
@@ -982,9 +989,9 @@ function testBlurbsNormal() {
   assert.equal(chunkView._blurbManager._currentBlurb, null);
   chunkView.draw(viewport, 0, 20);
   assert(chunkView._blurbManager._currentBlurb !== null);
-  callAnimationFrameCb(2000);
+  callAnimationFrameCb(0);
   chunkView.draw(viewport, 0, 20);
-  callAnimationFrameCb(4000);
+  callAnimationFrameCb(2000);
   chunkView.draw(viewport, 0, 20);
   assert.equal(currentAnimationFrameCb, null);
 
@@ -1027,7 +1034,7 @@ function testBlurbsElongated() {
   dataSource.insert(3, {primary: 12, secondary: -1});
   var chunk = dataSource.fetchChunkSync(0, 1, 3);
 
-  var chunkView = style.createChunkView(chunk, dataSource);
+  var chunkView = style.createChunkView(chunk, dataSource, harmonizer.defaultContext);
   var context = new Canvas().getContext('2d');
 
   var viewport = {
@@ -1072,9 +1079,9 @@ function testBlurbsElongated() {
   assert.equal(chunkView._blurbManager._currentBlurb, null);
   chunkView.draw(viewport, 0, 20);
   assert(chunkView._blurbManager._currentBlurb !== null);
-  callAnimationFrameCb(2000);
+  callAnimationFrameCb(0);
   chunkView.draw(viewport, 0, 20);
-  callAnimationFrameCb(4000);
+  callAnimationFrameCb(2000);
   chunkView.draw(viewport, 0, 20);
   assert.equal(currentAnimationFrameCb, null);
 
