@@ -5,10 +5,9 @@
 //
 // This emits 'redraw' events whenever the blurb's state has changed
 // in a way that was not directly caused by an update().
-function BlurbManager(config) {
-  EventEmitter.call(this);
-
+function BlurbManager(config, harmonizerContext) {
   this._config = config;
+  this._harmonizer = new window.harmonizer.Harmonizer(harmonizerContext);
 
   this._currentBlurb = null;
   this._currentBlurbViewport = null;
@@ -17,9 +16,6 @@ function BlurbManager(config) {
   this._lastViewport = null;
   this._lastScrollX = null;
   this._disableBlurbTimeout = null;
-
-  this._boundBlurbRedraw = this._handleBlurbRedraw.bind(this);
-  this._boundBlurbHidden = this._handleBlurbHidden.bind(this);
 }
 
 BlurbManager.CHANGE_DISABLE_TIME = 500;
@@ -55,7 +51,9 @@ BlurbManager.copyNumericalViewport = function(v) {
   return res;
 };
 
-BlurbManager.prototype = Object.create(EventEmitter.prototype);
+BlurbManager.prototype.harmonizer = function() {
+  return this._harmonizer;
+};
 
 // update updates the blurb's state using info from a ChunkView that is being drawn.
 BlurbManager.prototype.update = function(animating, viewport, scrollX, point, text) {
@@ -69,7 +67,7 @@ BlurbManager.prototype.update = function(animating, viewport, scrollX, point, te
     }
     this._disableBlurbTimeout = setTimeout(function() {
       this._disableBlurbTimeout = null;
-      this.emit('redraw');
+      this.harmonizer().requestPaint();
     }.bind(this), BlurbManager.CHANGE_DISABLE_TIME);
   }
 
@@ -85,12 +83,13 @@ BlurbManager.prototype.update = function(animating, viewport, scrollX, point, te
   }
 
   if (this._currentBlurb === null) {
-    this._currentBlurb = new Blurb(viewport, this._config, point, text);
+    this._currentBlurb = new Blurb(viewport, this._config, point, text,
+      this.harmonizer().getContext());
+    this.harmonizer().appendChild(this._currentBlurb.harmonizer());
     this._currentBlurb.fadeIn();
     this._currentBlurbScrollX = scrollX;
     this._currentBlurbViewport = this._lastViewport;
-    this._currentBlurb.on('redraw', this._boundBlurbRedraw);
-    this._currentBlurb.on('hidden', this._boundBlurbHidden);
+    this._currentBlurb.once('hidden', this._handleBlurbHidden.bind(this));
     return;
   }
 
@@ -108,13 +107,8 @@ BlurbManager.prototype.blurb = function() {
   return this._currentBlurb;
 };
 
-BlurbManager.prototype._handleBlurbRedraw = function() {
-  this.emit('redraw');
-};
-
 BlurbManager.prototype._handleBlurbHidden = function() {
-  this._currentBlurb.removeListener('redraw', this._boundBlurbRedraw);
-  this._currentBlurb.removeListener('hidden', this._boundBlurbHidden);
+  this.harmonizer().removeChild(this._currentBlurb.harmonizer());
+  this.harmonizer().requestPaint();
   this._currentBlurb = null;
-  this.emit('redraw');
 };

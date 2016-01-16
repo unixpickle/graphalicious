@@ -1,4 +1,4 @@
-// harmonizer version 0.4.0
+// harmonizer version 0.4.1
 //
 // Copyright (c) 2016, Alex Nichol.
 // All rights reserved.
@@ -90,6 +90,10 @@
 
   Harmonizer.prototype = Object.create(EventEmitter.prototype);
   Harmonizer.prototype.constructor = Harmonizer;
+
+  Harmonizer.prototype.getContext = function() {
+    return this._context;
+  };
 
   Harmonizer.prototype.start = function() {
     switch (this._animationState) {

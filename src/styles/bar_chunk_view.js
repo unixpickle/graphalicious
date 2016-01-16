@@ -24,9 +24,8 @@ function BarChunkView(attrs, chunk, dataSource, harmonizerContext) {
   this._animationProgress = 0;
 
   this._pointerPosition = null;
-  this._blurbManager = new BlurbManager(attrs);
-  // TODO: use a harmonizer for the blurb manager.
-  this._registerBlurbManagerEvents();
+  this._blurbManager = new BlurbManager(attrs, this._harmonizerContext);
+  this.harmonizer().appendChild(this._blurbManager.harmonizer());
 }
 
 BarChunkView.ANIMATION_NONE = 0;
@@ -45,10 +44,10 @@ BarChunkView.prototype = Object.create(EventEmitter.prototype);
 BarChunkView.prototype.constructor = BarChunkView;
 
 BarChunkView.prototype.handoff = function(oldChunkView) {
-  oldChunkView._blurbManager.removeAllListeners();
-  this._blurbManager.removeAllListeners();
+  oldChunkView.harmonizer().removeChild(oldChunkView._blurbManager.harmonizer());
+  this.harmonizer().removeChild(this._blurbManager.harmonizer());
   this._blurbManager = oldChunkView._blurbManager;
-  this._registerBlurbManagerEvents();
+  this.harmonizer().appendChild(this._blurbManager.harmonizer());
 };
 
 BarChunkView.prototype.harmonizer = function() {
@@ -561,10 +560,4 @@ BarChunkView.prototype._morphingGetPointProperness = function(idx) {
   }
 
   return amountProper;
-};
-
-BarChunkView.prototype._registerBlurbManagerEvents = function() {
-  this._blurbManager.on('redraw', function() {
-    this.harmonizer().requestPaint();
-  }.bind(this));
 };

@@ -6,7 +6,7 @@
 // Blurbs can be animated in and out.
 // While a blurb is animating, it will emit 'redraw' events periodically.
 // When a Blurb is fully faded out, it will emit a 'hidden' event instead of a 'redraw' event.
-function Blurb(viewport, config, point, text) {
+function Blurb(viewport, config, point, text, harmonizerContext) {
   EventEmitter.call(this);
 
   this._viewport = viewport;
@@ -14,6 +14,7 @@ function Blurb(viewport, config, point, text) {
   this._point = point;
   this._text = text;
   this._strikethrough = (this._text[0] === '!');
+  this._harmonizer = new window.harmonizer.Harmonizer(harmonizerContext);
 
   if (point.y+viewport.fullY >= viewport.fullHeight-Blurb.UP_DOWN_THRESHOLD) {
     this._side = Blurb.UP;
@@ -24,11 +25,10 @@ function Blurb(viewport, config, point, text) {
   }
 
   this._fadingIn = true;
-  this._animationFrame = null;
-  this._lastDrawTime = null;
-  this._animationStartTime = null;
-  this._animationStartTimeOffset = 0;
-  this._boundAnimationFrame = this._handleAnimationFrame.bind(this);
+  this._animating = false;
+  this._animationElapsed = 0;
+  this._animationTimeOffset = 0;
+  this._harmonizer.on('animationFrame', this._handleAnimationFrame.bind(this));
 
   this._cachedCanvas = null;
   this._cachedCanvasDrawRect = null;
@@ -74,6 +74,10 @@ Blurb.OUT_DURATION = 150;
 
 Blurb.prototype = Object.create(EventEmitter.prototype);
 
+Blurb.prototype.harmonizer = function() {
+  return this._harmonizer;
+};
+
 Blurb.prototype.getPoint = function() {
   return this._point;
 };
@@ -83,7 +87,7 @@ Blurb.prototype.getText = function() {
 };
 
 Blurb.prototype.fadeIn = function() {
-  if (this._fadingIn && this._animationFrame !== null) {
+  if (this._fadingIn && this._animating) {
     return;
   }
 
@@ -91,18 +95,18 @@ Blurb.prototype.fadeIn = function() {
   if (alpha === 1) {
     return;
   } else if (alpha > 0) {
-    this._animationStartTimeOffset = Blurb.IN_DELAY + Blurb.IN_DURATION*alpha;
+    this._animationTimeOffset = Blurb.IN_DELAY + Blurb.IN_DURATION*alpha;
   } else {
-    this._animationStartTimeOffset = 0;
+    this._animationTimeOffset = 0;
   }
 
-  this._lastDrawTime = null;
-  this._animationStartTime = null;
   this._fadingIn = true;
+  this._animationElapsed = 0;
+  this._animating = true;
 
-  if (this._animationFrame === null) {
-    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
-  }
+  // NOTE: we stop() before we start() to reset harmonizer's elapsed counter.
+  this._harmonizer.stop();
+  this._harmonizer.start();
 };
 
 Blurb.prototype.fadeOut = function() {
@@ -112,18 +116,18 @@ Blurb.prototype.fadeOut = function() {
 
   var alpha = this._currentAlpha();
   if (alpha < 1) {
-    this._animationStartTimeOffset = Blurb.OUT_DURATION*(1-alpha);
+    this._animationTimeOffset = Blurb.OUT_DURATION*(1-alpha);
   } else {
-    this._animationStartTimeOffset = 0;
+    this._animationTimeOffset = 0;
   }
 
-  this._lastDrawTime = null;
-  this._animationStartTime = null;
   this._fadingIn = false;
+  this._animationElapsed = 0;
+  this._animating = true;
 
-  if (this._animationFrame === null) {
-    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
-  }
+  // NOTE: we stop() before we start() to reset harmonizer's elapsed counter.
+  this._harmonizer.stop();
+  this._harmonizer.start();
 };
 
 Blurb.prototype.draw = function(context) {
@@ -281,10 +285,7 @@ Blurb.prototype._textToDraw = function() {
 };
 
 Blurb.prototype._currentAlpha = function() {
-  var elapsedTime = this._animationStartTimeOffset;
-  if (this._animationStartTime !== null) {
-    elapsedTime += this._lastDrawTime - this._animationStartTime;
-  }
+  var elapsedTime = this._animationElapsed + this._animationTimeOffset;
   if (this._fadingIn) {
     return Math.max(0, Math.min(1, (elapsedTime-Blurb.IN_DELAY)/Blurb.IN_DURATION));
   } else {
@@ -293,22 +294,15 @@ Blurb.prototype._currentAlpha = function() {
 };
 
 Blurb.prototype._handleAnimationFrame = function(time) {
-  this._animationFrame = null;
+  this.harmonizer().requestPaint();
 
-  this._lastDrawTime = time;
-  if (this._animationStartTime === null) {
-    this._animationStartTime = time;
-    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
-    return;
-  }
-
+  this._animationElapsed = time;
   var alpha = this._currentAlpha();
-  if ((alpha < 1 && this._fadingIn) || (alpha > 0 && !this._fadingIn)) {
-    this._animationFrame = window.requestAnimationFrame(this._boundAnimationFrame);
-  } else if (!this._fadingIn) {
-    this.emit('hidden');
-    return;
+  if ((alpha === 1 && this._fadingIn) || (alpha === 0 && !this._fadingIn)) {
+    this._animating = false;
+    this._harmonizer.stop();
+    if (!this._fadingIn) {
+      this.emit('hidden');
+    }
   }
-
-  this.emit('redraw');
 };
