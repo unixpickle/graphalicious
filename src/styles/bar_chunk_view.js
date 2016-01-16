@@ -16,15 +16,16 @@ function BarChunkView(attrs, chunk, dataSource, harmonizerContext) {
     this._dataPoints.push(chunk.getDataPoint(i));
   }
 
-  this._animationFrame = null;
-  this._animationProgress = 0;
-  this._animationStartTime = -1;
+  this._landscapeHarmonizer = new window.harmonizer.Harmonizer(this._harmonizerContext);
+  this._landscapeHarmonizer.on('animationFrame', this._animate.bind(this));
   this._animationType = BarChunkView.ANIMATION_NONE;
   this._animationDataPoint = null;
   this._animationPointIndex = 0;
+  this._animationProgress = 0;
 
   this._pointerPosition = null;
   this._blurbManager = new BlurbManager(attrs);
+  // TODO: use a harmonizer for the blurb manager.
   this._registerBlurbManagerEvents();
 }
 
@@ -51,7 +52,7 @@ BarChunkView.prototype.handoff = function(oldChunkView) {
 };
 
 BarChunkView.prototype.harmonizer = function() {
-  return null;
+  return this._landscapeHarmonizer;
 };
 
 BarChunkView.prototype.getWidth = function() {
@@ -134,21 +135,18 @@ BarChunkView.prototype.modification = function(index, animate) {
 };
 
 BarChunkView.prototype.finishAnimation = function() {
-  if (this._animationFrame !== null) {
-    window.cancelAnimationFrame(this._animationFrame);
-    this._animationFrame = null;
-    this._animationType = BarChunkView.ANIMATION_NONE;
-  }
+  this._landscapeHarmonizer.stop();
+  this._animationType = BarChunkView.ANIMATION_NONE;
 };
 
 BarChunkView.prototype.pointerLeave = function() {
   this._pointerPosition = null;
-  this.emit('redraw');
+  this.harmonizer().requestPaint();
 };
 
 BarChunkView.prototype.pointerMove = function(pos) {
   this._pointerPosition = pos;
-  this.emit('redraw');
+  this.harmonizer().requestPaint();
 };
 
 BarChunkView.prototype.pointerClick = function() {
@@ -425,14 +423,9 @@ BarChunkView.prototype._computeHoverInformation = function(pointerPos, drawParam
   return null;
 };
 
-BarChunkView.prototype._animate = function(time) {
-  if (this._animationStartTime < 0) {
-    this._animationStartTime = time;
-    this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
-    return;
-  }
-
-  var elapsed = (time - this._animationStartTime) / BarChunkView.ANIMATION_DURATION;
+BarChunkView.prototype._animate = function(elapsedMillis) {
+  this.harmonizer().requestPaint();
+  var elapsed = elapsedMillis / BarChunkView.ANIMATION_DURATION;
   if (elapsed >= 1) {
     elapsed = 1;
   }
@@ -442,7 +435,6 @@ BarChunkView.prototype._animate = function(time) {
     this.emit('animationFrame', 1);
     this.emit('animationEnd');
   } else {
-    this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
     this.emit('animationFrame', elapsed);
   }
 };
@@ -451,9 +443,8 @@ BarChunkView.prototype._startAnimation = function(index, type, point) {
   this._animationPointIndex = index;
   this._animationDataPoint = point;
   this._animationProgress = 0;
-  this._animationStartTime = -1;
-  this._animationFrame = window.requestAnimationFrame(this._animate.bind(this));
   this._animationType = type;
+  this._landscapeHarmonizer.start();
 };
 
 BarChunkView.prototype._morphingLandscape = function() {
@@ -574,9 +565,6 @@ BarChunkView.prototype._morphingGetPointProperness = function(idx) {
 
 BarChunkView.prototype._registerBlurbManagerEvents = function() {
   this._blurbManager.on('redraw', function() {
-    // Avoid redrawing twice per animation frame.
-    if (this._animationFrame === null) {
-      this.emit('redraw');
-    }
+    this.harmonizer().requestPaint();
   }.bind(this));
 };
