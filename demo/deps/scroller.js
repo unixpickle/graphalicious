@@ -209,24 +209,27 @@
   };
 
   View.prototype._handleTouchStart = function(e) {
-    e.preventDefault();
-
     // NOTE: the user can't simultaneously tap and stop easing.
-    this._touchTriggerClick = (this._ease === null);
-
+    if (this._ease !== null) {
+      e.preventDefault();
+      this._touchTriggerClick = false;
+    } else {
+      this._touchTriggerClick = true;
+    }
     this._draggingStart(this._touchEventCoordinate(e));
   };
 
   View.prototype._handleTouchMove = function(e) {
     if (this._draggingMove(this._touchEventCoordinate(e))) {
       this._touchTriggerClick = false;
+      e.preventDefault();
     }
   };
 
   View.prototype._handleTouchDone = function(e) {
     this._draggingEnd();
-    if (this._touchTriggerClick) {
-      this._triggerClickEvent(e.changedTouches[0]);
+    if (!this._touchTriggerClick) {
+      e.preventDefault();
     }
   };
 
@@ -237,26 +240,6 @@
     } else {
       return touch.clientY;
     }
-  };
-
-  View.prototype._triggerClickEvent = function(posInfo) {
-    if (this._content === null) {
-      return;
-    }
-
-    var evt;
-    var needsManualConfig = true;
-    if ('createEvent' in document) {
-      evt = document.createEvent('MouseEvents');
-      evt.initMouseEvent('click', true, true, window, 1, posInfo.screenX,
-        posInfo.screenY, posInfo.clientX, posInfo.clientY, false, false, false,
-        false, 0, null);
-    } else {
-      needsManualConfig = false;
-      evt = new MouseEvent('click', posInfo);
-    }
-
-    this._content.dispatchEvent(evt);
   };
 
   View.prototype._draggingStart = function(coord) {
