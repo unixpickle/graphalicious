@@ -1,4 +1,4 @@
-// scrollerjs version 0.2.1
+// scrollerjs version 0.2.3
 //
 // Copyright (c) 2015, Alex Nichol and Jonathan Loeb.
 // All rights reserved.
@@ -216,13 +216,18 @@
     } else {
       this._touchTriggerClick = true;
     }
-    this._draggingStart(this._touchEventCoordinate(e));
   };
 
   View.prototype._handleTouchMove = function(e) {
-    if (this._draggingMove(this._touchEventCoordinate(e))) {
-      this._touchTriggerClick = false;
+    var res;
+    if (!this._isDragging) {
+      res = this._draggingStart(this._touchEventCoordinate(e));
+    } else {
+      res = this._draggingMove(this._touchEventCoordinate(e));
+    }
+    if (res) {
       e.preventDefault();
+      this._touchTriggerClick = false;
     }
   };
 
