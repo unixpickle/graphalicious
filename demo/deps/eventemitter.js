@@ -1,4 +1,4 @@
-// eventemitter.js version 0.1.0.
+// eventemitter.js version 0.1.1.
 (function() {
   // An EventEmitter makes it easy to emit and subscribe to events.
   function EventEmitter() {
@@ -43,7 +43,7 @@
   EventEmitter.prototype.once = function(name, listener) {
     var f;
     f = function() {
-      listener();
+      listener.apply(this, arguments);
       this.removeListener(name, f);
     }.bind(this);
     this.addListener(name, f);
