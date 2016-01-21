@@ -12,10 +12,10 @@ You must have [jsbuild](https://github.com/unixpickle/jsbuild) installed in orde
 
 # TODO
 
- * Use **harmonizer** in everything.
  * Fix issue where arrow of upward facing blurb goes under scrollbar
  * Figure out how alternating x-axis labels will work
  * Implement YLCV subclass for x-axis labels
+ * Optimize CurveChunkView by caching a bitmap of the spline so that the path does not need to be re-stroked on every paint(). This will improve performance of the blurb and of scrolling on slower machines or for people with wide browser windows.
 
 # License
 
